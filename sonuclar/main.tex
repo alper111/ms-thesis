@@ -1,0 +1,212 @@
+\documentclass{article}
+% \usepackage{geometry} % see geometry.pdf on how to lay out the page. There's lots.
+% \geometry{a4paper} % or letter or a5paper or ... etc
+
+\usepackage{arxiv}
+
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{lipsum}
+\usepackage{xcolor}
+\usepackage{array}
+\usepackage{makecell}
+\usepackage{graphicx}
+\usepackage{multirow}
+\usepackage{amsmath, amssymb}
+
+\title{}
+\author{}
+
+%%% BEGIN DOCUMENT
+\begin{document}
+
+\begin{table}
+\begin{center}
+\caption{Results of FC and HME models.}
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\cline{3-7}
+\multicolumn{2}{c|}{} & FC		& HME-5		& HME-6		& HME-7		& HME-8		\\
+\hline
+\multirow{3}{*}{\rotatebox{90}{MNIST}}
+& \rotatebox{90}{Real} & $74.90 \pm 0.59$ & $73.62 \pm 0.91$ & $73.70 \pm 0.54$ & $73.27 \pm 0.48$ & $73.39 \pm 0.47$ \\
+\cline{2-7}
+& \rotatebox{90}{Fake} & $67.89 \pm 0.30$ & $73.24 \pm 1.03$ & $72.00 \pm 1.10$ & $70.97 \pm 0.35$ & $71.20 \pm 0.48$ \\
+\cline{2-7}
+& \rotatebox{90}{FID} & $11.13 \pm 0.44$ & $13.57 \pm 0.31$ & $12.61 \pm 0.84$ & $11.93 \pm 0.44$ & $11.84 \pm 0.48$ \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{Fashion}}
+& \rotatebox{90}{Real} & $75.01 \pm 0.20$ & $73.46 \pm 0.68$ & $73.22 \pm 0.86$ & $73.14 \pm 1.47$ & $72.45 \pm 2.08$ \\
+\cline{2-7}
+& \rotatebox{90}{Fake} & $84.89 \pm 0.39$ & $89.32 \pm 0.72$ & $88.36 \pm 0.95$ & $87.47 \pm 1.14$ & $86.95 \pm 1.27$ \\
+\cline{2-7}
+& \rotatebox{90}{FID} & $26.50 \pm 0.63$ & $27.92 \pm 0.91$ & $26.85 \pm 1.35$ & $25.93 \pm 1.48$ & $25.51 \pm 2.41$ \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{CelebA}}
+& \rotatebox{90}{Real} & $66.14 \pm 1.17$ & $72.16 \pm 0.51$ & $70.35 \pm 0.63$ & $68.61 \pm 0.81$ & $68.96 \pm 1.39$ \\
+\cline{2-7}
+& \rotatebox{90}{Fake} & $80.96 \pm 1.56$ & $91.14 \pm 0.40$ & $89.93 \pm 0.15$ & $87.71 \pm 0.95$ & $88.12 \pm 0.62$ \\
+\cline{2-7}
+& \rotatebox{90}{FID} & $14.93 \pm 0.48$ & $21.40 \pm 0.61$ & $19.97 \pm 0.27$ & $18.21 \pm 0.52$ & $18.20 \pm 0.47$ \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{UTZap50K}}
+& \rotatebox{90}{Real} & $89.59 \pm 1.40$ & $91.64 \pm 0.83$ & $90.62 \pm 0.59$ & $90.47 \pm 0.70$ & $90.30 \pm 0.73$ \\
+\cline{2-7}
+& \rotatebox{90}{Fake} & $81.51 \pm 1.16$ & $86.02 \pm 0.67$ & $85.13 \pm 0.46$ & $84.02 \pm 0.43$ & $83.71 \pm 0.61$ \\
+\cline{2-7}
+& \rotatebox{90}{FID} & $54.48 \pm 5.36$ & $63.67 \pm 3.40$ & $58.96 \pm 1.28$ & $57.43 \pm 3.06$ & $56.48 \pm 2.39$ \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{Flowers}}
+& \rotatebox{90}{Real} & $93.80 \pm 1.02$ & $93.83 \pm 0.95$ & $93.41 \pm 0.96$ & $93.14 \pm 0.83$ & $93.38 \pm 0.96$ \\
+\cline{2-7}
+& \rotatebox{90}{Fake} & $97.60 \pm 0.71$ & $97.48 \pm 0.48$ & $97.42 \pm 0.35$ & $97.46 \pm 0.58$ & $97.24 \pm 0.74$ \\
+\cline{2-7}
+& \rotatebox{90}{FID} & $135.28 \pm 7.28$ & $133.47 \pm 6.22$ & $131.05 \pm 4.61$ & $128.95 \pm 3.49$ & $128.62 \pm 5.94$ \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{table}
+\begin{center}
+\caption{Results for ME models.}
+\begin{tabular}{|c|c|c|c|c|c|}
+\cline{3-6}
+\multicolumn{2}{c|}{} & ME-32		& ME-64		& ME-128		& ME-256 \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{MNIST}}
+& \rotatebox{90}{Real} & $74.23 \pm 0.58$ & $74.00 \pm 0.31$ & $74.57 \pm 0.86$ & $76.31 \pm 0.79$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $74.11 \pm 0.77$ & $72.12 \pm 0.74$ & $72.65 \pm 1.30$ & $72.97 \pm 0.52$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $13.71 \pm 1.19$ & $12.08 \pm 0.23$ & $12.75 \pm 0.77$ & $14.58 \pm 1.10$ \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{Fashion}}
+& \rotatebox{90}{Real} & $74.05 \pm 0.81$ & $73.54 \pm 1.10$ & $75.84 \pm 2.43$ & $75.63 \pm 2.48$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $90.23 \pm 0.47$ & $90.31 \pm 0.59$ & $90.50 \pm 1.47$ & $90.46 \pm 1.65$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $27.68 \pm 0.83$ & $27.86 \pm 1.34$ & $28.47 \pm 2.90$ & $29.49 \pm 2.86$ \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{CelebA}}
+& \rotatebox{90}{Real} & $72.22 \pm 1.60$ & $71.23 \pm 1.07$ & $69.66 \pm 0.84$ & $69.23 \pm 1.29$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $91.04 \pm 1.86$ & $90.56 \pm 1.87$ & $87.92 \pm 0.48$ & $87.83 \pm 0.66$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $20.96 \pm 0.78$ & $20.27 \pm 0.70$ & $18.78 \pm 0.35$ & $18.39 \pm 0.76$ \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{UTZap50K}}
+& \rotatebox{90}{Real} & $91.07 \pm 0.62$ & $91.18 \pm 0.34$ & $90.95 \pm 0.82$ & $91.31 \pm 1.18$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $86.69 \pm 1.18$ & $85.67 \pm 0.99$ & $85.38 \pm 0.42$ & $86.06 \pm 1.04$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $63.72 \pm 4.35$ & $61.19 \pm 2.02$ & $61.51 \pm 2.52$ & $65.19 \pm 3.85$ \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{Flowers}}
+& \rotatebox{90}{Real} & $93.58 \pm 1.26$ & $93.69 \pm 0.50$ & $93.57 \pm 1.41$ & $94.40 \pm 1.19$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $97.88 \pm 0.58$ & $97.96 \pm 0.30$ & $97.76 \pm 0.41$ & $97.89 \pm 0.48$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $133.13 \pm 4.31$ & $131.83 \pm 2.45$ & $132.07 \pm 7.28$ & $137.08 \pm 6.46$ \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{table}
+\begin{center}
+\caption{HME with linear experts for different tree depths. In all models, $dim(\boldsymbol{z})$ is fixed to 32.}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\multicolumn{2}{|c|}{Depth} & 2 & 3 & 4 & 5 \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{MNIST}}
+& \rotatebox{90}{Real} & $73.75 \pm 0.61$ & $71.83 \pm 0.77$ & $71.43 \pm 0.32$ & $70.81 \pm 0.39$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $66.07 \pm 0.89$ & $65.30 \pm 0.89$ & $65.30 \pm 0.59$ & $65.05 \pm 0.65$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $9.98 \pm 0.60$ & $8.91 \pm 0.47$ & $8.71 \pm 0.32$ & $8.46 \pm 0.28$ \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{Fashion}}
+& \rotatebox{90}{Real} & $70.85 \pm 0.67$ & $69.52 \pm 0.46$ & $68.55 \pm 0.61$ & $69.08 \pm 0.64$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $78.53 \pm 0.38$ & $78.46 \pm 0.21$ & $77.64 \pm 0.90$ & $78.27 \pm 1.29$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $19.40 \pm 0.79$ & $18.57 \pm 0.52$ & $17.75 \pm 0.58$ & $18.01 \pm 0.73$ \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{CelebA}}
+& \rotatebox{90}{Real} & $62.48 \pm 1.27$ & x & x & $61.73 \pm 0.94$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $78.64 \pm 1.09$ & x & x & $77.72 \pm 0.46$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $12.58 \pm 0.41$ & x & x & $12.03 \pm 0.25$ \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{UTZap50K}}
+& \rotatebox{90}{Real} & $86.27 \pm 1.08$ & $86.18 \pm 0.99$ & x & $86.49 \pm 0.71$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $77.10 \pm 0.88$ & $78.86 \pm 0.69$ & x & $77.25 \pm 0.92$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $40.19 \pm 2.79$ & $40.04 \pm 2.30$ & x & $40.88 \pm 2.13$ \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{Flowers}}
+& \rotatebox{90}{Real} & $89.50 \pm 2.25$ & $88.24 \pm 0.84$ & x & $89.08 \pm 1.71$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $95.62 \pm 0.90$ & $95.94 \pm 0.90$ & x & $96.28 \pm 0.67$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $109.97 \pm 7.29$ & $107.81 \pm 4.21$ & x & $109.88 \pm 4.28$ \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{table}
+\begin{center}
+\caption{HME with linear experts for embedding spaces with different dimensionalities. In all models, depth is fixed to 5.}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\multicolumn{2}{|c|}{$dim(\boldsymbol{z})$} & 4 & 32 & 64 & 100 \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{MNIST}}
+& \rotatebox{90}{Real} & $74.94 \pm 0.67$ & $70.81 \pm 0.39$ & $71.27 \pm 0.46$ & $72.14 \pm 0.54$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $86.88 \pm 0.65$ & $65.05 \pm 0.65$ & $65.33 \pm 0.60$ & $65.63 \pm 0.25$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $17.42 \pm 0.88$ & $8.46 \pm 0.28$ & $8.55 \pm 0.25$ & $9.07 \pm 0.44$ \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{Fashion}}
+& \rotatebox{90}{Real} & $73.33 \pm 0.87$ & $69.08 \pm 0.64$ & $69.62 \pm 0.87$ & $69.99 \pm 0.70$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $96.62 \pm 0.44$ & $78.27 \pm 1.29$ & $77.99 \pm 0.70$ & $78.10 \pm 0.60$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $28.37 \pm 1.40$ & $18.01 \pm 0.73$ & $18.32 \pm 0.67$ & $18.24 \pm 0.91$ \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{CelebA}}
+& \rotatebox{90}{Real} & $75.88 \pm 0.83$ & $61.73 \pm 0.94$ & $61.91 \pm 0.72$ & $62.02 \pm 1.02$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $98.10 \pm 0.26$ & $77.72 \pm 0.46$ & $77.14 \pm 0.83$ & $77.02 \pm 0.98$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $26.21 \pm 0.38$ & $12.03 \pm 0.25$ & $11.99 \pm 0.40$ & $12.09 \pm 0.56$ \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{UTZap50K}}
+& \rotatebox{90}{Real} & $92.45 \pm 0.47$ & $86.49 \pm 0.71$ & $85.98 \pm 0.87$ & $87.77 \pm 1.17$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $91.39 \pm 0.66$ & $77.25 \pm 0.92$ & $76.40 \pm 1.08$ & $78.42 \pm 1.36$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $70.91 \pm 4.65$ & $40.88 \pm 2.13$ & $38.79 \pm 2.26$ & $45.54 \pm 3.46$ \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{Flowers}}
+& \rotatebox{90}{Real} & $94.13 \pm 1.08$ & $89.08 \pm 1.71$ & $88.30 \pm 1.21$ & $90.15 \pm 1.60$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $98.16 \pm 0.29$ & $96.28 \pm 0.67$ & $96.77 \pm 0.65$ & $96.55 \pm 0.76$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $133.34 \pm 1.24$ & $109.88 \pm 4.28$ & $110.93 \pm 4.54$ & $114.79 \pm 4.20$ \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\end{document}
