@@ -22,15 +22,15 @@
 % COVER PAGE
 \title{HIERARCHICAL MIXTURES OF GENERATORS}
 \turkcebaslik{ÜRETİCİLERİN HİYERARŞİK KARIŞIMLARI}
-\degree{B.S., Program Name, Boğaziçi University, 2017}
+\degree{B.S., Computer Engineering, Boğaziçi University, 2017}
 \author{Alper Ahmetoğlu}
 \program{Computer Engineering}
 \subyear{2019}
 
 % APPROVED BY PAGE
-\supervisor{Prof. Tunga Güngör}
-\examineri{Prof. Emre Uğur}
-\examinerii{Prof. Ethem Alpaydın}
+\supervisor{Prof. Dr. Tunga Güngör}
+\examineri{Prof. Dr. Ethem Alpaydın}
+\examinerii{Prof. Dr. X}
 \dateofapproval{DD.MM.YYYY}
 
 \begin{document}
@@ -76,13 +76,13 @@ Generative adversarial networks are used successfully to model complex data dist
 
 
 \chapter{INTRODUCTION}
-\label{chapter:introduction}
+\label{chapter:intro}
 \pagenumbering{arabic}
-Machine learning is to learn to predict the outcome of an event~$\boldsymbol{y}$~that is dependent on another event~$\boldsymbol{x}$. Learning corresponds to finding the appropriate mapping~$f(\boldsymbol{x})=\boldsymbol{y}$. More formally, we are given a set of data points~$X=\{\boldsymbol{x}^i\}_{i=1}^{N}\thicksim p(\boldsymbol{x})$~with their respective targets~$Y=\{\boldsymbol{y}^i\}_{i=1}^{N}\thicksim p(\boldsymbol{y})$. If these two distributions are correlated, then they are dependent and we can make a prediction about the outcome of~$\boldsymbol{y}$~given the outcome of~$\boldsymbol{x}$, or vice versa. Motivated by this fact, we construct a function~$f(\boldsymbol{x}; \theta)=\hat{\boldsymbol{y}}$. Here,~$\theta$~are the set of parameters of the function. Based on our data set $X$, and corresponding targets $Y$, we tweak the parameters of the function so that~$\sum_i L(f(\boldsymbol{x}^i; \theta), y^i)$~is minimized for a function~$L$~that measures the difference between two values. If we successfully find a good estimator for~$p(\boldsymbol{y}|\boldsymbol{x})$, we can then use this to predict the outcome of~$\boldsymbol{y}$~given the outcome of~$\boldsymbol{x}$.
+Machine learning is to learn to predict the outcome of an event $\boldsymbol{y}$ that is dependent on another event $\boldsymbol{x}$. Learning corresponds to finding the appropriate mapping $f(\boldsymbol{x})=\boldsymbol{y}$. More formally, we are given a set of data points $X=\{\boldsymbol{x}^i\}_{i=1}^{N}\thicksim p(\boldsymbol{x})$ with their respective targets $Y=\{\boldsymbol{y}^i\}_{i=1}^{N}\thicksim p(\boldsymbol{y})$. If these two distributions are correlated, then they are dependent and we can make a prediction about the outcome of $\boldsymbol{y}$ given the outcome of $\boldsymbol{x}$, or vice versa. Motivated by this fact, we construct a function $f(\boldsymbol{x}; \theta)=\hat{\boldsymbol{y}}$. Here, $\theta$ are the set of parameters of the function. Based on our data set $X$, and corresponding targets $Y$, we tweak the parameters of the function so that $\sum_i L(f(\boldsymbol{x}^i; \theta), y^i)$ is minimized for a function $L$ that measures the difference between two values. If we successfully find a good estimator for $p(\boldsymbol{y}|\boldsymbol{x})$, we can then use this to predict the outcome of $\boldsymbol{y}$ given the outcome of $\boldsymbol{x}$.
 
-In the above setting, we are concerned with the statistical regularities between $X$ and $Y$. The learned mapping $f^{*}(\boldsymbol{x})$ maps the~$\boldsymbol{x}$-space to the~$\boldsymbol{y}$-space. An alternative interpretation is that we partition the~$\boldsymbol{x}$-space into regions with respect to outcomes of~$\boldsymbol{y}$. We can think of this process as finding discriminative borders in~$p(\boldsymbol{x})$~to predict the outcome of~$\boldsymbol{y}$. One can see that these borders are totally dependent on~$\boldsymbol{y}$. If there happens to be only one outcome of event~$\boldsymbol{y}$, then the~$\boldsymbol{x}$-space has no borders and there is only one color (there is only one region). On the other extreme, if each data point~$\boldsymbol{x}^{(i)}$~corresponds to a different target~$\boldsymbol{y}^{(i)}$, then each point will have a different color in the~$\boldsymbol{x}$-space and there will be lots of borders. Trying to learn a mapping from~$\boldsymbol{x}$-space to some target~$\boldsymbol{y}$-space is called \emph{supervised learning}. This is supervised because we specify a target for each data point. Supervised learning together with \emph{deep learning}, achieved great success on real-world problems such as object recognition~\cite{alexnet}, speech recognition~\cite{acoustic} and statistical machine translation~\cite{seq2seq}. However, these successes are heavily due to labeled large data sets.
+In the above setting, we are concerned with the statistical regularities between $X$ and $Y$. The learned mapping $f^{*}(\boldsymbol{x})$ maps the $\boldsymbol{x}$-space to the $\boldsymbol{y}$-space. An alternative interpretation is that we partition the $\boldsymbol{x}$-space into regions with respect to outcomes of $\boldsymbol{y}$. We can think of this process as finding discriminative borders in $p(\boldsymbol{x})$ to predict the outcome of $\boldsymbol{y}$. One can see that these borders are totally dependent on $\boldsymbol{y}$. If there happens to be only one outcome of event $\boldsymbol{y}$, then the $\boldsymbol{x}$-space has no borders and there is only one color (there is only one region). On the other extreme, if each data point $\boldsymbol{x}^{(i)}$ corresponds to a different target $\boldsymbol{y}^{(i)}$, then each point will have a different color in the $\boldsymbol{x}$-space and there will be lots of borders. Trying to learn a mapping from $\boldsymbol{x}$-space to some target~$\boldsymbol{y}$-space is called \emph{supervised learning}. This is supervised because we specify a target for each data point. Supervised learning together with \emph{deep learning}, achieved great success on real-world problems such as object recognition \cite{alexnet}, speech recognition \cite{acoustic} and statistical machine translation \cite{seq2seq}. However, these successes are heavily due to labeled large data sets.
 
-An important research direction in machine learning is \emph{unsupervised learning}. Here, we are not given a set of pre-defined targets. So we do not know the outcome of~$\boldsymbol{y}$~that is dependent on the given input $\boldsymbol{x}$. We do not even know if there is any $\boldsymbol{y}$. The aim is to model the probability distribution of $\boldsymbol{x}$, to see what normally happens. Therefore the aim is to find statistical regularities within the $X$ space. Once we know 
+An important research direction in machine learning is \emph{unsupervised learning}. Here, we are not given a set of pre-defined targets. So we do not know the outcome of $\boldsymbol{y}$ that is dependent on the given input $\boldsymbol{x}$. We do not even know if there is any $\boldsymbol{y}$. The aim is to model the probability distribution of $\boldsymbol{x}$, to see what normally happens. Therefore the aim is to find statistical regularities within the $X$ space. Once we know the structure of $X$, it becomes considerably easy to find a mapping from $X$ to $Y$. More formally, when we know $p(\boldsymbol{x})$, we can find $p(x_i | \{\boldsymbol{x} \backslash x_i\})$.
 
 % Deep neural networks (DNNs) have been shown to be very effective as discriminative models in real world tasks such as speech recognition \cite{acoustic}, object recognition \cite{alexnet} and machine translation \cite{seq2seq}. Generative adversarial networks (GAN) \cite{gan} and variational auto-encoders \cite{vae} (VAE) show that DNNs can also be used as generative models.
 
@@ -91,7 +91,7 @@ An important research direction in machine learning is \emph{unsupervised learni
 
 
 \chapter{GENERATIVE ADVERSARIAL NETWORKS}
-\label{chapter:generative-adversarial-networks}
+\label{chapter:gan}
 
 The generative adversarial network (GAN) \cite{gan}~has been proposed to learn a generative model to model a data distribution, $p(x)$. GAN is composed of two learners, a generative network $G$ and a discriminative network $D$. $G(z;\theta)$ learns to map $z$ sampled from an arbitrary distribution $p(z)$ to~the target distribution $p(x)$. It is a trained model, generally a deep neural network, parameterized by $\theta$. The discriminator $D(x;\phi)$, another neural network with weights $\phi$, is trained to assign low scores to ``fake'' samples generated $G(z;\theta)$ and high scores to samples from true $p(\boldsymbol{x})$ given in the training set.
 
@@ -122,7 +122,13 @@ $D$ is trained to maximize this, i.e., it learns to maximize the difference betw
 
 A well trained GAN can generate images that are almost indistinguishable by humans \cite{biggan,proggan,stylegan}. Yet, there remain difficulties regarding the training. Recently, Wassertein GAN \cite{wgan} proposed to minimize Earth-Mover distance (also known as Wasserstein-1 distance) instead of Jensen-Shannon divergence. They show both theoretically and experimentally that this loss has better convergence properties.
 
+\section{Problems Related with GANs}
+\label{sec:problems}
+
 However, training of these architectures are notoriously hard. Two networks are trained simultaneously. Empirically, if $D_{\phi}$ is trained too much, then gradients that are propagated to $G_{\theta}$ become either too low or too high, depending on the use of original cost function or the non-saturating cost function \cite{principledmethods}. Another problem is when~$G_{\theta}$~quickly learns to generate a subset of~$p(\boldsymbol{x})$. Then again gradients that are propagated through~$D_{\phi}$~do not enforce~$G_{\theta}$~to generate diverse samples. This problem is called \emph{mode collapse}.
+
+\section{Related Work}
+\label{sec:related}
 
 Recent works mainly focus on these two problems. To solve problems related to training people proposed different GAN objectives \cite{wgan,infogan,leastgan,lsgan}, regularization methods \cite{improved_wgan,sngan,dcgan}, architectures \cite{biggan,bigan,ali,proggan,stylegan,dcgan,sagan} and several other tricks mentioned in these papers. A good review of these works can be found in \cite{ganreview,ganreview2,ganreview3}.
 
@@ -164,7 +170,7 @@ where $y_m^L$ and $y_m^R$ are the responses of the left and the right children o
 
 \lipsum[5]
 
-\section{GAN Variants with Multiple Generators}
+.\section{GAN Variants with Multiple Generators}
 \label{sec:related}
 
 We use a widely adopted DCGAN \cite{dcgan} architecture for the generator. In DCGAN, we project the input noise vector $\boldsymbol{z}$ into a high dimensional vector and reshape it to apply transposed convolution operation. This projection is done with a fully-connected perceptron layer. Here, we remove this layer and add a SDT. Given an input vector $\boldsymbol{z}$, SDT softly decides which leaves (experts) to use. Leaves contain high-dimensional vectors (to be used for transposed convolution), that are also learned throughout the training. The model is visually summarized in Figure \ref{fig:tree}. Instead of a tree structure, a flat gating function can also be used as in \cite{me}.
@@ -207,7 +213,7 @@ The model is shown in Figure \ref{fig:models:mgan}. There is also the difference
 
 %
 %
-\subsection{Mixture of experts GAN}
+\subsection{Mixture of Experts GAN}
 \label{subsec:megan}
 
 In the MEGAN \cite{megan}, inspired from the mixtures of experts \cite{me}, there is an additional gating model, which is also trained, that chooses among the different generators.
@@ -226,8 +232,8 @@ The model is shown in Figure \ref{fig:models:megan}. There is a set of generator
 %
 %
 %
-\section{Hierarchical mixture of generators}
-\label{sec:proposed}
+\chapter{HIERARCHICAL MIXTURE OF GENERATORS}
+\label{chapter:hme}
 
 Just like the hierarchical mixture of experts \cite{hme} go from the flat organization of mixture of experts  \cite{me} to a tree, our proposed hierarchical mixture of generators go from a flat mixture of generators to a tree.
 
@@ -244,8 +250,21 @@ As shown in Figure \ref{fig:models:hmegan}, we have a binary tree where each int
 
 Since the whole model is continuous, one can use gradient based optimization to learn the parameters, which include all the gating parameters in all decision nodes in the tree as well as the $z'$ of all the leaves.
 
-\chapter{EXPERIMENTS AND RESULTS}
-\label{chapter:experiments-and-results}
+\chapter{EXPERIMENTS}
+\label{chapter:exps}
+
+\section{Hierarchical Structure vs. Flat Structure}
+\label{sec:hme-vs-me}
+
+\section{Fully-connected vs. HME}
+\label{sec:fc-vs-hme}
+
+\section{Linear Experts}
+\label{sec:hme-linear}
+
+\section{Interpretation of the Learned Model}
+\label{sec:interpret}
+
 We test our proposed mixture model on four image data sets that are widely used in GAN literature, namely, MNIST \cite{mnist}, FashionMNIST \cite{fashion}, UTZap50K \cite{utzap50k} and CelebA \cite{celeba}. 
 
 We use trees of different depths, and we also test a flat mixture of generators of equal number of leaves. For example, we have a tree of depth five with 32 leaves and a flat mixture of 32 leaves. In the former case, for each leaf, we have five binary gatings; in the latter case, there is one gating that chooses one of 32. 
@@ -314,62 +333,238 @@ Some generated examples for different data sets using the hierarchical mixture m
 
 \begin{table}[thbp]
 \vskip\baselineskip
-\caption[FID scores]{FID scores.}
+\caption[Results of FC and HME models]{Results of FC and HME models. $dim(\boldsymbol{z})$ is fixed to 100.}
 \begin{center}
-\begin{tabular}{|c|c|c|c|c|c|}
+\begin{tabular}{|p{0.2cm}|p{0.2cm}|c|c|c|c|c|}
+\cline{3-7}
+\multicolumn{2}{c|}{} & FC		& HME-5		& HME-6		& HME-7		& HME-8		\\
 \hline
- & MNIST & Fashion & CelebA & Shoes & Flowers \\
+\multirow{3}{*}{\rotatebox{90}{MNIST}}
+& \rotatebox{90}{Real} & $74.90 \pm 0.59$ & $73.62 \pm 0.91^-$ & $73.70 \pm 0.54^-$ &  {$73.27 \pm 0.48^-$} &  {$73.39 \pm 0.47^-$} \\
+\cline{2-7}
+& \rotatebox{90}{Fake} & $67.89 \pm 0.30$ & $73.24 \pm 1.03^+$ & $72.00 \pm 1.10^+$ &  {$70.97 \pm 0.35^+$} &  {$71.20 \pm 0.48^+$} \\
+\cline{2-7}
+& \rotatebox{90}{FID} & $11.13 \pm 0.44$ & $13.57 \pm 0.31^+$ & $12.61 \pm 0.84^+$ & $11.93 \pm 0.44^+$ & {$11.84 \pm 0.48^+$} \\
 \hline
-FC & $11.13 \pm 0.44$ & $26.50 \pm 0.63$ & $14.93 \pm 0.48$ & $54.48 \pm 5.36$ & $135.28 \pm 7.28$\\ 
- & 413K & 413K & 827K & 827K & 827K \\
- \hline
- HME-5 & $13.57 \pm 0.31$ & $27.92 \pm 0.91$ & $21.40 \pm 0.61$ & $63.67 \pm 3.40$ & $133.47 \pm 6.22$\\ 
- & 134K & 134K & 265K & 265K & 265K \\
- \hline
- HME-6 & $12.61 \pm 0.84$ & $26.85 \pm 1.35$ & $19.97 \pm 0.27$ & $58.96 \pm 1.28$ & $131.05 \pm 4.61$\\ 
- & 268K & 268K & 530K & 530K & 530K \\
- \hline
- HME-7 & $11.93 \pm 0.44$ & $25.93 \pm 1.48$ & $18.21 \pm 0.52$ & $57.43 \pm 3.06$ & $128.95 \pm 3.49$\\ 
- & 537K & 537K & 1.06M & 1.06M & 1.06M \\
- \hline
- HME-8 & $11.84 \pm 0.48$ & $25.51 \pm 2.41$ & $18.20 \pm 0.47$ & $56.48 \pm 2.39$ & $128.62 \pm 5.94$\\ 
- & 1.07M & 1.07M & 2.12M & 2.12M & 2.12M \\
- \hline
- ME-32 & $13.71 \pm 1.19$ & $27.68 \pm 0.83$ & $20.96 \pm 0.78$ & $63.72 \pm 4.35$ & $133.13 \pm 4.31$\\ 
- & 134K & 134K & 265K & 265K & 265K \\
-  \hline
- ME-64 & $12.08 \pm 0.23$ & $27.86 \pm 1.34$ & $20.27 \pm 0.70$ & $61.19 \pm 2.02$ & $131.83 \pm 2.45$\\ 
- & 268K & 268K & 530K & 530K & 530K \\
-  \hline
- ME-128 & $12.75 \pm 0.77$ & $28.47 \pm 2.90$ & $18.78 \pm 0.35$ & $61.51 \pm 2.52$ & $132.07 \pm 7.28$\\ 
- & 537K & 537K & 1.06M & 1.06M & 1.06M \\
-  \hline
- ME-256 & $14.58 \pm 1.10$ & $29.49 \pm 2.86$ & $18.39 \pm 0.76$ & $65.19 \pm 3.85$ & $137.08 \pm 6.46$\\ 
- & 1.07M & 1.07M & 2.12M & 2.12M & 2.12M \\
-  \hline
- HME-L2-Z32 & $9.98 \pm 0.60$ & $19.40 \pm 0.79$ & $12.58 \pm 0.41$ & $40.19 \pm 2.79$ & $109.97 \pm 7.29$\\ 
- & 540K & 540K & 1.08M & 1.08M & 1.08M \\
- \hline
- HME-L3-Z32 & $8.91 \pm 0.47$ & $18.57 \pm 0.52$ & x & x & x \\
- \hline
- HME-L4-Z32 & $8.71 \pm 0.32$ & $17.75 \pm 0.58$ & x & x & x \\
- \hline
- HME-L5-Z32 & $8.46 \pm 0.28$ & $18.01 \pm 0.73 $ & x & x & x \\
- \hline
- HME-L5-Z64 & $8.55 \pm 0.25$ & $18.32 \pm 0.67$ & $11.99 \pm 0.40$ & $38.79 \pm 2.26$ & $110.93 \pm 4.54$ \\
- \hline
- HME-L5-Z100 & $9.07 \pm 0.44$ & $18.24 \pm 0.91$ & $12.09 \pm 0.56$ & $45.54 \pm 3.46$ & $114.79 \pm 4.20$\\ 
- & 13.24M & 13.24M & 26.47M & 26.47M & 26.47M \\
- \hline
- HME-L5-Z4 & $17.42 \pm 0.88$ & $28.37 \pm 1.40$ & $26.21 \pm 0.38$ & $70.91 \pm 4.65$ & $133.34 \pm 1.24$\\ 
- & 655K & 655K & 1.31M & 1.31M & 1.31M \\
-  \hline
+\multicolumn{2}{|c|}{\#} & 413K & 134K & 268K & 537K & 1.07M \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{Fashion}}
+& \rotatebox{90}{Real} & $75.01 \pm 0.20$ & $73.46 \pm 0.68^-$ & $73.22 \pm 0.86^-$ & $73.14 \pm 1.47^-$ & $72.45 \pm 2.08$ \\
+\cline{2-7}
+& \rotatebox{90}{Fake} & $84.89 \pm 0.39$ & $89.32 \pm 0.72^+$ & {$88.36 \pm 0.95^+$} & {$87.47 \pm 1.14^+$} & {$86.95 \pm 1.27^+$} \\
+\cline{2-7}
+& \rotatebox{90}{FID} & $26.50 \pm 0.63$ & $27.92 \pm 0.91^+$ & $26.85 \pm 1.35$ & $25.93 \pm 1.48$ & {$25.51 \pm 2.41$} \\
+\hline
+\multicolumn{2}{|c|}{\#} & 413K & 134K & 268K & 537K & 1.07M \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{CelebA}}
+& \rotatebox{90}{Real} & $66.14 \pm 1.17$ & $72.16 \pm 0.51^+$ & $70.35 \pm 0.63^+$ & $68.61 \pm 0.81^+$ & $68.96 \pm 1.39^+$ \\
+\cline{2-7}
+& \rotatebox{90}{Fake} & $80.96 \pm 1.56$ & $91.14 \pm 0.40^+$ & $89.93 \pm 0.15^+$ & $87.71 \pm 0.95^+$ & $88.12 \pm 0.62^+$ \\
+\cline{2-7}
+& \rotatebox{90}{FID} & $14.93 \pm 0.48$ & $21.40 \pm 0.61^+$ & $19.97 \pm 0.27^+$ & $18.21 \pm 0.52^+$ & $18.20 \pm 0.47^+$ \\
+\hline
+\multicolumn{2}{|c|}{\#} & 827K & 265K & 530K & 1.06M & 2.12M \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{UTZap50K}}
+& \rotatebox{90}{Real} & $89.59 \pm 1.40$ & $91.64 \pm 0.83^+$ & $90.62 \pm 0.59$ & $90.47 \pm 0.70$ & $90.30 \pm 0.73$ \\
+\cline{2-7}
+& \rotatebox{90}{Fake} & $81.51 \pm 1.16$ & $86.02 \pm 0.67^+$ & $85.13 \pm 0.46^+$ & {$84.02 \pm 0.43^+$} & {$83.71 \pm 0.61^+$} \\
+\cline{2-7}
+& \rotatebox{90}{FID} & $54.48 \pm 5.36$ & $63.67 \pm 3.40^+$ & $58.96 \pm 1.28$ & $57.43 \pm 3.06$ & {$56.48 \pm 2.39$} \\
+\hline
+\multicolumn{2}{|c|}{\#} & 827K & 265K & 530K & 1.06M & 2.12M \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{Flowers}}
+& \rotatebox{90}{Real} & $93.80 \pm 1.02$ & $93.83 \pm 0.95$ & $93.41 \pm 0.96$ & $93.14 \pm 0.83$ & $93.38 \pm 0.96$ \\
+\cline{2-7}
+& \rotatebox{90}{Fake} & $97.60 \pm 0.71$ & $97.48 \pm 0.48$ & {$97.42 \pm 0.35$} & $97.46 \pm 0.58$ & $97.24 \pm 0.74$ \\
+\cline{2-7}
+& \rotatebox{90}{FID} & $135.28 \pm 7.28$ & $133.47 \pm 6.22$ & $131.05 \pm 4.61$ & $128.95 \pm 3.49$ & $128.62 \pm 5.94$ \\
+\hline
+\multicolumn{2}{|c|}{\#} & 827K & 265K & 530K & 1.06M & 2.12M \\
+\hline
 \end{tabular}
-\label{table:fid}
+\label{tab:fc-hme}
 \end{center}
 \end{table}
 
-Experiment results are reported in Table \ref{table:fid}. HME-$k$ refers to a tree with depth $k$ and ME-$k$ refers to $k$ experts. We report the parameter count of FC, HME and ME; these do not include the convolution parameters shared across all models. These results show that HME and ME, though are good, are not as good as FC in terms of Frechet score or 5-NN accuracy. Their performance improves as the structure gets larger; note that trees with depth 5 and 6 are smaller than FC.
+\begin{table}[thbp]
+\vskip\baselineskip
+\caption[Results for ME models]{Results for ME models. $dim(\boldsymbol{z})$ is fixed to 100.}
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|}
+\cline{3-6}
+\multicolumn{2}{c|}{} & ME-32		& ME-64		& ME-128		& ME-256 \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{MNIST}}
+& \rotatebox{90}{Real} & $74.23 \pm 0.58$ & $74.00 \pm 0.31^-$ & $74.57 \pm 0.86$ & $76.31 \pm 0.79^+$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $74.11 \pm 0.77^+$ & $72.12 \pm 0.74^+$ & $72.65 \pm 1.30^+$ & $72.97 \pm 0.52^+$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $13.71 \pm 1.19^+$ & $12.08 \pm 0.23^+$ & $12.75 \pm 0.77^+$ & $14.58 \pm 1.10^+$ \\
+\hline
+\multicolumn{2}{|c|}{params.} & 134K & 268K & 537K & 1.07M \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{Fashion}}
+& \rotatebox{90}{Real} & $74.05 \pm 0.81$ & $73.54 \pm 1.10^-$ & $75.84 \pm 2.43$ & $75.63 \pm 2.48$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $90.23 \pm 0.47^+$ & $90.31 \pm 0.59^+$ & $90.50 \pm 1.47^+$ & $90.46 \pm 1.65^+$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $27.68 \pm 0.83^+$ & $27.86 \pm 1.34$ & $28.47 \pm 2.90$ & $29.49 \pm 2.86$ \\
+\hline
+\multicolumn{2}{|c|}{params.} & 134K & 268K & 537K & 1.07M \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{CelebA}}
+& \rotatebox{90}{Real} & $72.22 \pm 1.60^+$ & $71.23 \pm 1.07^+$ & $69.66 \pm 0.84^+$ & $69.23 \pm 1.29^+$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $91.04 \pm 1.86^+$ & $90.56 \pm 1.87^+$ & $87.92 \pm 0.48^+$ & $87.83 \pm 0.66^+$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $20.96 \pm 0.78^+$ & $20.27 \pm 0.70^+$ & $18.78 \pm 0.35^+$ & $18.39 \pm 0.76^+$ \\
+\hline
+\multicolumn{2}{|c|}{params.} & 265K & 530K & 1.06M & 2.12M \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{UTZap50K}}
+& \rotatebox{90}{Real} & $91.07 \pm 0.62$ & $91.18 \pm 0.34$ & $90.95 \pm 0.82$ & $91.31 \pm 1.18$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $86.69 \pm 1.18^+$ & $85.67 \pm 0.99^+$ & $85.38 \pm 0.42^+$ & $86.06 \pm 1.04^+$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $63.72 \pm 4.35^+$ & $61.19 \pm 2.02^+$ & $61.51 \pm 2.52^+$ & $65.19 \pm 3.85^+$ \\
+\hline
+\multicolumn{2}{|c|}{params.} & 265K & 530K & 1.06M & 2.12M \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{Flowers}}
+& \rotatebox{90}{Real} & $93.58 \pm 1.26$ & $93.69 \pm 0.50$ & $93.57 \pm 1.41$ & $94.40 \pm 1.19$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $97.88 \pm 0.58$ & $97.96 \pm 0.30$ & $97.76 \pm 0.41$ & $97.89 \pm 0.48$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $133.13 \pm 4.31$ & $131.83 \pm 2.45$ & $132.07 \pm 7.28$ & $137.08 \pm 6.46$ \\
+\hline
+\multicolumn{2}{|c|}{params.} & 265K & 530K & 1.06M & 2.12M \\
+\hline
+\end{tabular}
+\label{tab:me}
+\end{center}
+\end{table}
+
+
+\begin{table}[thbp]
+\vskip\baselineskip
+\caption[HME with linear experts for different tree depths]{HME with linear experts for different tree depths. $dim(\boldsymbol{z})$ is fixed to 32.}
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\multicolumn{2}{|c|}{Depth} & 2 & 3 & 4 & 5 \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{MNIST}}
+& \rotatebox{90}{Real} & $73.75 \pm 0.61$ & $71.83 \pm 0.77$ & $71.43 \pm 0.32$ & $70.81 \pm 0.39$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $66.07 \pm 0.89$ & $65.30 \pm 0.89$ & $65.30 \pm 0.59$ & $65.05 \pm 0.65$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $9.98 \pm 0.60$ & $8.91 \pm 0.47$ & $8.71 \pm 0.32$ & $8.46 \pm 0.28$ \\
+\hline
+\multicolumn{2}{|c|}{params.} & 540K & 1.08M & 2.16M & 4.32M \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{Fashion}}
+& \rotatebox{90}{Real} & $70.85 \pm 0.67$ & $69.52 \pm 0.46$ & $68.55 \pm 0.61$ & $69.08 \pm 0.64$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $78.53 \pm 0.38$ & $78.46 \pm 0.21$ & $77.64 \pm 0.90$ & $78.27 \pm 1.29$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $19.40 \pm 0.79$ & $18.57 \pm 0.52$ & $17.75 \pm 0.58$ & $18.01 \pm 0.73$ \\
+\hline
+\multicolumn{2}{|c|}{params.} & 540K & 1.08M & 2.16M & 4.32M \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{CelebA}}
+& \rotatebox{90}{Real} & $62.48 \pm 1.27$ & $78.26 \pm 1.08$ & $62.60 \pm 1.20$ & $61.73 \pm 0.94$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $78.64 \pm 1.09$ & $62.20 \pm 1.28$ & $78.84 \pm 0.69$ & $77.72 \pm 0.46$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $12.58 \pm 0.41$ & $12.46 \pm 0.69$ & $12.79 \pm 	0.43$ & $12.03 \pm 0.25$ \\
+\hline
+\multicolumn{2}{|c|}{params.} & 1.08M & 2.16M & 4.32M & 8.65M \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{UTZap50K}}
+& \rotatebox{90}{Real} & $86.27 \pm 1.08$ & $86.18 \pm 0.99$ & $86.04 \pm 0.75$ & $86.49 \pm 0.71$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $77.10 \pm 0.88$ & $78.86 \pm 0.69$ & $76.62 \pm 0.78$ & $77.25 \pm 0.92$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $40.19 \pm 2.79$ & $40.04 \pm 2.30$ & $38.83 \pm 0.80$ & $40.88 \pm 2.13$ \\
+\hline
+\multicolumn{2}{|c|}{params.} & 1.08M & 2.16M & 4.32M & 8.65M \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{Flowers}}
+& \rotatebox{90}{Real} & $89.50 \pm 2.25$ & $88.24 \pm 0.84$ & $89.39 \pm 1.02$ & $89.08 \pm 1.71$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $95.62 \pm 0.90$ & $95.94 \pm 0.90$ & $96.24 \pm 0.28$ & $96.28 \pm 0.67$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $109.97 \pm 7.29$ & $107.81 \pm 4.21$ & $112.73 \pm 4.55$ & $109.88 \pm 4.28$ \\
+\hline
+\multicolumn{2}{|c|}{params.} & 1.08M & 2.16M & 4.32M & 8.65M \\
+\hline
+\end{tabular}
+\label{tab:hme-depth}
+\end{center}
+\end{table}
+
+\begin{table}[thbp]
+\vskip\baselineskip
+\caption[HME with linear experts for embedding spaces with different dimensionalities]{HME with linear experts for embedding spaces with different dimensionalities. Depth is fixed to 5.}
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\multicolumn{2}{|c|}{$dim(\boldsymbol{z})$} & 4 & 32 & 64 & 100 \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{MNIST}}
+& \rotatebox{90}{Real} & $74.94 \pm 0.67$ & $70.81 \pm 0.39^-$ & $71.27 \pm 0.46^-$ & $72.14 \pm 0.54^-$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $86.88 \pm 0.65^+$ & $65.05 \pm 0.65^-$ & $65.33 \pm 0.60^-$ & $65.63 \pm 0.25^-$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $17.42 \pm 0.88^+$ & $8.46 \pm 0.28^-$ & $8.55 \pm 0.25^-$ & $9.07 \pm 0.44^-$ \\
+\hline
+\multicolumn{2}{|c|}{params.} & 655K & 4.32M & 8.52M & 13.24M \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{Fashion}}
+& \rotatebox{90}{Real} & $73.33 \pm 0.87^-$ & $69.08 \pm 0.64^-$ & $69.62 \pm 0.87^-$ & $69.99 \pm 0.70^-$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $96.62 \pm 0.44^+$ & $78.27 \pm 1.29^-$ & $77.99 \pm 0.70^-$ & $78.10 \pm 0.60^-$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $28.37 \pm 1.40^+$ & $18.01 \pm 0.73^-$ & $18.32 \pm 0.67^-$ & $18.24 \pm 0.91^-$ \\
+\hline
+\multicolumn{2}{|c|}{params.} & 655K & 4.32M & 8.52M & 13.24M \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{CelebA}}
+& \rotatebox{90}{Real} & $75.88 \pm 0.83^+$ & $61.73 \pm 0.94^-$ & $61.91 \pm 0.72^-$ & $62.02 \pm 1.02^-$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $98.10 \pm 0.26^+$ & $77.72 \pm 0.46^-$ & $77.14 \pm 0.83^-$ & $77.02 \pm 0.98^-$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $26.21 \pm 0.38^+$ & $12.03 \pm 0.25^-$ & $11.99 \pm 0.40^-$ & $12.09 \pm 0.56^-$ \\
+\hline
+\multicolumn{2}{|c|}{params.} & 1.31M & 8.65M & 17.04M & 26.47M \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{UTZap50K}}
+& \rotatebox{90}{Real} & $92.45 \pm 0.47^+$ & $86.49 \pm 0.71^-$ & $85.98 \pm 0.87^-$ & $87.77 \pm 1.17$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $91.39 \pm 0.66^+$ & $77.25 \pm 0.92^-$ & $76.40 \pm 1.08^-$ & $78.42 \pm 1.36^-$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $70.91 \pm 4.65^+$ & $40.88 \pm 2.13^-$ & $38.79 \pm 2.26^-$ & $45.54 \pm 3.46^-$ \\
+\hline
+\multicolumn{2}{|c|}{params.} & 1.31M & 8.65M & 17.04M & 26.47M \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{Flowers}}
+& \rotatebox{90}{Real} & $94.13 \pm 1.08$ & $89.08 \pm 1.71^-$ & $88.30 \pm 1.21^-$ & $90.15 \pm 1.60^-$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $98.16 \pm 0.29$ & $96.28 \pm 0.67^-$ & $96.77 \pm 0.65$ & $96.55 \pm 0.76$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $133.34 \pm 1.24$ & $109.88 \pm 4.28^-$ & $110.93 \pm 4.54^-$ & $114.79 \pm 4.20^-$ \\
+\hline
+\multicolumn{2}{|c|}{params.} & 1.31M & 8.65M & 17.04M & 26.47M \\
+\hline
+\end{tabular}
+\label{tab:hme-zdim}
+\end{center}
+\end{table}
+
+Experiment results are reported in Table \ref{tab:fc-hme}. HME-$k$ refers to a tree with depth $k$ and ME-$k$ refers to $k$ experts. We report the parameter count of FC, HME and ME; these do not include the convolution parameters shared across all models. These results show that HME and ME, though are good, are not as good as FC in terms of Frechet score or 5-NN accuracy. Their performance improves as the structure gets larger; note that trees with depth 5 and 6 are smaller than FC.
 
 \begin{figure}[htbp]
 \begin{center}
@@ -380,10 +575,10 @@ Experiment results are reported in Table \ref{table:fid}. HME-$k$ refers to a tr
 \label{fig:tree}
 \end{figure}
 
-Though our proposed model is not as good as the FC in terms of FID or 5-NN scores, its main advantage is interpretability. To investigate the learned representation, we generate $1000$~samples from the generated model and for each node $m$, we take a weighted average of the generated samples. In a hard decision tree where we choose left or right, a hard count corresponds to the path from root to prediction leaf. Here, we instead find the soft count of a node by multiplying the gating values up to that node. The result is visualized in Figure \ref{fig:tree}. We see that earlier levels of the tree correspond to the means of larger samples and as we go down to the leaves, there is specialization, an indication that the tree structure divides the input space into regions. We can think of the structure implementing a soft hierarchical clustering. 
+Though our proposed model is not as good as the FC in terms of FID or 5-NN scores, its main advantage is interpretability. To investigate the learned representation, we generate $100$ samples from the generated model and for each node $m$, we take a weighted average of the generated samples. In a hard decision tree where we choose left or right, a hard count corresponds to the path from root to prediction leaf. Here, we instead find the soft count of a node by multiplying the gating values up to that node. The result is visualized in Figure \ref{fig:tree}. We see that earlier levels of the tree correspond to the means of larger samples and as we go down to the leaves, there is specialization, an indication that the tree structure divides the input space into regions. We can think of the structure implementing a soft hierarchical clustering. 
 
 \chapter{CONCLUSION}
-\label{chapter:conclusion}
+\label{chapter:conc}
 We propose a hierarchical mixture of generators model for GAN. We show that the parameters can be trained using the gradient information. Our experimental results show that the model can generate samples that are realistic and diverse. Though results are not as good as the the fully connected vanilla model, they are promising.
 
 The greatest advantage of the proposed model is interpretability. Since this is a tree architecture, we can make post-hoc analysis to the learned tree to gain insight about the data. The tree structure indicates granularity at different levels and leaves correspond to modes of the distribıtion.
