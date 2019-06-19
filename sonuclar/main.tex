@@ -196,6 +196,62 @@
 
 \begin{table}[H]
 \begin{center}
+\caption{HME with linear experts for different tree depths. $dim(\boldsymbol{z})$ is fixed to 100.}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\multicolumn{2}{|c|}{Depth} & 2 & 3 & 4 & 5 \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{MNIST}}
+& \rotatebox{90}{Real} & $74.03 \pm 0.81$ & $73.48 \pm 0.53$ & $72.10 \pm 0.74$ & $72.14 \pm 0.54$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $66.73 \pm 0.61$ & $66.41 \pm 0.74$ & $66.21 \pm 0.82$ & $65.63 \pm 0.25$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $10.27 \pm 0.41$ & $9.86 \pm 0.24$ & $9.15 \pm 0.45$ & $9.07 \pm 0.44$ \\
+\hline
+\multicolumn{2}{|c|}{params.} & 540K & 1.08M & 2.16M & 4.32M \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{Fashion}}
+& \rotatebox{90}{Real} & $72.18 \pm 0.38$ & $71.15 \pm 0.88$ & $70.08 \pm 0.84$ & $69.99 \pm 0.70$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $79.96 \pm 0.35$ & $79.14 \pm 0.73$ & $78.67 \pm 0.78$ & $78.10 \pm 0.60$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $20.88 \pm 0.17$ & $19.64 \pm 0.89$ & $18.79 \pm 0.77$ & $18.24 \pm 0.91$ \\
+\hline
+\multicolumn{2}{|c|}{params.} & 540K & 1.08M & 2.16M & 4.32M \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{CelebA}}
+& \rotatebox{90}{Real} & x & x & x & x \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & x & x & x & x \\
+\cline{2-6}
+& \rotatebox{90}{FID} & x & x & x & x \\
+\hline
+\multicolumn{2}{|c|}{params.} & 1.08M & 2.16M & 4.32M & 8.65M \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{UTZap50K}}
+& \rotatebox{90}{Real} & x & x & x & x \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & x & x & x & x \\
+\cline{2-6}
+& \rotatebox{90}{FID} & x & x & x & x \\
+\hline
+\multicolumn{2}{|c|}{params.} & 1.08M & 2.16M & 4.32M & 8.65M \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{Flowers}}
+& \rotatebox{90}{Real} & x & x & x & x \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & x & x & x & x \\
+\cline{2-6}
+& \rotatebox{90}{FID} & x & x & x & x \\
+\hline
+\multicolumn{2}{|c|}{params.} & 1.08M & 2.16M & 4.32M & 8.65M \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
 \caption{HME with linear experts for embedding spaces with different dimensionalities. Depth is fixed to 5.}
 \begin{tabular}{|c|c|c|c|c|c|}
 \hline
