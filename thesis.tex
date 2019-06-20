@@ -78,7 +78,9 @@ Generative adversarial networks are used successfully to model complex data dist
 \chapter{INTRODUCTION}
 \label{chapter:intro}
 \pagenumbering{arabic}
-Machine learning is to learn to predict the outcome of an event $\boldsymbol{y}$ that is dependent on another event $\boldsymbol{x}$. Learning corresponds to finding the appropriate mapping $f(\boldsymbol{x})=\boldsymbol{y}$. More formally, we are given a set of data points $X=\{\boldsymbol{x}^i\}_{i=1}^{N}\thicksim p(\boldsymbol{x})$ with their respective targets $Y=\{\boldsymbol{y}^i\}_{i=1}^{N}\thicksim p(\boldsymbol{y})$. If these two distributions are correlated, then they are dependent and we can make a prediction about the outcome of $\boldsymbol{y}$ given the outcome of $\boldsymbol{x}$, or vice versa. Motivated by this fact, we construct a function $f(\boldsymbol{x}; \theta)=\hat{\boldsymbol{y}}$. Here, $\theta$ are the set of parameters of the function. Based on our data set $X$, and corresponding targets $Y$, we tweak the parameters of the function so that $\sum_i L(f(\boldsymbol{x}^i; \theta), y^i)$ is minimized for a function $L$ that measures the difference between two values. If we successfully find a good estimator for $p(\boldsymbol{y}|\boldsymbol{x})$, we can then use this to predict the outcome of $\boldsymbol{y}$ given the outcome of $\boldsymbol{x}$.
+One of the main problems in machine learning is how to learn to predict the outcome of an event $\boldsymbol{y}$ that is dependent on another event $\boldsymbol{x}$. These events, $\boldsymbol{x}$ and $\boldsymbol{y}$, can be thought as random variables with probability distributions $p(\boldsymbol{x})$ and $p(\boldsymbol{y})$ respectively. Learning corresponds to finding the appropriate mapping $f$, that satisfies $f(\boldsymbol{x}) = \boldsymbol{y}$. In general, we do not explicitly know the probability distributions of these events. Rather, we are given a set of data points $X=\{\boldsymbol{x}^{(i)}\}_{i=1}^{N}\thicksim p(\boldsymbol{x})$ with their respective targets $Y=\{\boldsymbol{y}^{(i)}\}_{i=1}^{N}\thicksim p(\boldsymbol{y})$. We construct a function $f(\boldsymbol{x}; \theta)=\hat{\boldsymbol{y}}$. Every function has a set of parameters that defines the function itself. Here, $\theta$ are the set of parameters of the function. Based on our data set $X$, and corresponding targets $Y$, we tweak the parameters of the function so that $\sum_i L(f(\boldsymbol{x}^{(i)}; \theta), y^{(i)})$ is minimized for a function $L$ that measures the difference between two values.
+
+
 
 In the above setting, we are concerned with the statistical regularities between $X$ and $Y$. The learned mapping $f^{*}(\boldsymbol{x})$ maps the $\boldsymbol{x}$-space to the $\boldsymbol{y}$-space. An alternative interpretation is that we partition the $\boldsymbol{x}$-space into regions with respect to outcomes of $\boldsymbol{y}$. We can think of this process as finding discriminative borders in $p(\boldsymbol{x})$ to predict the outcome of $\boldsymbol{y}$. One can see that these borders are totally dependent on $\boldsymbol{y}$. If there happens to be only one outcome of event $\boldsymbol{y}$, then the $\boldsymbol{x}$-space has no borders and there is only one color (there is only one region). On the other extreme, if each data point $\boldsymbol{x}^{(i)}$ corresponds to a different target $\boldsymbol{y}^{(i)}$, then each point will have a different color in the $\boldsymbol{x}$-space and there will be lots of borders. Trying to learn a mapping from $\boldsymbol{x}$-space to some target~$\boldsymbol{y}$-space is called \emph{supervised learning}. This is supervised because we specify a target for each data point. Supervised learning together with \emph{deep learning}, achieved great success on real-world problems such as object recognition \cite{alexnet}, speech recognition \cite{acoustic} and statistical machine translation \cite{seq2seq}. However, these successes are heavily due to labeled large data sets.
 
@@ -92,6 +94,9 @@ An important research direction in machine learning is \emph{unsupervised learni
 
 \chapter{GENERATIVE ADVERSARIAL NETWORKS}
 \label{chapter:gan}
+
+\section{Introduction}
+\label{sec:gan:intro}
 
 The generative adversarial network (GAN) \cite{gan}~has been proposed to learn a generative model to model a data distribution, $p(x)$. GAN is composed of two learners, a generative network $G$ and a discriminative network $D$. $G(z;\theta)$ learns to map $z$ sampled from an arbitrary distribution $p(z)$ to~the target distribution $p(x)$. It is a trained model, generally a deep neural network, parameterized by $\theta$. The discriminator $D(x;\phi)$, another neural network with weights $\phi$, is trained to assign low scores to ``fake'' samples generated $G(z;\theta)$ and high scores to samples from true $p(\boldsymbol{x})$ given in the training set.
 
@@ -144,8 +149,72 @@ Instead of trying to construct a different $p(\boldsymbol{z})$, one can learn di
 
 These works employ one shared generator with multiple generators at the end. This can be thought as transforming $p(\boldsymbol{z})$ to a representation that can be used by multiple models. We instead propose to transform $p(\boldsymbol{z})$ at the earlier layers then use a shared network to generate the data. By this way, generator can decide how to transform $p(\boldsymbol{z})$. Also, we can analyze the $p(\boldsymbol{z})$ after the training to see the relation between clusters in $p(\boldsymbol{z})$.
 
-\chapter{MIXTURES OF EXPERTS}
+\chapter{MIXTURES OF GENERATORS}
 \label{chapter:me}
+
+\lipsum[5]
+
+We use a widely adopted DCGAN \cite{dcgan} architecture for the generator. In DCGAN, we project the input noise vector $\boldsymbol{z}$ into a high dimensional vector and reshape it to apply transposed convolution operation. This projection is done with a fully-connected perceptron layer. Here, we remove this layer and add a SDT. Given an input vector $\boldsymbol{z}$, SDT softly decides which leaves (experts) to use. Leaves contain high-dimensional vectors (to be used for transposed convolution), that are also learned throughout the training. The model is visually summarized in Figure \ref{fig:tree}. Instead of a tree structure, a flat gating function can also be used as in \cite{me}.
+
+Let $\boldsymbol{z} \in \mathbb{R}^{d}$. In the original DCGAN architecture, the data lies in $\mathbb{R}^{d}$ after the first transformation even though the resulting vector is high-dimensional. In our formulation, SDT can only output values in the \emph{convex hull} that is defined by its leaves since it takes a convex combination of its leaf values. Therefore, the data lies in $\mathbb{R}^m$ after the SDT transformation where $m$ is the number of leaves. As a result, we separate the relation between the dimensionality of the input vector and the latent distribution. For example, we can set the dimensionality of the noise vector as $2$ but have a $128$-dimensional latent distribution that is defined by the output of the SDT by using 128 leaves. The parameters of the gating functions and the leaves are learned throughout the training. The leaf values decide the vertices of the convex hull and the gating functions decide the distribution between the leaf values.
+
+\section{Multi-Agent Diverse GAN}
+\label{sec:madgan}
+
+In MAD-GAN \cite{madgan} there are multiple generators and each generator labels the fake data with its index. The discriminator not only separates true examples from fakes, but also learns the index of the generator for a fake. This additional classification problem forces generators to be local.
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=0.75\columnwidth]{madgan.pdf}
+\end{center}
+\caption{Multi-agent diverse GAN}
+\vskip\baselineskip % Leave a vertical skip below the figure
+\label{fig:models:madgan}
+\end{figure}
+
+The model is shown in Figure \ref{fig:models:madgan}. Given $z$, a shared neural network block produces $z'$, an intermediate representation that is higher dimensional than $z$, which is used by a set of generators $\{G_i(z')\}_{i=1}^m$. The discriminator is a $m+1$-class classifier with 0 for true, and $1$ to $m$ for the fake instances. The discriminator should push the different generators to different modes to be able to solve the classification problem. 
+
+%
+%
+\section{Mixture GAN}
+\label{sec:mgan}
+
+MGAN \cite{mgan} is similar to MAD-GAN except that the classifer and the discriminator are separate. The discriminator is two-class as usual discriminating between true and fake examples, and there is a separate $m$-class classifier only for the fake examples.
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=0.75\columnwidth]{mgan.pdf}
+\end{center}
+\caption{Mixture GAN}
+\vskip\baselineskip % Leave a vertical skip below the figure
+\label{fig:models:mgan}
+\end{figure}
+
+The model is shown in Figure \ref{fig:models:mgan}. There is also the difference is that the split of the generators is earlier. A set of generators $\{G_i(z)\}_{i=1}^m$, transform $z$ and for all, the shared network produce $z'$. A multinomial distribution is sampled to randomly select one of the generators. While the discriminator tries to discriminate between fake and real data as usual, the classifier tries to predict the index of the generator that produced the fake sample. These two networks share parameters treating discriminator/classifier as a multi-task learning problem.
+
+%
+%
+\section{Mixture of Experts GAN}
+\label{sec:megan}
+
+In the MEGAN \cite{megan}, inspired from the mixtures of experts \cite{me}, there is an additional gating model, which is also trained, that chooses among the different generators.
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=0.75\columnwidth]{megan.pdf}
+\end{center}
+\caption{Mixture of experts GAN}
+\vskip\baselineskip % Leave a vertical skip below the figure
+\label{fig:models:megan}
+\end{figure}
+
+The model is shown in Figure \ref{fig:models:megan}. There is a set of generators $\{G_i(z)\}_{i=1}^{m}$ and an additional gating function, which takes as its input $z$ and some features from the generated $x$. Then Straight-Through Gumbel Softmax is applied which only selects one expert while allowing differentiability. The discriminator is still two-class. The gating model also has its parameters that are updated together with the generators. Although all generators generate an output, it is the gating model that decides which one is to be used. 
+
+%
+%
+%
+\chapter{HIERARCHICAL MIXTURE OF GENERATORS}
+\label{chapter:hme}
 
 A mixture of experts (ME) model consists of local experts $\{f_i(\boldsymbol{x})\}_{i=1}^{m}$, and a gating function $g(\boldsymbol{x})$ \cite{me}. Instead of learning a global function, we divide the input space into regions and learn a set of local functions. For a given input $\boldsymbol{x}$, the gating function outputs probabilities that decide which experts to use. Experts can be simple models since each expert needs to learn a local input-output mapping instead of a global one. The formal definition of the model is as follows:
 
@@ -168,73 +237,6 @@ y_m(\boldsymbol{x})=
 
 where $y_m^L$ and $y_m^R$ are the responses of the left and the right children of node $m$ respectively. This can be interpreted as a soft decision tree. In a hard decision tree, we either select the left child or the right child in a node whereas in a soft decision tree we take a convex combination of the child responses. One can fix the tree structure beforehand, or grow the tree adaptively based on the error \cite{sdt, budding}. Since the whole model is continuous, we can use gradient based optimization to learn the model parameters.
 
-\lipsum[5]
-
-.\section{GAN Variants with Multiple Generators}
-\label{sec:related}
-
-We use a widely adopted DCGAN \cite{dcgan} architecture for the generator. In DCGAN, we project the input noise vector $\boldsymbol{z}$ into a high dimensional vector and reshape it to apply transposed convolution operation. This projection is done with a fully-connected perceptron layer. Here, we remove this layer and add a SDT. Given an input vector $\boldsymbol{z}$, SDT softly decides which leaves (experts) to use. Leaves contain high-dimensional vectors (to be used for transposed convolution), that are also learned throughout the training. The model is visually summarized in Figure \ref{fig:tree}. Instead of a tree structure, a flat gating function can also be used as in \cite{me}.
-
-Let $\boldsymbol{z} \in \mathbb{R}^{d}$. In the original DCGAN architecture, the data lies in $\mathbb{R}^{d}$ after the first transformation even though the resulting vector is high-dimensional. In our formulation, SDT can only output values in the \emph{convex hull} that is defined by its leaves since it takes a convex combination of its leaf values. Therefore, the data lies in $\mathbb{R}^m$ after the SDT transformation where $m$ is the number of leaves. As a result, we separate the relation between the dimensionality of the input vector and the latent distribution. For example, we can set the dimensionality of the noise vector as $2$ but have a $128$-dimensional latent distribution that is defined by the output of the SDT by using 128 leaves. The parameters of the gating functions and the leaves are learned throughout the training. The leaf values decide the vertices of the convex hull and the gating functions decide the distribution between the leaf values.
-
-\subsection{Multi-Agent Diverse GAN}
-\label{subsec:madgan}
-
-In MAD-GAN \cite{madgan} there are multiple generators and each generator labels the fake data with its index. The discriminator not only separates true examples from fakes, but also learns the index of the generator for a fake. This additional classification problem forces generators to be local.
-
-\begin{figure}[htbp]
-\begin{center}
-\includegraphics[width=0.75\columnwidth]{madgan.pdf}
-\end{center}
-\caption{Multi-agent diverse GAN}
-\vskip\baselineskip % Leave a vertical skip below the figure
-\label{fig:models:madgan}
-\end{figure}
-
-The model is shown in Figure \ref{fig:models:madgan}. Given $z$, a shared neural network block produces $z'$, an intermediate representation that is higher dimensional than $z$, which is used by a set of generators $\{G_i(z')\}_{i=1}^m$. The discriminator is a $m+1$-class classifier with 0 for true, and $1$ to $m$ for the fake instances. The discriminator should push the different generators to different modes to be able to solve the classification problem. 
-
-%
-%
-\subsection{Mixture GAN}
-\label{subsec:mgan}
-
-MGAN \cite{mgan} is similar to MAD-GAN except that the classifer and the discriminator are separate. The discriminator is two-class as usual discriminating between true and fake examples, and there is a separate $m$-class classifier only for the fake examples.
-
-\begin{figure}[htbp]
-\begin{center}
-\includegraphics[width=0.75\columnwidth]{mgan.pdf}
-\end{center}
-\caption{Mixture GAN}
-\vskip\baselineskip % Leave a vertical skip below the figure
-\label{fig:models:mgan}
-\end{figure}
-
-The model is shown in Figure \ref{fig:models:mgan}. There is also the difference is that the split of the generators is earlier. A set of generators $\{G_i(z)\}_{i=1}^m$, transform $z$ and for all, the shared network produce $z'$. A multinomial distribution is sampled to randomly select one of the generators. While the discriminator tries to discriminate between fake and real data as usual, the classifier tries to predict the index of the generator that produced the fake sample. These two networks share parameters treating discriminator/classifier as a multi-task learning problem.
-
-%
-%
-\subsection{Mixture of Experts GAN}
-\label{subsec:megan}
-
-In the MEGAN \cite{megan}, inspired from the mixtures of experts \cite{me}, there is an additional gating model, which is also trained, that chooses among the different generators.
-
-\begin{figure}[htbp]
-\begin{center}
-\includegraphics[width=0.75\columnwidth]{megan.pdf}
-\end{center}
-\caption{Mixture of experts GAN}
-\vskip\baselineskip % Leave a vertical skip below the figure
-\label{fig:models:megan}
-\end{figure}
-
-The model is shown in Figure \ref{fig:models:megan}. There is a set of generators $\{G_i(z)\}_{i=1}^{m}$ and an additional gating function, which takes as its input $z$ and some features from the generated $x$. Then Straight-Through Gumbel Softmax is applied which only selects one expert while allowing differentiability. The discriminator is still two-class. The gating model also has its parameters that are updated together with the generators. Although all generators generate an output, it is the gating model that decides which one is to be used. 
-
-%
-%
-%
-\chapter{HIERARCHICAL MIXTURE OF GENERATORS}
-\label{chapter:hme}
-
 Just like the hierarchical mixture of experts \cite{hme} go from the flat organization of mixture of experts  \cite{me} to a tree, our proposed hierarchical mixture of generators go from a flat mixture of generators to a tree.
 
 \begin{figure}[htbp]
@@ -252,6 +254,12 @@ Since the whole model is continuous, one can use gradient based optimization to 
 
 \chapter{EXPERIMENTS}
 \label{chapter:exps}
+
+\section{Data Sets}
+\label{sec:datasets}
+
+\section{Experimental Setup}
+\label{sec:setup}
 
 \section{Hierarchical Structure vs. Flat Structure}
 \label{sec:hme-vs-me}
