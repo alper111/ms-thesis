@@ -104,6 +104,11 @@ Deep neural networks (DNNs) achieved great success on real-world problems that r
 
 GANs seem to be a promising way to train DNNs for generative modeling. In this thesis, we propose to use hierarchical mixture of generators as the generative part of GAN. This lets us interpret the learned representation. The rest of this work is organized as follows. Chapter \ref{chapter:gan} reviews the prerequisite knowledge about GANs. In Chapter \ref{chapter:me}, we discuss works that also use multiple generators. We explain our proposed model in detail in Chapter \ref{chapter:hme}. Our experimental results are given in \ref{chapter:exps}. We make a conclusion and discuss future work in Chapter \ref{chapter:conc}.
 
+% bu aşağıdaki iki paragrafla ilgilen !!
+The direction we pursue is to use multiple generators each one responsible from a local region of the $z$, and hence $x$ space. Different local generators will learn to cover different modes and this will help alleviate the mode collapse problem. We review three previously proposed approaches, namely multi-agent diverse GAN (MAD-GAN)\cite{madgan}, mixture GAN (MGAN)\cite{mgan}, and mixture of experts GAN (MEGAN)\cite{megan}. 
+
+We propose the hierarchical mixture of generators, which learns a tree structure with internal decision nodes that divide up the input space and the leaves are local generators responsible from a local $z$ region generating a subset of $p(x)$. Since the splits are soft, given the tree structure, the parameters of the internal nodes as well as of the generators in the leaves can be updated using gradient-descent over Wasserstein loss. Note that it is only $G$ that is modeled this way, $D$ remains the usual deep neural network.
+
 \chapter{GENERATIVE ADVERSARIAL NETWORKS}
 \label{chapter:gan}
 
@@ -118,14 +123,40 @@ The generative adversarial network (GAN) \cite{gan} has been proposed to learn a
 \mathbb{E}_{z \sim p(z)} [ \log{(1-D(G(z;\theta);\phi))} ]
 \end{equation} 
 
-In the original paper, it is shown that when we give enough capacity to both $G$ and $D$...
+We optimize Equation \ref{eq:gan} by alternating between optimizing $D$ and $G$ with stochastic gradient descent (SGD) (Figure \ref{fig:gan}). In the original paper  \cite{gan}, it is shown that if $D$ and $G$ have enough capacity, this optimization minimizes the Jensen-Shannon divergence (JSD) between $p_{\text{true}}$ and $p_{\text{fake}}$, and therefore will converge to a point where $G$ exactly generates the target distribution $p(x)$. Though it should be noted that we use a parametric family of functions defined by neural networks. This might limit our functions' capacity and break the convergence guarantee. 
+%
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=0.75\textwidth]{gan.pdf}
+\end{center}
+\caption{GAN framework.}
+\vskip\baselineskip
+\label{fig:gan}
+\end{figure}
 
-GANs are used successfully especially in image generation. A well-trained GAN can generate images that are almost indistinguishable by humans \cite{stylegan}. Yet, there remain two main difficulties regarding the training: The first problem of mode collapse means that $G$ learns to generate some parts of $p(x)$ but not all; there are ways of being $x$ that cannot be generated for any $G(z)$. The second problem of vanishing gradients is because in practice both $D$ and $G$ are deep, and $G$ is doubly deep because its gradient needs to be back-propagated through $D$. Recent works mainly focus on these two problems. People proposed different GAN objectives, regularization methods, architectures and several other tricks \cite{ganreview}. The Wasserstein loss we use above is one example. 
+If training converges, $G$ can generate new data simply by sampling an input point $z$, and outputting $G(z)$. On the other hand, $D$ can be used as a feature extractor for downstream tasks since it learns a good representation of $p(x)$ due to adversarial training.
 
-The direction we pursue is to use multiple generators each one responsible from a local region of the $z$, and hence $x$ space. Different local generators will learn to cover different modes and this will help alleviate the mode collapse problem. We review three previously proposed approaches, namely multi-agent diverse GAN (MAD-GAN)\cite{madgan}, mixture GAN (MGAN)\cite{mgan}, and mixture of experts GAN (MEGAN)\cite{megan}. 
+\section{Problems Related with GANs}
+\label{sec:problems}
 
-We propose the hierarchical mixture of generators, which learns a tree structure with internal decision nodes that divide up the input space and the leaves are local generators responsible from a local $z$ region generating a subset of $p(x)$. Since the splits are soft, given the tree structure, the parameters of the internal nodes as well as of the generators in the leaves can be updated using gradient-descent over Wasserstein loss. Note that it is only $G$ that is modeled this way, $D$ remains the usual deep neural network.
+GANs are used successfully especially in image generation. A well-trained GAN can generate images that are almost indistinguishable by humans \cite{proggan,biggan,stylegan}. Yet, there remain two main difficulties regarding the training: The first problem of mode collapse means that $G$ learns to generate some parts of $p(x)$ but not all; there are ways of being $x$ that cannot be generated for any $G(z)$. This is depicted in Figure \ref{fig:modecollapse}. The second problem is of vanishing gradients. In order to optimize Equation \ref{eq:gan} for $G$, we should find gradients with respect to $\theta$. However $\nabla_{\theta} \log(1-D(G(z)))$ becomes zero in regions where $D$ is perfectly able to discriminate $p_{\text{true}}$ and $p_{\text{fake}}$. To remedy this, it is suggested to use a proxy loss, also known as non-saturating loss: $-\log D(G(z))$. This loss provides better gradients even when $D$ is optimal. However, Arjovsky and Bottou \cite{principledmethods} showed that this loss no longer minimizes the JSD, but rather $KL(p_{\text{fake}} || p_{\text{true}}) - 2 JSD(p_{\text{fake}} || p_{\text{true}})$, where $KL$ is the Kullback-Leibler divergence. Moreover, they show that when $D$ gets better, gradients of $G$ increases with an increasing variance. They concluded that this increasing variance might be the cause of the notorious instability of GANs.
 
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=0.5\textwidth]{modecollapse.pdf}
+\end{center}
+\caption{An example of a mode collapse.}
+\vskip\baselineskip
+\label{fig:modecollapse}
+\end{figure}
+
+Recent works mainly focus on these two problems. To solve problems related to training people proposed different GAN objectives \cite{wgan,infogan,leastgan,lsgan}, regularization methods \cite{improved_wgan,sngan,dcgan}, architectures \cite{biggan,bigan,ali,proggan,stylegan,dcgan,sagan} and several other tricks mentioned in these papers. A good review of these works can be found in \cite{ganreview,ganreview2,ganreview3}.
+
+Another problem is of evaluating GANs. Unlike Bayesian generative models where we can evaluate the quality of a model with marginal likelihood (or with evidence lower bounds), there is no proper way of evaluating GAN models. At the moment, people seem to agree on Inception score (IS) \cite{improvedtechniques} and Fr\'echet Inception distance (FID) \cite{twotimes} since most of papers include these scores. Though it should be noted that these evaluation metrics are specifically for image domain. To the best of our knowledge, there is no work that generalizes these metrics to other domains. Other than these two methods, classifier two-sample test (C2ST) \cite{twosample} is a simple and effective way of evaluating GAN models. An extensive review of evaluation methods can be found in \cite{evalreview}.
+
+\section{Wasserstein GAN}
+\label{sec:wgan}
+Recently, Wassertein GAN \cite{wgan} proposed to minimize Earth-Mover distance (also known as Wasserstein-1 distance) instead of Jensen-Shannon divergence. They show both theoretically and experimentally that this loss has better convergence properties.
 The Wasserstein criterion \cite{wgan} is formulated as:
 \begin{equation}
 \mathbb{E}_{x\sim p(x} [D(x;\phi)] - 
@@ -135,38 +166,10 @@ The Wasserstein criterion \cite{wgan} is formulated as:
 
 $D$ is trained to maximize this, i.e., it learns to maximize the difference between the expected score generated for the true samples in the training set and fake samples generated by $G$. At the same time, $G$ is trained to minimize this, i.e., it learns to generate fake samples that will be scored high by $D$. The parameters $\theta$ of $G$ and the parameters $\phi$ of $D$ are updated using gradient-descent/ascent. 
 
-A well trained GAN can generate images that are almost indistinguishable by humans \cite{biggan,proggan,stylegan}. Yet, there remain difficulties regarding the training. Recently, Wassertein GAN \cite{wgan} proposed to minimize Earth-Mover distance (also known as Wasserstein-1 distance) instead of Jensen-Shannon divergence. They show both theoretically and experimentally that this loss has better convergence properties.
 
-\section{Problems Related with GANs}
-\label{sec:problems}
-
-However, training of these architectures are notoriously hard. Two networks are trained simultaneously. Empirically, if $D_{\phi}$ is trained too much, then gradients that are propagated to $G_{\theta}$ become either too low or too high, depending on the use of original cost function or the non-saturating cost function \cite{principledmethods}. Another problem is when~$G_{\theta}$~quickly learns to generate a subset of~$p(x)$. Then again gradients that are propagated through~$D_{\phi}$~do not enforce~$G_{\theta}$~to generate diverse samples. This problem is called \emph{mode collapse}.
-
-\section{Related Work}
-\label{sec:related}
-
-Recent works mainly focus on these two problems. To solve problems related to training people proposed different GAN objectives \cite{wgan,infogan,leastgan,lsgan}, regularization methods \cite{improved_wgan,sngan,dcgan}, architectures \cite{biggan,bigan,ali,proggan,stylegan,dcgan,sagan} and several other tricks mentioned in these papers. A good review of these works can be found in \cite{ganreview,ganreview2,ganreview3}.
-
-The third main problem is the evaluation of models. Unlike Bayesian models where we can evaluate the quality of a model with marginal likelihood (or with evidence lower bounds), there is no proper way of evaluating GAN models.
-
-For the evaluation of GAN methods, people seem to agree on Inception score (IS) \cite{improvedtechniques} and Fr\'echet Inception distance (FID) \cite{twotimes} since most of papers include these scores. Though it should be noted that these evaluation metrics are specifically for image domain. To the best of our knowledge, there is no work that generalizes these metrics to other domains. Other than these two methods, classifier two-sample test (C2ST) \cite{twosample} is a simple and effective way of evaluating GAN models. An extensive review of evaluation methods can be found in \cite{evalreview}.
-
-Many unsupervised learning methods assume that $x$~is determined by a set of factors $\boldsymbol{z}$ and an unpredictable noise factor $\epsilon$. So instead of finding $p(x)$, we try to find $p(\boldsymbol{z})$ and the mapping between $p(\boldsymbol{z})$ and $p(x)$. In the GAN framework, we generally fix $p(\boldsymbol{z})$ to be a spherical Gaussian distribution and let $G$~to find the relation between $p(\boldsymbol{z})$ and $p(x)$. Since DNNs are very powerful function approximators, we hope that $G$ can map $p(\boldsymbol{z})$ to $p(x)$ even if we fix $p(\boldsymbol{z})$. However, this mapping might be arbitrarily hard.
-
-In this work, we use a soft decision tree (SDT) model \cite{sdt} in earlier layers of $G$, instead of a densely connected perceptron layer. Since an SDT is a continuous model, we can train the whole architecture with stochastic gradient descent (SGD). We experimentally show that our proposed architecture encapsulates the information in $p(\boldsymbol{z})$ in fewer dimensions with fewer trainable parameters. Furthermore, we can analyze the nodes of the tree after training to get an insight about $p(\boldsymbol{z})$.
-
-Instead of trying to construct a different $p(\boldsymbol{z})$, one can learn different mappings for different regions of the input space. In multi-agent diverse GANs (MAD-GAN) \cite{madgan}, they propose to use multiple generators and force discriminator to also tell from which generator the data is generated.  MGAN \cite{mgan} is similar to MAD-GAN but they use a different classifier with parameters tied to discriminator network to classify generators. In mixture of experts GAN \cite{megan}, there are multiple generators but a gating function decides which generator to use based on features of generated data.
-
-These works employ one shared generator with multiple generators at the end. This can be thought as transforming $p(\boldsymbol{z})$ to a representation that can be used by multiple models. We instead propose to transform $p(\boldsymbol{z})$ at the earlier layers then use a shared network to generate the data. By this way, generator can decide how to transform $p(\boldsymbol{z})$. Also, we can analyze the $p(\boldsymbol{z})$ after the training to see the relation between clusters in $p(\boldsymbol{z})$.
 
 \chapter{MIXTURES OF GENERATORS}
 \label{chapter:me}
-
-\lipsum[5]
-
-We use a widely adopted DCGAN \cite{dcgan} architecture for the generator. In DCGAN, we project the input noise vector $\boldsymbol{z}$ into a high dimensional vector and reshape it to apply transposed convolution operation. This projection is done with a fully-connected perceptron layer. Here, we remove this layer and add a SDT. Given an input vector $\boldsymbol{z}$, SDT softly decides which leaves (experts) to use. Leaves contain high-dimensional vectors (to be used for transposed convolution), that are also learned throughout the training. The model is visually summarized in Figure \ref{fig:tree}. Instead of a tree structure, a flat gating function can also be used as in \cite{me}.
-
-Let $\boldsymbol{z} \in \mathbb{R}^{d}$. In the original DCGAN architecture, the data lies in $\mathbb{R}^{d}$ after the first transformation even though the resulting vector is high-dimensional. In our formulation, SDT can only output values in the \emph{convex hull} that is defined by its leaves since it takes a convex combination of its leaf values. Therefore, the data lies in $\mathbb{R}^m$ after the SDT transformation where $m$ is the number of leaves. As a result, we separate the relation between the dimensionality of the input vector and the latent distribution. For example, we can set the dimensionality of the noise vector as $2$ but have a $128$-dimensional latent distribution that is defined by the output of the SDT by using 128 leaves. The parameters of the gating functions and the leaves are learned throughout the training. The leaf values decide the vertices of the convex hull and the gating functions decide the distribution between the leaf values.
 
 \section{Multi-Agent Diverse GAN}
 \label{sec:madgan}
@@ -221,6 +224,11 @@ In the MEGAN \cite{megan}, inspired from the mixtures of experts \cite{me}, ther
 The model is shown in Figure \ref{fig:models:megan}. There is a set of generators $\{G_i(z)\}_{i=1}^{m}$ and an additional gating function, which takes as its input $z$ and some features from the generated $x$. Then Straight-Through Gumbel Softmax is applied which only selects one expert while allowing differentiability. The discriminator is still two-class. The gating model also has its parameters that are updated together with the generators. Although all generators generate an output, it is the gating model that decides which one is to be used. 
 
 %
+Many unsupervised learning methods assume that $x$~is determined by a set of factors $\boldsymbol{z}$ and an unpredictable noise factor $\epsilon$. So instead of finding $p(x)$, we try to find $p(\boldsymbol{z})$ and the mapping between $p(\boldsymbol{z})$ and $p(x)$. In the GAN framework, we generally fix $p(\boldsymbol{z})$ to be a spherical Gaussian distribution and let $G$~to find the relation between $p(\boldsymbol{z})$ and $p(x)$. Since DNNs are very powerful function approximators, we hope that $G$ can map $p(\boldsymbol{z})$ to $p(x)$ even if we fix $p(\boldsymbol{z})$. However, this mapping might be arbitrarily hard.
+
+In this work, we use a soft decision tree (SDT) model \cite{sdt} in earlier layers of $G$, instead of a densely connected perceptron layer. Since an SDT is a continuous model, we can train the whole architecture with stochastic gradient descent (SGD). We experimentally show that our proposed architecture encapsulates the information in $p(\boldsymbol{z})$ in fewer dimensions with fewer trainable parameters. Furthermore, we can analyze the nodes of the tree after training to get an insight about $p(\boldsymbol{z})$.
+
+These works employ one shared generator with multiple generators at the end. This can be thought as transforming $p(\boldsymbol{z})$ to a representation that can be used by multiple models. We instead propose to transform $p(\boldsymbol{z})$ at the earlier layers then use a shared network to generate the data. By this way, generator can decide how to transform $p(\boldsymbol{z})$. Also, we can analyze the $p(\boldsymbol{z})$ after the training to see the relation between clusters in $p(\boldsymbol{z})$.
 %
 %
 \chapter{HIERARCHICAL MIXTURE OF GENERATORS}
@@ -246,6 +254,10 @@ y_m(x)=
 \end{equation}
 
 where $y_m^L$ and $y_m^R$ are the responses of the left and the right children of node $m$ respectively. This can be interpreted as a soft decision tree. In a hard decision tree, we either select the left child or the right child in a node whereas in a soft decision tree we take a convex combination of the child responses. One can fix the tree structure beforehand, or grow the tree adaptively based on the error \cite{sdt, budding}. Since the whole model is continuous, we can use gradient based optimization to learn the model parameters.
+
+We use a widely adopted DCGAN \cite{dcgan} architecture for the generator. In DCGAN, we project the input noise vector $\boldsymbol{z}$ into a high dimensional vector and reshape it to apply transposed convolution operation. This projection is done with a fully-connected perceptron layer. Here, we remove this layer and add a SDT. Given an input vector $\boldsymbol{z}$, SDT softly decides which leaves (experts) to use. Leaves contain high-dimensional vectors (to be used for transposed convolution), that are also learned throughout the training. The model is visually summarized in Figure \ref{fig:models:hmegan}. Instead of a tree structure, a flat gating function can also be used as in \cite{me}.
+
+Let $\boldsymbol{z} \in \mathbb{R}^{d}$. In the original DCGAN architecture, the data lies in $\mathbb{R}^{d}$ after the first transformation even though the resulting vector is high-dimensional. In our formulation, SDT can only output values in the \emph{convex hull} that is defined by its leaves since it takes a convex combination of its leaf values. Therefore, the data lies in $\mathbb{R}^m$ after the SDT transformation where $m$ is the number of leaves. As a result, we separate the relation between the dimensionality of the input vector and the latent distribution. For example, we can set the dimensionality of the noise vector as $2$ but have a $128$-dimensional latent distribution that is defined by the output of the SDT by using 128 leaves. The parameters of the gating functions and the leaves are learned throughout the training. The leaf values decide the vertices of the convex hull and the gating functions decide the distribution between the leaf values.
 
 Just like the hierarchical mixture of experts \cite{hme} go from the flat organization of mixture of experts  \cite{me} to a tree, our proposed hierarchical mixture of generators go from a flat mixture of generators to a tree.
 
