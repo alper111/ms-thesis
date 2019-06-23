@@ -506,59 +506,117 @@ Some generated examples for different data sets using the hierarchical mixture m
 
 \begin{table}[thbp]
 \vskip\baselineskip
-\caption[HME with linear experts for different tree depths]{HME with linear experts for different tree depths. $dim(\boldsymbol{z})$ is fixed to 32.}
+\caption[HME with linear experts for different tree depths]{HME with linear experts for different tree depths. $dim(\boldsymbol{z})$ is fixed to 100.}
 \begin{center}
 \begin{tabular}{|c|c|c|c|c|c|}
 \hline
 \multicolumn{2}{|c|}{Depth} & 2 & 3 & 4 & 5 \\
 \hline
 \multirow{3}{*}{\rotatebox{90}{MNIST}}
-& \rotatebox{90}{Real} & $73.75 \pm 0.61$ & $71.83 \pm 0.77$ & $71.43 \pm 0.32$ & $70.81 \pm 0.39$ \\
+& \rotatebox{90}{Real} & $74.03 \pm 0.81$ & $73.48 \pm 0.53$ & $72.10 \pm 0.74$ & $72.14 \pm 0.54$ \\
 \cline{2-6}
-& \rotatebox{90}{Fake} & $66.07 \pm 0.89$ & $65.30 \pm 0.89$ & $65.30 \pm 0.59$ & $65.05 \pm 0.65$ \\
+& \rotatebox{90}{Fake} & $66.73 \pm 0.61$ & $66.41 \pm 0.74$ & $66.21 \pm 0.82$ & $65.63 \pm 0.25$ \\
 \cline{2-6}
-& \rotatebox{90}{FID} & $9.98 \pm 0.60$ & $8.91 \pm 0.47$ & $8.71 \pm 0.32$ & $8.46 \pm 0.28$ \\
+& \rotatebox{90}{FID} & $10.27 \pm 0.41$ & $9.86 \pm 0.24$ & $9.15 \pm 0.45$ & $9.07 \pm 0.44$ \\
 \hline
 \multicolumn{2}{|c|}{params.} & 540K & 1.08M & 2.16M & 4.32M \\
 \hline
 \multirow{3}{*}{\rotatebox{90}{Fashion}}
-& \rotatebox{90}{Real} & $70.85 \pm 0.67$ & $69.52 \pm 0.46$ & $68.55 \pm 0.61$ & $69.08 \pm 0.64$ \\
+& \rotatebox{90}{Real} & $72.18 \pm 0.38$ & $71.15 \pm 0.88$ & $70.08 \pm 0.84$ & $69.99 \pm 0.70$ \\
 \cline{2-6}
-& \rotatebox{90}{Fake} & $78.53 \pm 0.38$ & $78.46 \pm 0.21$ & $77.64 \pm 0.90$ & $78.27 \pm 1.29$ \\
+& \rotatebox{90}{Fake} & $79.96 \pm 0.35$ & $79.14 \pm 0.73$ & $78.67 \pm 0.78$ & $78.10 \pm 0.60$ \\
 \cline{2-6}
-& \rotatebox{90}{FID} & $19.40 \pm 0.79$ & $18.57 \pm 0.52$ & $17.75 \pm 0.58$ & $18.01 \pm 0.73$ \\
+& \rotatebox{90}{FID} & $20.88 \pm 0.17$ & $19.64 \pm 0.89$ & $18.79 \pm 0.77$ & $18.24 \pm 0.91$ \\
 \hline
 \multicolumn{2}{|c|}{params.} & 540K & 1.08M & 2.16M & 4.32M \\
 \hline
 \multirow{3}{*}{\rotatebox{90}{CelebA}}
-& \rotatebox{90}{Real} & $62.48 \pm 1.27$ & $78.26 \pm 1.08$ & $62.60 \pm 1.20$ & $61.73 \pm 0.94$ \\
+& \rotatebox{90}{Real} & $62.96 \pm 0.81$ & $63.15 \pm 1.42$ & $62.07 \pm 0.88$ & $62.02 \pm 1.02$ \\
 \cline{2-6}
-& \rotatebox{90}{Fake} & $78.64 \pm 1.09$ & $62.20 \pm 1.28$ & $78.84 \pm 0.69$ & $77.72 \pm 0.46$ \\
+& \rotatebox{90}{Fake} & $77.91 \pm 0.83$ & $77.68 \pm 1.91$ & $77.18 \pm 0.82$ & $77.02 \pm 0.98$ \\
 \cline{2-6}
-& \rotatebox{90}{FID} & $12.58 \pm 0.41$ & $12.46 \pm 0.69$ & $12.79 \pm 	0.43$ & $12.03 \pm 0.25$ \\
+& \rotatebox{90}{FID} & $12.41 \pm 0.40$ & $12.48 \pm 0.65$ & $12.23 \pm 0.56$ & $12.09 \pm 0.56$ \\
 \hline
 \multicolumn{2}{|c|}{params.} & 1.08M & 2.16M & 4.32M & 8.65M \\
 \hline
 \multirow{3}{*}{\rotatebox{90}{UTZap50K}}
-& \rotatebox{90}{Real} & $86.27 \pm 1.08$ & $86.18 \pm 0.99$ & $86.04 \pm 0.75$ & $86.49 \pm 0.71$ \\
+& \rotatebox{90}{Real} & $87.26 \pm 0.80$ & $87.39 \pm 0.96$ & $87.61 \pm 1.21$ & $87.77 \pm 1.17$ \\
 \cline{2-6}
-& \rotatebox{90}{Fake} & $77.10 \pm 0.88$ & $78.86 \pm 0.69$ & $76.62 \pm 0.78$ & $77.25 \pm 0.92$ \\
+& \rotatebox{90}{Fake} & $77.46 \pm 1.09$ & $78.21 \pm 0.32$ & $78.10 \pm 0.43$ & $78.42 \pm 1.36$ \\
 \cline{2-6}
-& \rotatebox{90}{FID} & $40.19 \pm 2.79$ & $40.04 \pm 2.30$ & $38.83 \pm 0.80$ & $40.88 \pm 2.13$ \\
+& \rotatebox{90}{FID} & $42.35 \pm 3.27$ & $42.99 \pm 2.08$ & $44.88 \pm 3.48$ & $45.54 \pm 3.46$ \\
 \hline
 \multicolumn{2}{|c|}{params.} & 1.08M & 2.16M & 4.32M & 8.65M \\
 \hline
 \multirow{3}{*}{\rotatebox{90}{Flowers}}
-& \rotatebox{90}{Real} & $89.50 \pm 2.25$ & $88.24 \pm 0.84$ & $89.39 \pm 1.02$ & $89.08 \pm 1.71$ \\
+& \rotatebox{90}{Real} & $88.96 \pm 0.93$ & $89.30 \pm 1.49$ & $88.89 \pm 1.51$ & $90.15 \pm 1.60$ \\
 \cline{2-6}
-& \rotatebox{90}{Fake} & $95.62 \pm 0.90$ & $95.94 \pm 0.90$ & $96.24 \pm 0.28$ & $96.28 \pm 0.67$ \\
+& \rotatebox{90}{Fake} & $96.58 \pm 0.58$ & $96.43 \pm 0.65$ & $96.61 \pm 0.41$ & $96.55 \pm 0.76$ \\
 \cline{2-6}
-& \rotatebox{90}{FID} & $109.97 \pm 7.29$ & $107.81 \pm 4.21$ & $112.73 \pm 4.55$ & $109.88 \pm 4.28$ \\
+& \rotatebox{90}{FID} & $111.06 \pm 4.84$ & $111.85 \pm 3.65$ & $112.78 \pm 3.13$ & $114.79 \pm 4.20$ \\
 \hline
 \multicolumn{2}{|c|}{params.} & 1.08M & 2.16M & 4.32M & 8.65M \\
 \hline
 \end{tabular}
 \label{tab:hme-depth}
+\end{center}
+\end{table}
+
+\begin{table}[thbp]
+\vskip\baselineskip
+\caption[ME with linear experts for different number of experts]{ME with linear experts for different number of experts. $dim(\boldsymbol{z})$ is fixed to 100.}
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\multicolumn{2}{|c|}{Depth} & 4 & 8 & 16 & 32 \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{MNIST}}
+& \rotatebox{90}{Real} & $72.91 \pm 0.93$ & $71.46 \pm 1.02$ & $70.91 \pm 0.83$ & x \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $66.29 \pm 0.97$ & $66.25 \pm 0.72$ & $65.38 \pm 0.70$ & x \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $9.74 \pm 0.64$ & $8.95 \pm 0.28$ & $8.56 \pm 0.53$ & x \\
+\hline
+\multicolumn{2}{|c|}{params.} & 540K & 1.08M & 2.16M & 4.32M \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{Fashion}}
+& \rotatebox{90}{Real} & $72.28 \pm 0.60$ & $70.90 \pm 0.96$ & $69.45 \pm 0.71$ & x \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & $79.81 \pm 0.93$ & $78.64 \pm 0.51$ & $78.09 \pm 0.73$ & x \\
+\cline{2-6}
+& \rotatebox{90}{FID} & $20.90 \pm 0.87$ & $19.37 \pm 0.90$ & $18.09 \pm 0.89$ & x \\
+\hline
+\multicolumn{2}{|c|}{params.} & 540K & 1.08M & 2.16M & 4.32M \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{CelebA}}
+& \rotatebox{90}{Real} & x & x & $62.63 \pm 0.67$ & x \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & x & x & $78.11 \pm 0.96$ & x \\
+\cline{2-6}
+& \rotatebox{90}{FID} & x & x & $12.41 \pm 0.45$ & x \\
+\hline
+\multicolumn{2}{|c|}{params.} & 1.08M & 2.16M & 4.32M & 8.65M \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{UTZap50K}}
+& \rotatebox{90}{Real} & x & x & $86.97 \pm 0.54$ & x \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & x & x & $77.50 \pm 1.13$ & x \\
+\cline{2-6}
+& \rotatebox{90}{FID} & x & x & $41.45 \pm 1.99$ & x \\
+\hline
+\multicolumn{2}{|c|}{params.} & 1.08M & 2.16M & 4.32M & 8.65M \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{Flowers}}
+& \rotatebox{90}{Real} & x & x & $89.33 \pm 1.39$ & x \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & x & x & $96.93 \pm 0.36$ & x \\
+\cline{2-6}
+& \rotatebox{90}{FID} & x & x & $115.45 \pm 3.02$ & x \\
+\hline
+\multicolumn{2}{|c|}{params.} & 1.08M & 2.16M & 4.32M & 8.65M \\
+\hline
+\end{tabular}
+\label{tab:me-depth}
 \end{center}
 \end{table}
 
