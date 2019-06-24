@@ -589,29 +589,29 @@ Some generated examples for different data sets using the hierarchical mixture m
 \multicolumn{2}{|c|}{params.} & 540K & 1.08M & 2.16M & 4.32M \\
 \hline
 \multirow{3}{*}{\rotatebox{90}{CelebA}}
-& \rotatebox{90}{Real} & x & x & $62.63 \pm 0.67$ & x \\
+& \rotatebox{90}{Real} & x & $61.44 \pm 1.27$ & $62.63 \pm 0.67$ & x \\
 \cline{2-6}
-& \rotatebox{90}{Fake} & x & x & $78.11 \pm 0.96$ & x \\
+& \rotatebox{90}{Fake} & x & $77.36 \pm 0.50$ & $78.11 \pm 0.96$ & x \\
 \cline{2-6}
-& \rotatebox{90}{FID} & x & x & $12.41 \pm 0.45$ & x \\
+& \rotatebox{90}{FID} & x & $11.99 \pm 0.27$ & $12.41 \pm 0.45$ & x \\
 \hline
 \multicolumn{2}{|c|}{params.} & 1.08M & 2.16M & 4.32M & 8.65M \\
 \hline
 \multirow{3}{*}{\rotatebox{90}{UTZap50K}}
-& \rotatebox{90}{Real} & x & x & $86.97 \pm 0.54$ & x \\
+& \rotatebox{90}{Real} & x & $86.83 \pm 1.12$ & $86.97 \pm 0.54$ & x \\
 \cline{2-6}
-& \rotatebox{90}{Fake} & x & x & $77.50 \pm 1.13$ & x \\
+& \rotatebox{90}{Fake} & x & $77.25 \pm 1.53$ & $77.50 \pm 1.13$ & x \\
 \cline{2-6}
-& \rotatebox{90}{FID} & x & x & $41.45 \pm 1.99$ & x \\
+& \rotatebox{90}{FID} & x & $41.95 \pm 2.82$ & $41.45 \pm 1.99$ & x \\
 \hline
 \multicolumn{2}{|c|}{params.} & 1.08M & 2.16M & 4.32M & 8.65M \\
 \hline
 \multirow{3}{*}{\rotatebox{90}{Flowers}}
-& \rotatebox{90}{Real} & x & x & $89.33 \pm 1.39$ & x \\
+& \rotatebox{90}{Real} & x & $88.59 \pm 1.43$ & $89.33 \pm 1.39$ & x \\
 \cline{2-6}
-& \rotatebox{90}{Fake} & x & x & $96.93 \pm 0.36$ & x \\
+& \rotatebox{90}{Fake} & x & $96.79 \pm 0.69$ & $96.93 \pm 0.36$ & x \\
 \cline{2-6}
-& \rotatebox{90}{FID} & x & x & $115.45 \pm 3.02$ & x \\
+& \rotatebox{90}{FID} & x & $113.37 \pm 3.92$ & $115.45 \pm 3.02$ & x \\
 \hline
 \multicolumn{2}{|c|}{params.} & 1.08M & 2.16M & 4.32M & 8.65M \\
 \hline
@@ -670,6 +670,64 @@ Some generated examples for different data sets using the hierarchical mixture m
 & \rotatebox{90}{Fake} & $98.16 \pm 0.29$ & $96.28 \pm 0.67^-$ & $96.77 \pm 0.65$ & $96.55 \pm 0.76$ \\
 \cline{2-6}
 & \rotatebox{90}{FID} & $133.34 \pm 1.24$ & $109.88 \pm 4.28^-$ & $110.93 \pm 4.54^-$ & $114.79 \pm 4.20^-$ \\
+\hline
+\multicolumn{2}{|c|}{params.} & 1.31M & 8.65M & 17.04M & 26.47M \\
+\hline
+\end{tabular}
+\label{tab:hme-zdim}
+\end{center}
+\end{table}
+
+\begin{table}[thbp]
+\vskip\baselineskip
+\caption{FC for embedding spaces with different dimensionalities.}
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\multicolumn{2}{|c|}{$dim(\boldsymbol{z})$} & 4 & 32 & 64 & 100 \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{MNIST}}
+& \rotatebox{90}{Real} & x & $74.42 \pm 0.64$ & $74.40 \pm 0.51$ & $74.90 \pm 0.59$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & x & $67.44 \pm 0.67$ & $67.52 \pm 0.85$ & $67.89 \pm 0.30$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & x & $10.97 \pm 0.85$ & $10.84 \pm 0.52$ & $11.13 \pm 0.44$ \\
+\hline
+\multicolumn{2}{|c|}{params.} & 655K & 4.32M & 8.52M & 13.24M \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{Fashion}}
+& \rotatebox{90}{Real} & x & x & x & $75.01 \pm 0.20$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & x & x & x & $84.89 \pm 0.39$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & x & x & x & $26.50 \pm 0.63$ \\
+\hline
+\multicolumn{2}{|c|}{params.} & 655K & 4.32M & 8.52M & 13.24M \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{CelebA}}
+& \rotatebox{90}{Real} & x & x & x & $66.14 \pm 1.17$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & x & x & x & $80.96 \pm 1.56$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & x & x & x & $14.93 \pm 0.48$ \\
+\hline
+\multicolumn{2}{|c|}{params.} & 1.31M & 8.65M & 17.04M & 26.47M \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{UTZap50K}}
+& \rotatebox{90}{Real} & x & x & x & $89.59 \pm 1.40$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & x & x & x & $81.51 \pm 1.16$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & x & x & x & $54.48 \pm 5.36$ \\
+\hline
+\multicolumn{2}{|c|}{params.} & 1.31M & 8.65M & 17.04M & 26.47M \\
+\hline
+\multirow{3}{*}{\rotatebox{90}{Flowers}}
+& \rotatebox{90}{Real} & x & x & x & $93.80 \pm 1.02$ \\
+\cline{2-6}
+& \rotatebox{90}{Fake} & x & x & x & $97.60 \pm 0.71$ \\
+\cline{2-6}
+& \rotatebox{90}{FID} & x & x & x & $135.28 \pm 7.28$ \\
 \hline
 \multicolumn{2}{|c|}{params.} & 1.31M & 8.65M & 17.04M & 26.47M \\
 \hline
