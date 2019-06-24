@@ -39,13 +39,13 @@
 \makemstitle % M.S. thesis
 \makeapprovalpage
 \begin{acknowledgements}
-\lipsum[1]
+Empty for now.
 \end{acknowledgements}
 \begin{abstract}
-Generative adversarial networks are used successfully to model complex data distributions. One variant trains multiple generators each one responsible from one local mode of the data distribution. In this work, we review such approaches and propose a hierarchical mixture of generators, learning a hierarchical division in the tree structure as well as the local generators in the leaves. Since these experts are combined softly, the whole model is continuous and can be trained using gradient-based optimization. Our experiments on four image data sets, namely, MNIST, FashionMNIST, UTZap50K and CelebA, show that our proposed model is as successful as the fully connected neural network; the learned hierarchical structure also allows for knowledge extraction.
+Generative adversarial networks are used successfully to model complex data distributions. One variant trains multiple generators each one responsible from one local mode of the data distribution. In this work, we review such approaches and propose a hierarchical mixture of generators, learning a hierarchical division in the tree structure as well as the local generators in the leaves. Since these experts are combined softly, the whole model is continuous and can be trained using gradient-based optimization. Our experiments on five image data sets, namely, MNIST, FashionMNIST, CelebA, UTZap50K and Oxford Flowers, show that our proposed model is as successful as the fully connected neural network; the learned hierarchical structure also allows for knowledge extraction.
 \end{abstract}
 \begin{ozet}
-Generative adversarial networks are used successfully to model complex data distributions. One variant trains multiple generators each one responsible from one local mode of the data distribution. In this work, we review such approaches and propose a hierarchical mixture of generators, learning a hierarchical division in the tree structure as well as the local generators in the leaves. Since these experts are combined softly, the whole model is continuous and can be trained using gradient-based optimization. Our experiments on four image data sets, namely, MNIST, FashionMNIST, UTZap50K and CelebA, show that our proposed model is as successful as the fully connected neural network; the learned hierarchical structure also allows for knowledge extraction.
+Generative adversarial networks are used successfully to model complex data distributions. One variant trains multiple generators each one responsible from one local mode of the data distribution. In this work, we review such approaches and propose a hierarchical mixture of generators, learning a hierarchical division in the tree structure as well as the local generators in the leaves. Since these experts are combined softly, the whole model is continuous and can be trained using gradient-based optimization. Our experiments on four image data sets, namely, MNIST, FashionMNIST, CelebA, UTZap50K and Oxford Flowers, show that our proposed model is as successful as the fully connected neural network; the learned hierarchical structure also allows for knowledge extraction.
 \end{ozet}
 \tableofcontents
 \listoffigures
@@ -259,31 +259,80 @@ Many unsupervised learning methods assume that $x$ is determined by a set of fac
 
 \section{Mixtures of Experts}
 \label{sec:me}
-A mixture of experts (ME) model consists of local experts $\{f_i(x)\}_{i=1}^{m}$, and a gating function $g(x)$ \cite{me}. Instead of learning a global function, we divide the input space into regions and learn a set of local functions. For a given input $x$, the gating function outputs probabilities that decide which experts to use. Experts can be simple models since each expert needs to learn a local input-output mapping instead of a global one. The formal definition of the model is as follows:
-\begin{eqnarray}
-g(x) = \text{softmax}(W_g x + \boldsymbol{b}_g)\\
-y = \sum_{i=1}^m g_i(x) f_i(x)
-\end{eqnarray}
+A mixture of experts (ME) model consists of local experts $\{f_i(x)\}_{i=1}^{m}$, and a gating function $g(x)$ \cite{me}. Instead of learning a global function, we divide the input space into regions and learn a set of local functions. For a given input $x$, the gating function outputs probabilities that decide which experts to use. Each expert is responsible for modeling input-output mapping in its region. Experts can be simple models since each expert needs to learn a local input-output mapping instead of a global one. The formal definition of the model is as follows:
+\begin{gather}
+g(x) = \text{softmax}(W_g x + b_g)\\
+y = \sum_{i=1}^m g_i(x) f_i(x)\\
+\text{softmax}_i(x) = \frac{e^{x_i}}{\sum_j e^{x_j}}
+\end{gather}
 where $y$ is the response of the model. Experts can be any differentiable function. It is recommended that we keep experts simple since we employ a multiple of them. For example, this can be a constant response, $f_i(x)=\rho_i$, or a linear response, $f_i(x)=W_i x + b_i$.
+%
+\begin{figure}[htbp]
+\begin{center}
+\subfloat[Regression]{
+	\includegraphics[width=0.5\linewidth]{me_regression.pdf}
+	\label{fig:me:regression}
+}
+\subfloat[Cooperation]{
+	\includegraphics[width=0.5\linewidth]{me_coop.pdf}
+	\label{fig:me:coop}
+}
+
+\subfloat[Experts]{
+	\includegraphics[width=\linewidth]{me_experts.pdf}
+	\label{fig:me:experts}
+}
+\end{center}
+\caption{Results of regression task on a spiral data set with a mixture of experts model.}
+\vskip\baselineskip
+\label{fig:me:model}
+\end{figure}
+%
+For a visual understanding of the model, let us look at Figure \ref{fig:me:model}. We are given a spiral-like shaped two-dimensional data set. We trained an ME model with 8 linear experts. In Figure \ref{fig:me:regression}, we see the trained model's response. To see which expert is responsible for which part, we pick a color for each expert and visualize its response with the respective color. The responsibility of each expert is calculated by softly counting the gating function's output for each point. This soft count decides the transparency level (alpha level) of the visualized point. This is shown in Figure \ref{fig:me:coop}. The horizontal line in Figure \ref{fig:me:coop} shows the color of each expert. As we expect, we see that the color changes when we change the region. Responses of each expert alone is also shown in Figure \ref{fig:me:experts}. We understand that some experts are not used at all.
 
 \section{Hierarchical Mixtures of Experts}
 \label{sec:hme}
-In hierarchical mixtures of experts model (HME) \cite{hme}, we define a tree structure where internal nodes contain gating functions and leaves contain experts. The response of a binary tree node $m$ can be recursively defined as:
-\begin{equation}
+In hierarchical mixtures of experts model (HME) \cite{hme}, we define a tree structure where internal nodes contain gating functions and leaves contain experts. The difference between the ME model is that we replace the softmax gating function with a hierarchical mixture of sigmoid functions. The response of a binary tree node $m$ can be recursively defined as:
+\begin{gather}
 y_m(x)=
 	\begin{cases}
 		\hfil f_m(x) &\text{if $m$ is a leaf} \\
 		\hfil y_m^{L}(x)g_m(x) + y_m^{R}(x)(1 - g_m(x)) &\text{otherwise}
-	\end{cases}
-\end{equation}
-where $y_m^L$ and $y_m^R$ are the responses of the left and the right children of node $m$ respectively. This can be interpreted as a soft decision tree. In a hard decision tree, we either select the left child or the right child in a node whereas in a soft decision tree we take a convex combination of the child responses. One can fix the tree structure beforehand, or grow the tree adaptively based on the error \cite{sdt, budding}. Since the whole model is continuous, we can use gradient based optimization to learn the model parameters.
+	\end{cases}\\
+g_m(x) = \frac{1}{1+e^{-(w_m x + b_m)}}
+\end{gather}
+where $y_m^L$ and $y_m^R$ are the responses of the left and the right children of node $m$ respectively. This can be also interpreted as a soft decision tree. In a hard decision tree, we either select the left child or the right child in a node whereas in a soft decision tree we take a convex combination of the child responses. One can fix the tree structure beforehand, or grow the tree adaptively based on the error \cite{sdt, budding}. Since the whole model is continuous, we can use gradient based optimization to learn the model parameters.
+%
+\begin{figure}[htbp]
+\begin{center}
+\subfloat[Regression]{
+	\includegraphics[width=0.5\linewidth]{hme_regression.pdf}
+	\label{fig:hme:regression}
+}
+\subfloat[Cooperation]{
+	\includegraphics[width=0.5\linewidth]{hme_coop.pdf}
+	\label{fig:hme:coop}
+}
+
+\subfloat[Experts]{
+	\includegraphics[width=\linewidth]{hme_experts.pdf}
+	\label{fig:hme:experts}
+}
+\end{center}
+\caption{Results of regression task on a spiral data set with a hierarchical mixture of experts model.}
+\vskip\baselineskip
+\label{fig:hme:model}
+\end{figure}
+%
+
+The difference between HME and ME is the gating function. Note that given an input, each model takes a convex combination of their experts. However, the way this combination calculated is rather different. Because of the inherent tree structure of HME, experts that are children of the same parent are expected to have similar responses since the regions they are selected are closer. This brings such an interpretational advantage that we can understand the problem's procedural solution by looking at different levels of the tree. This will be further explained in later sections.
+
+Let us now repeat the same experiment that we did in ME (Figure \ref{fig:hme:model}). We trained an HME model with a depth of 3 (therefore 8 experts). The response is quite the same. However, in Figure \ref{fig:hme:coop}, the curve is almost rainbow colored. In order for this to happen, each expert should be responsible of output, in the same order of color spectrum. This is shown more clearly in Figure \ref{fig:hme:experts}. In short, HME model first divides the spiral in half, use the left subtree for the outer region and the right subtree for the inner region. The same procedure is repeated for children (though the order may change).
 
 \section{HME-GAN}
+\label{sec:hmegan}
 
 We propose the hierarchical mixture of generators, which learns a tree structure with internal decision nodes that divide up the input space and the leaves are local generators responsible from a local $z$ region generating a subset of $p(x)$. Since the splits are soft, given the tree structure, the parameters of the internal nodes as well as of the generators in the leaves can be updated using gradient-descent over Wasserstein loss. Note that it is only $G$ that is modeled this way, $D$ remains the usual deep neural network.
-
-% We use a widely adopted DCGAN \cite{dcgan} architecture for the generator. In DCGAN, we project the input noise vector $\boldsymbol{z}$ into a high dimensional vector and reshape it to apply transposed convolution operation. This projection is done with a fully-connected perceptron layer. Here, we remove this layer and add a SDT. Given an input vector $\boldsymbol{z}$, SDT softly decides which leaves (experts) to use. Leaves contain high-dimensional vectors (to be used for transposed convolution), that are also learned throughout the training. The model is visually summarized in Figure \ref{fig:models:hmegan}. Instead of a tree structure, a flat gating function can also be used as in \cite{me}.
-Just like the hierarchical mixture of experts \cite{hme} go from the flat organization of mixture of experts  \cite{me} to a tree, our proposed hierarchical mixture of generators go from a flat mixture of generators to a tree.
 
 \begin{figure}[htbp]
 \begin{center}
@@ -294,42 +343,71 @@ Just like the hierarchical mixture of experts \cite{hme} go from the flat organi
 \label{fig:models:hmegan}
 \end{figure}
 
-As shown in Figure \ref{fig:models:hmegan}, we have a binary tree where each internal node has a gating model that chooses between the two children based on $z$. The leaves of the tree give the output $z'$. The final $z'$ is the weighted sum of all of the leaves weighted by the gating values on each path. A shared network then generates $x$ from this final $z'$. 
+% We use a widely adopted DCGAN \cite{dcgan} architecture for the generator. In DCGAN, we project the input noise vector $\boldsymbol{z}$ into a high dimensional vector and reshape it to apply transposed convolution operation. This projection is done with a fully-connected perceptron layer. Here, we remove this layer and add a SDT. Given an input vector $\boldsymbol{z}$, SDT softly decides which leaves (experts) to use. Leaves contain high-dimensional vectors (to be used for transposed convolution), that are also learned throughout the training. The model is visually summarized in Figure \ref{fig:models:hmegan}. Instead of a tree structure, a flat gating function can also be used as in \cite{me}.
+Just like the hierarchical mixture of experts \cite{hme} go from the flat organization of mixture of experts  \cite{me} to a tree, our proposed hierarchical mixture of generators go from a flat mixture of generators to a tree. As shown in Figure \ref{fig:models:hmegan}, we have a binary tree where each internal node has a gating model that chooses between the two children based on $z$. The leaves of the tree give the output $\{z_i\}_{i=1}^m$. The final $z'$ is the weighted sum of all of the leaves weighted by the gating values on each path. A shared network then generates $x$ from this final $z'$.  We used the deconvolutional part of a widely used GAN architecture, namely DCGAN \cite{dcgan}, as the shared network. Using a shared network is optional and depends on the domain we want to model. For image data sets, since images share lots of common texture, use of a shared network is essential for an economic (in terms of number of parameters) model.
 
-Since the whole model is continuous, one can use gradient based optimization to learn the parameters, which include all the gating parameters in all decision nodes in the tree as well as the $z'$ of all the leaves.
-
-%Let $\boldsymbol{z} \in \mathbb{R}^{d}$. In the original DCGAN architecture, the data lies in $\mathbb{R}^{d}$ after the first transformation even though the resulting vector is high-dimensional. In our formulation, SDT can only output values in the \emph{convex hull} that is defined by its leaves since it takes a convex combination of its leaf values. Therefore, the data lies in $\mathbb{R}^m$ after the SDT transformation where $m$ is the number of leaves. As a result, we separate the relation between the dimensionality of the input vector and the latent distribution. For example, we can set the dimensionality of the noise vector as $2$ but have a $128$-dimensional latent distribution that is defined by the output of the SDT by using 128 leaves. The parameters of the gating functions and the leaves are learned throughout the training. The leaf values decide the vertices of the convex hull and the gating functions decide the distribution between the leaf values.
+Let $z \in \mathbb{R}^{d}$. In the original DCGAN architecture, the data lies in $\mathbb{R}^{d}$ after the first transformation even though the resulting vector is high-dimensional. In our formulation, HME can only output values in the \emph{convex hull} that is defined by its leaves since it takes a convex combination of its leaf values. Therefore, the data lies in $\mathbb{R}^m$ after the HME transformation where $m$ is the number of leaves. As a result, we separate the relation between the dimensionality of the input vector and the latent distribution. For example, we can set the dimensionality of the noise vector as $2$ but have a $128$-dimensional latent distribution that is defined by the output of the HME by using 128 leaves. The parameters of the gating functions and the leaves are learned throughout the training. The leaf values decide the vertices of the convex hull and the gating functions decide the distribution between the leaf values.
 
 \chapter{EXPERIMENTS}
 \label{chapter:exps}
 
 \section{Data Sets}
 \label{sec:datasets}
+We test our proposed mixture model on five image data sets that are widely used in GAN literature: MNIST \cite{mnist}, FashionMNIST \cite{fashion}, CelebA \cite{celeba},  UTZap50K \cite{utzap50k} and Oxford Flowers (which we call ``Flowers'' in some tables to save for space) \cite{flowers}.
+
+MNIST is a data set that contains gray-scale handwritten digits of size $28 \times 28$ pixels. There are 60,000 training samples and 10,000 test samples.
+
+FashionMNIST is a data set of fashion products such as t-shirts, trousers, sneakers. It is inspired from MNIST and has the same data structure with the same number of examples. It is designed to be a drop-in replacement from MNIST and known to be a harder baseline.
+
+For these two data sets, we resize the images to $32 \times 32$ pixels, to be able to use the same kind of deconvolutional architecture repeatedly. We use all 10,000 examples in the test set for evaluation metrics.
+
+CelebA contains colored celebrity faces with 40 different annotated features. There are 10,177 distinct people with a total of 202,599 images. We use the aligned-and-cropped version of the data set. There is no separate test set. We randomly select 10,000 test images and use it only in the evaluation. These images contain very different backgrounds therefore we further center-crop $148 \times 148$ pixels, and resize it to $64 \times 64$ pixels.
+
+UTZap50K is a colored shoe data set of 50,000 catalog images. There are 4 major categories with many subcategories as brand names. We resize all images to $64 \times 64$. We randomly select 5,000 test images and use it only in the evaluation.
+
+Oxford flowers is a colored flower data set with 102 different categories with a total of 8198 images. There are around 80 images per class. We resize all images to $64 \times 64$. We use 1,000 test images and use it only in the evaluation.
+
+\begin{figure}[htbp]
+\begin{center}
+\subfloat[MNIST]{
+	\includegraphics[width=0.8\linewidth]{mnist_dataset.png}
+	\label{fig:samples:mnist}
+}
+
+\subfloat[FashionMNIST]{
+	\includegraphics[width=0.8\linewidth]{fashion_dataset.png}
+	\label{fig:samples:fashion}
+}
+
+\subfloat[CelebA]{
+	\includegraphics[width=0.8\linewidth]{celeba_dataset.png}
+	\label{fig:samples:celeba}
+}
+
+\subfloat[UTZap50K]{
+	\includegraphics[width=0.8\linewidth]{utzap50k_dataset.png}
+	\label{fig:samples:shoes}
+}
+
+\subfloat[UTZap50K]{
+	\includegraphics[width=0.8\linewidth]{flowers_dataset.png}
+	\label{fig:samples:shoes}
+}
+\end{center}
+\caption{Samples from data sets.}
+\vskip\baselineskip
+\label{fig:datasets}
+\end{figure}
+
+Examples from each data set is shown in Figure \ref{fig:datasets}. All images contain pixel intensities in the range $[0, 255]$ as features. To improve training speed, we normalized all pixel intensities to range $[-1, 1]$. For MNIST and FashionMNIST, there are $32 \times 32=1024$ features. Other data sets are colored therefore there are three channels that describe red, green, blue pixel intensities. These have $64 \times 64 \times 3=12288$ features. 
 
 \section{Experimental Setup}
 \label{sec:setup}
-
-\section{Hierarchical Structure vs. Flat Structure}
-\label{sec:hme-vs-me}
-
-\section{Fully-connected vs. HME}
-\label{sec:fc-vs-hme}
-
-\section{Linear Experts}
-\label{sec:hme-linear}
-
-\section{Interpretation of the Learned Model}
-\label{sec:interpret}
-
-We test our proposed mixture model on four image data sets that are widely used in GAN literature, namely, MNIST \cite{mnist}, FashionMNIST \cite{fashion}, UTZap50K \cite{utzap50k} and CelebA \cite{celeba}. 
-
-We use trees of different depths, and we also test a flat mixture of generators of equal number of leaves. For example, we have a tree of depth five with 32 leaves and a flat mixture of 32 leaves. In the former case, for each leaf, we have five binary gatings; in the latter case, there is one gating that chooses one of 32. 
-
-We test these against a fully connected (FC) layer. In Figure \ref{fig:models:hmegan}, this corresponds to having one fully connected layer between $z$ and $z'$. One advantage of the gating lies in complexity. Let us say $z$ is 100 dimensional and $z'$ is 1000 dimensional; a fully connected layer has 100 000 weights, but a tree uses gating nodes all of which are 100 dimensional, so unless the tree has more than 100 leaves, the tree is much simpler in terms of memory and computation.
+These settings are applied to all experiments unless otherwise stated. The convolutional architecture that we use is the DCGAN \cite{dcgan}. Since MNIST and FashionMNIST are $32\times 32$ pixels and other data sets are $64\times 64$ pixels, we used different networks with different sizes. The network architectures used for the former and latter data sets are given in Table \ref{tab:models} that shows the number of units in each layer and the convolutional structure. Layers 2 to 5 are transposed convolutional layers and layer 1 is fully connected for FC, or is where we have the HME or ME structure embedded. The dimensionality of the input $z$ is set to 100. We did not use normalization in $G$ but used layer normalization \cite{lei2016layer} in $D$.
 
 \begin{table}[thbp]
 \vskip\baselineskip
-\caption{Deconvolution network architectures that are used. The small network is used on MNIST and FashionMNIST which are $32\times 32$ and the large is used on UTZap50K and CelebA which are $64\times 64$.}
+\caption{Deconvolution network architectures that are used. The small network is used on MNIST and FashionMNIST which are $32\times 32$ and the large is used on CelebA , UTZap50K and Oxford Flowers which are $64\times 64$.}
 \begin{center}
 \begin{tabular}{|l|c|c|}
 \hline
@@ -352,40 +430,15 @@ We test these against a fully connected (FC) layer. In Figure \ref{fig:models:hm
 \end{center}
 \end{table}
 
-The convolutional architecture that we use is the DCGAN \cite{dcgan}. We resized MNIST and FashionMNIST to $32\times 32$ pixels and other data sets to $64\times 64$ pixels. The network architectures used for the former and latter data sets are given in Table \ref{tab:models} that shows the number of units in each layer and the convolutional structure. Layers 2 to 5 are transposed convolutional layers and layer 1 is fully connected for FC, or is where we have the HME or ME structure embedded. 
+Wasserstein loss \cite{wgan} with gradient penalty \cite{improved_wgan} is used. We adopted the suggested hyperparameter setting of Wasserstein loss recommended in \cite{improved_wgan}, namely two-sided gradient penalty with a constant of $10.0$. The discriminator is trained 5 times per optimization step of the generator. We used Adam optimizer \cite{adam} with amsgrad option \cite{amsgrad}. Learning rate is set to $0.0001$ with beta values of Adam set to $(0.5, 0.999)$. We do not apply learning rate decay. Batch size is set to 128.
 
-Wasserstein loss \cite{wgan} with gradient penalty \cite{improved_wgan} is used throughout all experiments, and we adopted the suggested hyperparameter setting of Wasserstein loss recommended in \cite{improved_wgan}. The dimensionality of the input $z$ is set to 100. For the hierarchical model, we tested trees with depth 5, 6 and 7. To get the same number of leaves, we used 32, 64, and 128 generator experts in the flat mixture. 
+For the evaluation of GAN methods, we used the most popular evaluation criteria that are the Fr\'echet Inception distance (FID) \cite{twotimes} and the two-sample test (C2ST) \cite{twosample}, here, 5-nearest neighbor (5-NN) leave-one-out accuracy. Both FID and 5-NN accuracy are calculated with the activations before the softmax layer (2048-dim) of InceptionV3 \cite{inceptionv3}. Lower FID scores are better and 5-NN accuracies that are close to 50\% are better. All models are run five times with different random seeds, and we report the average and standard deviations.
 
-For the evaluation of GAN methods, we used the most popular evaluation criteria that are the Fr\'echet Inception distance (FID) \cite{twotimes} and the two-sample test (C2ST) \cite{twosample}, here, 5-nearest neighbor (5-NN) leave-one-out accuracy. Both FID and 5-NN accuracy are calculated with the activations before the softmax layer (2048-dim) of InceptionV3 \cite{inceptionv3}. All models are run five times with different random seeds, and we report the average and standard deviations. Lower FID scores are better and 5-NN accuracies that are close to 50\% are better. 
+Seed numbers are set to {2019, 2020, 2021, 2022, 2023}. Except CuDNN \cite{chetlur2014cudnn} operations which are not deterministic but do not effect experiment results, all experiments are reproducible with given seeds. PyTorch auto-differentiation library \cite{paszke2017automatic} is used to automatically calculate gradients by exploiting the chain rule of Calculus. 
 
-\begin{figure}[htbp]
-\begin{center}
-\subfloat[MNIST]{
-	\includegraphics[width=0.6\linewidth]{mnist_samples.png}
-	\label{fig:samples:mnist}
-}
-
-\subfloat[FashionMNIST]{
-	\includegraphics[width=0.6\linewidth]{fashion_samples.png}
-	\label{fig:samples:fashion}
-}
-
-\subfloat[UTZap50K]{
-	\includegraphics[width=0.6\linewidth]{shoes_samples.png}
-	\label{fig:samples:shoes}
-}
-
-\subfloat[CelebA]{
-	\includegraphics[width=0.6\linewidth]{celeba_samples.png}
-	\label{fig:samples:celeba}
-}
-\end{center}
-\caption{Samples generated using our proposed hierarchical mixture of generators.}
-\vskip\baselineskip
-\label{fig:samples}
-\end{figure}
-
-Some generated examples for different data sets using the hierarchical mixture model are shown in Figure \ref{fig:samples}. It can be seen that these are quite realistic and contain diversity. Here, we use a tree with depth 5 for all data sets, except FashionMNIST where we use a tree with depth 7.
+\section{Hierarchical Structure vs. Flat Structure}
+\label{sec:hme-vs-me}
+We use trees of different depths, and we also test a flat mixture of generators of equal number of leaves. For example, we have a tree of depth five with 32 leaves and a flat mixture of 32 leaves. In the former case, for each leaf, we have five binary gatings; in the latter case, there is one gating that chooses one of 32. For the hierarchical model, we tested trees with depth 5, 6, 7 and 8. To get the same number of leaves, we used 32, 64, 128 and 256 generator experts in the flat mixture
 
 \begin{table}[thbp]
 \vskip\baselineskip
@@ -503,7 +556,43 @@ Some generated examples for different data sets using the hierarchical mixture m
 \end{center}
 \end{table}
 
+\begin{figure}[htbp]
+\begin{center}
+\subfloat[MNIST]{
+	\includegraphics[width=0.6\linewidth]{mnist_samples.png}
+	\label{fig:samples:mnist}
+}
 
+\subfloat[FashionMNIST]{
+	\includegraphics[width=0.6\linewidth]{fashion_samples.png}
+	\label{fig:samples:fashion}
+}
+
+\subfloat[UTZap50K]{
+	\includegraphics[width=0.6\linewidth]{shoes_samples.png}
+	\label{fig:samples:shoes}
+}
+
+\subfloat[CelebA]{
+	\includegraphics[width=0.6\linewidth]{celeba_samples.png}
+	\label{fig:samples:celeba}
+}
+\end{center}
+\caption{Samples generated using our proposed hierarchical mixture of generators.}
+\vskip\baselineskip
+\label{fig:samples}
+\end{figure}
+
+Some generated examples for different data sets using the hierarchical mixture model are shown in Figure \ref{fig:samples}. It can be seen that these are quite realistic and contain diversity. Here, we use a tree with depth 5 for all data sets, except FashionMNIST where we use a tree with depth 7.
+
+\section{Fully-connected vs. HME}
+\label{sec:fc-vs-hme}
+We test these against a fully connected (FC) layer. In Figure \ref{fig:models:hmegan}, this corresponds to having one fully connected layer between $z$ and $z'$. One advantage of the gating lies in complexity. Let us say $z$ is 100 dimensional and $z'$ is 1000 dimensional; a fully connected layer has 100 000 weights, but a tree uses gating nodes all of which are 100 dimensional, so unless the tree has more than 100 leaves, the tree is much simpler in terms of memory and computation.
+
+Experiment results are reported in Table \ref{tab:fc-hme}. HME-$k$ refers to a tree with depth $k$ and ME-$k$ refers to $k$ experts. We report the parameter count of FC, HME and ME; these do not include the convolution parameters shared across all models. These results show that HME and ME, though are good, are not as good as FC in terms of Frechet score or 5-NN accuracy. Their performance improves as the structure gets larger; note that trees with depth 5 and 6 are smaller than FC.
+
+\section{Linear Experts}
+\label{sec:hme-linear}
 \begin{table}[thbp]
 \vskip\baselineskip
 \caption[HME with linear experts for different tree depths]{HME with linear experts for different tree depths. $dim(\boldsymbol{z})$ is fixed to 100.}
@@ -736,7 +825,9 @@ Some generated examples for different data sets using the hierarchical mixture m
 \end{center}
 \end{table}
 
-Experiment results are reported in Table \ref{tab:fc-hme}. HME-$k$ refers to a tree with depth $k$ and ME-$k$ refers to $k$ experts. We report the parameter count of FC, HME and ME; these do not include the convolution parameters shared across all models. These results show that HME and ME, though are good, are not as good as FC in terms of Frechet score or 5-NN accuracy. Their performance improves as the structure gets larger; note that trees with depth 5 and 6 are smaller than FC.
+\section{Interpretation of the Learned Model}
+\label{sec:interpret}
+Though our proposed model is not as good as the FC in terms of FID or 5-NN scores, its main advantage is interpretability. To investigate the learned representation, we generate $100$ samples from the generated model and for each node $m$, we take a weighted average of the generated samples. In a hard decision tree where we choose left or right, a hard count corresponds to the path from root to prediction leaf. Here, we instead find the soft count of a node by multiplying the gating values up to that node. The result is visualized in Figure \ref{fig:tree}. We see that earlier levels of the tree correspond to the means of larger samples and as we go down to the leaves, there is specialization, an indication that the tree structure divides the input space into regions. We can think of the structure implementing a soft hierarchical clustering. 
 
 \begin{figure}[htbp]
 \begin{center}
@@ -746,8 +837,6 @@ Experiment results are reported in Table \ref{tab:fc-hme}. HME-$k$ refers to a t
 \vskip\baselineskip % Leave a vertical skip below the figure
 \label{fig:tree}
 \end{figure}
-
-Though our proposed model is not as good as the FC in terms of FID or 5-NN scores, its main advantage is interpretability. To investigate the learned representation, we generate $100$ samples from the generated model and for each node $m$, we take a weighted average of the generated samples. In a hard decision tree where we choose left or right, a hard count corresponds to the path from root to prediction leaf. Here, we instead find the soft count of a node by multiplying the gating values up to that node. The result is visualized in Figure \ref{fig:tree}. We see that earlier levels of the tree correspond to the means of larger samples and as we go down to the leaves, there is specialization, an indication that the tree structure divides the input space into regions. We can think of the structure implementing a soft hierarchical clustering. 
 
 \chapter{CONCLUSION}
 \label{chapter:conc}
