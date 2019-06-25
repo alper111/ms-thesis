@@ -346,7 +346,7 @@ We propose the hierarchical mixture of generators, which learns a tree structure
 % We use a widely adopted DCGAN \cite{dcgan} architecture for the generator. In DCGAN, we project the input noise vector $\boldsymbol{z}$ into a high dimensional vector and reshape it to apply transposed convolution operation. This projection is done with a fully-connected perceptron layer. Here, we remove this layer and add a SDT. Given an input vector $\boldsymbol{z}$, SDT softly decides which leaves (experts) to use. Leaves contain high-dimensional vectors (to be used for transposed convolution), that are also learned throughout the training. The model is visually summarized in Figure \ref{fig:models:hmegan}. Instead of a tree structure, a flat gating function can also be used as in \cite{me}.
 Just like the hierarchical mixture of experts \cite{hme} go from the flat organization of mixture of experts  \cite{me} to a tree, our proposed hierarchical mixture of generators go from a flat mixture of generators to a tree. As shown in Figure \ref{fig:models:hmegan}, we have a binary tree where each internal node has a gating model that chooses between the two children based on $z$. The leaves of the tree give the output $\{z_i\}_{i=1}^m$. The final $z'$ is the weighted sum of all of the leaves weighted by the gating values on each path. A shared network then generates $x$ from this final $z'$.  We used the deconvolutional part of a widely used GAN architecture, namely DCGAN \cite{dcgan}, as the shared network. Using a shared network is optional and depends on the domain we want to model. For image data sets, since images share lots of common texture, use of a shared network is essential for an economic (in terms of number of parameters) model.
 
-Let $z \in \mathbb{R}^{d}$. In the original DCGAN architecture, the data lies in $\mathbb{R}^{d}$ after the first transformation even though the resulting vector is high-dimensional. In our formulation, HME can only output values in the \emph{convex hull} that is defined by its leaves since it takes a convex combination of its leaf values. Therefore, the data lies in $\mathbb{R}^m$ after the HME transformation where $m$ is the number of leaves. As a result, we separate the relation between the dimensionality of the input vector and the latent distribution. For example, we can set the dimensionality of the noise vector as $2$ but have a $128$-dimensional latent distribution that is defined by the output of the HME by using 128 leaves. The parameters of the gating functions and the leaves are learned throughout the training. The leaf values decide the vertices of the convex hull and the gating functions decide the distribution between the leaf values.
+Let $z \in \mathbb{R}^{d}$. In the original DCGAN architecture, the data lies in $\mathbb{R}^{d}$ after the first transformation even though the resulting vector is high-dimensional. When we use constant leaf vectors, HME can only output values in the \emph{convex hull} that is defined by its leaves since it takes a convex combination of its leaf vectors. Therefore, the data lies in $\mathbb{R}^m$ after the HME transformation where $m$ is the number of leaves. As a result, we separate the relation between the dimensionality of the input vector and the latent distribution. For example, we can set the dimensionality of the noise vector as $2$ but have a $128$-dimensional latent distribution that is defined by the output of the HME by using 128 leaves. The parameters of the gating functions and the leaves are learned throughout the training. The leaf values decide the vertices of the convex hull and the gating functions decide the distribution between the leaf values.
 
 \chapter{EXPERIMENTS}
 \label{chapter:exps}
@@ -434,9 +434,10 @@ For the evaluation of GAN methods, we used the most popular evaluation criteria 
 
 Seed numbers are set to {2019, 2020, 2021, 2022, 2023}. Except CuDNN \cite{chetlur2014cudnn} operations which are not deterministic but do not effect experiment results, all experiments are reproducible with given seeds. PyTorch auto-differentiation library \cite{paszke2017automatic} is used to automatically calculate gradients by exploiting the chain rule of Calculus. 
 
-\section{Hierarchical Structure vs. Flat Structure}
+\section{Tree Structure vs. Flat Structure}
 \label{sec:hme-vs-me}
-We use trees of different depths, and we also test a flat mixture of generators of equal number of leaves. For example, we have a tree of depth five with 32 leaves and a flat mixture of 32 leaves. In the former case, for each leaf, we have five binary gatings; in the latter case, there is one gating that chooses one of 32. For the hierarchical model, we tested trees with depth 5, 6, 7 and 8. To get the same number of leaves, we used 32, 64, 128 and 256 generator experts in the flat mixture
+
+First, we want to see whether there is a qualitative difference between the tree structure and the flat structure. We use trees of different depths, and we also test a flat mixture of generators of equal number of leaves. For example, we have a tree of depth five with 32 leaves and a flat mixture of 32 leaves. In the former case, for each leaf, we have five binary gatings; in the latter case, there is one gating that chooses one of 32. For the hierarchical model, we tested trees with depth 5, 6, 7 and 8. To get the same number of leaves, we used 32, 64, 128 and 256 generator experts in the flat mixture. These models are denoted as HME-$k$ and ME-$k$ respectively. We also report the parameter count of each model; these do not include the convolution parameters shared across all models.
 
 \begin{table}[thbp]
 \vskip\baselineskip
@@ -554,77 +555,85 @@ We use trees of different depths, and we also test a flat mixture of generators 
 \end{center}
 \end{table}
 
+Some samples generated from ME-64 and HME-6 are shown in Figure \ref{fig:samples} for visual inspection. It can be seen that these are quite realistic and contain diversity for both models. 5-NN and FID scores are given in Table \ref{tab:fc-hme} and \ref{tab:me} for HME and ME respectively. In general, it seems that they perform the same. From Table \ref{tab:fc-hme}, we see that the results for HME generally gets better with the increasing complexity (in terms of number of parameters) as expected. For ME (Table \ref{tab:me}), the results does not get better as in HME. Especially ME-256 model performs worse than other ME models with less parameters. We anticipate that more experts should bring more power. However, the gating function of ME does not get better when we increase the number of experts. Therefore, we conjecture that it is due to the gating function of ME, the results stagnates. However, this is not the case for HME since we distribute the gating function into many binary gating functions.
+
 \begin{figure}[htbp]
 \begin{center}
-\subfloat[MNIST]{
-	\includegraphics[width=0.5\linewidth]{samples_mnist.png}
-	\label{fig:samples:mnist}
+\subfloat[ME-64 leafs]{
+	\includegraphics[width=0.5\linewidth]{me_leafs_fashion.png}
+	\label{fig:leafs:me_fashion}
 }
-\subfloat[FashionMNIST]{
-	\includegraphics[width=0.5\linewidth]{samples_fashion.png}
-	\label{fig:samples:fashion}
-}
-
-\subfloat[CelebA]{
-	\includegraphics[width=0.5\linewidth]{samples_celeb.png}
-	\label{fig:samples:celeb}
-}
-\subfloat[UTZap50K]{
-	\includegraphics[width=0.5\linewidth]{samples_utzap50k.png}
-	\label{fig:samples:utzap50k}
-}
-
-\subfloat[Oxford Flowers]{
-	\includegraphics[width=0.5\linewidth]{samples_flowers.png}
-	\label{fig:samples:flowers}
+\subfloat[HME-6 leafs]{
+	\includegraphics[width=0.5\linewidth]{hme_leafs_fashion.png}
+	\label{fig:leafs:hme_fashion}
 }
 \end{center}
-\caption{Samples generated using our proposed HME-6 model.}
+\caption{Leaf responsibilities of ME-64 (left) and HME-6 (right).}
+\vskip\baselineskip
+\label{fig:leafs}
+\end{figure}
+
+\begin{figure}[htbp]
+\begin{center}
+\subfloat{
+	\includegraphics[width=0.5\linewidth]{me_samples_mnist.png}
+	\label{fig:samples:me_mnist}
+}
+\subfloat{
+	\includegraphics[width=0.5\linewidth]{hme_samples_mnist.png}
+	\label{fig:samples:hme_mnist}
+}
+
+\subfloat{
+	\includegraphics[width=0.5\linewidth]{me_samples_fashion.png}
+	\label{fig:samples:me_fashion}
+}
+\subfloat{
+	\includegraphics[width=0.5\linewidth]{hme_samples_fashion.png}
+	\label{fig:samples:hme_fashion}
+}
+
+\subfloat{
+	\includegraphics[width=0.5\linewidth]{me_samples_celeb.png}
+	\label{fig:samples:me_celeb}
+}
+\subfloat{
+	\includegraphics[width=0.5\linewidth]{hme_samples_celeb.png}
+	\label{fig:samples:hme_celeb}
+}
+
+\subfloat{
+	\includegraphics[width=0.5\linewidth]{me_samples_utzap50k.png}
+	\label{fig:samples:me_utzap50k}
+}
+\subfloat{
+	\includegraphics[width=0.5\linewidth]{hme_samples_utzap50k.png}
+	\label{fig:samples:hme_utzap50k}
+}
+
+\subfloat{
+	\includegraphics[width=0.5\linewidth]{me_samples_flowers.png}
+	\label{fig:samples:me_flowers}
+}
+\subfloat{
+	\includegraphics[width=0.5\linewidth]{hme_samples_flowers.png}
+	\label{fig:samples:hme_flowers}
+}
+\end{center}
+\caption{Samples generated using ME-64 (left) and HME-6 (right).}
 \vskip\baselineskip
 \label{fig:samples}
 \end{figure}
 
-\begin{figure}[htbp]
-\begin{center}
-\subfloat[MNIST]{
-	\includegraphics[width=0.8\linewidth]{inter_mnist.png}
-	\label{fig:inter:mnist}
-}
-
-\subfloat[FashionMNIST]{
-	\includegraphics[width=0.8\linewidth]{inter_fashion.png}
-	\label{fig:inter:fashion}
-}
-
-\subfloat[CelebA]{
-	\includegraphics[width=0.8\linewidth]{inter_celeb.png}
-	\label{fig:inter:celeb}
-}
-
-\subfloat[UTZap50K]{
-	\includegraphics[width=0.8\linewidth]{inter_utzap50k.png}
-	\label{fig:inter:utzap50k}
-}
-
-\subfloat[Oxford Flowers]{
-	\includegraphics[width=0.8\linewidth]{inter_flowers.png}
-	\label{fig:inter:flowers}
-}
-\end{center}
-\caption{Interpolation between random $z$ vectors with HME-6 model.}
-\vskip\baselineskip
-\label{fig:interpolations}
-\end{figure}
-
-Some generated examples for different data sets using the hierarchical mixture model are shown in Figure \ref{fig:samples}. It can be seen that these are quite realistic and contain diversity.
+We also tried to visualize the learned experts representations for ME and HME, as we did in Chapter \ref{chapter:hme}. To do this, we count the responsibility values (gating values) of leafs for each generated image. Then, for each leaf, we take a weighted average of generated images where weights are responsibilities of the leaf for each image. This will give us the leaf's expected responsibility, in other words its contribution. The result is shown in Figure \ref{fig:leafs}. We can say from the figure that HME leafs are more diverse and local when compared with ME leafs. Interpretation of this figure is important. This figure is not about sample quality or sample diversity. It is rather about the relation of leafs with each other. In Figure \ref{fig:leafs:me_fashion}, leafs seem more blurry. This says that leafs of ME are not specialized for a region of $p(z)$ but rather used throughout many regions of $p(z)$. To understand this clearly, we show the covariance matrices of leaf gating values in Figure \ref{fig:covariances}. These are $64 \times 64$ matrices where each index corresponds to a leaf. For example, for both matrices we see that the diagonal values are higher than others. This implies leafs are rather used alone, or used with high proportion. For ME in Figure \ref{fig:cov:me}, correlations are randomly scattered. Its counterpart HME (Figure \ref{fig:cov:hme}) has correlations gathered around the diagonal. Furthermore, we can see spectral squares of sizes $4 \times 4$ and $8 \times 8$. This shows that cooperations are done in a hierarchical way.
 
 \begin{figure}[htbp]
 \begin{center}
-\subfloat[ME]{
+\subfloat[ME-64]{
 	\includegraphics[width=0.5\linewidth]{cov_me.pdf}
 	\label{fig:cov:me}
 }
-\subfloat[HME]{
+\subfloat[HME-6]{
 	\includegraphics[width=0.5\linewidth]{cov_hme.pdf}
 	\label{fig:cov:hme}
 }
@@ -634,16 +643,23 @@ Some generated examples for different data sets using the hierarchical mixture m
 \label{fig:covariances}
 \end{figure}
 
-**explain Figure \ref{fig:covariances}.**
-
 \section{Fully-connected vs. HME}
 \label{sec:fc-vs-hme}
-We test these against a fully connected (FC) layer. In Figure \ref{fig:models:hmegan}, this corresponds to having one fully connected layer between $z$ and $z'$. One advantage of the gating lies in complexity. Let us say $z$ is 100 dimensional and $z'$ is 1000 dimensional; a fully connected layer has 100 000 weights, but a tree uses gating nodes all of which are 100 dimensional, so unless the tree has more than 100 leaves, the tree is much simpler in terms of memory and computation.
+Now that we see the difference between ME and HME, we rather focus on HME and compare it with a fully-connected (FC) layer. In Figure \ref{fig:models:hmegan}, this corresponds to having one fully connected layer between $z$ and $z'$.
 
-Experiment results are reported in Table \ref{tab:fc-hme}. HME-$k$ refers to a tree with depth $k$ and ME-$k$ refers to $k$ experts. We report the parameter count of FC, HME and ME; these do not include the convolution parameters shared across all models. These results show that HME and ME, though are good, are not as good as FC in terms of Frechet score or 5-NN accuracy. Their performance improves as the structure gets larger; note that trees with depth 5 and 6 are smaller than FC.
+% One advantage of HME lies in complexity. Let us say $z$ is 100 dimensional and $z'$ is 1000 dimensional; a fully connected layer has 100,000 weights, but a tree uses gating nodes all of which are 100 dimensional, so unless the tree has more than 100 leaves, the tree is much simpler in terms of memory and computation.
+
+Experiment results are reported in Table \ref{tab:fc-hme}. These results show that though HME is good, is not as good as FC in terms of FID score or 5-NN accuracy. Its performance improves as the structure gets larger; note that trees with depth 5 and 6 are smaller than FC. We conjecture that performance drop might be due to decreased sample diversity. Although 5-NN real accuracies are quite close, there is a gap between 5-NN fake accuracies. High 5-NN fake accuracy implies that fake samples are located near fake samples in $p(x)$.
+
+One possible cause for the decreased diversity is to use constant vectors in the leafs. In FC version, the random vector $z$ is gone through an affine transformation and a rectified linear unit (ReLU) non-linearity. HME, on the other hand, encapsulates the information of $z$ in its gatings. Gating units are sigmoid functions. Sigmoid functions get saturated for values that are too low or too high. Therefore, if gating weights get too high or too low, which also means that it mimics a hard split instead of a soft one, the variety is lost due to sigmoid function. So although we want our experts to specialize, they output constant vectors when they are too specialized. To remedy this problem, we introduce linear experts in the leafs instead of constant vectors.
 
 \section{Linear Experts}
 \label{sec:hme-linear}
+
+* leaflerin işlevleri *
+
+* datayı hapsetme meselesi *
+
 \begin{table}[thbp]
 \vskip\baselineskip
 \caption[HME with linear experts for different tree depths]{HME with linear experts for different tree depths. $dim(\boldsymbol{z})$ is fixed to 100. **welch's t-test yapılacak**}
@@ -836,11 +852,11 @@ Experiment results are reported in Table \ref{tab:fc-hme}. HME-$k$ refers to a t
 \multicolumn{2}{|c|}{params.} & 20K & 135K & 266K & 413K \\
 \hline
 \multirow{3}{*}{\rotatebox{90}{Fashion}}
-& \rotatebox{90}{Real} & x & x & x & $75.01 \pm 0.20$ \\
+& \rotatebox{90}{Real} & x & x & $75.02 \pm 0.43$ & $75.01 \pm 0.20$ \\
 \cline{2-6}
-& \rotatebox{90}{Fake} & x & x & x & $84.89 \pm 0.39$ \\
+& \rotatebox{90}{Fake} & x & x & $84.85 \pm 0.56$ & $84.89 \pm 0.39$ \\
 \cline{2-6}
-& \rotatebox{90}{FID} & x & x & x & $26.50 \pm 0.63$ \\
+& \rotatebox{90}{FID} & x & x & $26.64 \pm 0.88$ & $26.50 \pm 0.63$ \\
 \hline
 \multicolumn{2}{|c|}{params.} & 20K & 135K & 266K & 413K \\
 \hline
@@ -923,6 +939,38 @@ Though our proposed model is not as good as the FC in terms of FID or 5-NN score
 \caption{Mean responses of each node. At the center, there is the root. As we go outer, the depth increases and therefore granularity level increases.}
 \vskip\baselineskip % Leave a vertical skip below the figure
 \label{fig:polar:flowers}
+\end{figure}
+
+\begin{figure}[htbp]
+\begin{center}
+\subfloat[MNIST]{
+	\includegraphics[width=0.8\linewidth]{inter_mnist.png}
+	\label{fig:inter:mnist}
+}
+
+\subfloat[FashionMNIST]{
+	\includegraphics[width=0.8\linewidth]{inter_fashion.png}
+	\label{fig:inter:fashion}
+}
+
+\subfloat[CelebA]{
+	\includegraphics[width=0.8\linewidth]{inter_celeb.png}
+	\label{fig:inter:celeb}
+}
+
+\subfloat[UTZap50K]{
+	\includegraphics[width=0.8\linewidth]{inter_utzap50k.png}
+	\label{fig:inter:utzap50k}
+}
+
+\subfloat[Oxford Flowers]{
+	\includegraphics[width=0.8\linewidth]{inter_flowers.png}
+	\label{fig:inter:flowers}
+}
+\end{center}
+\caption{Interpolation between random $z$ vectors with HME-6 model.}
+\vskip\baselineskip
+\label{fig:interpolations}
 \end{figure}
 
 \chapter{CONCLUSION}
