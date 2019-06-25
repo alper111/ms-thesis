@@ -370,28 +370,26 @@ Oxford flowers is a colored flower data set with 102 different categories with a
 \begin{figure}[htbp]
 \begin{center}
 \subfloat[MNIST]{
-	\includegraphics[width=0.8\linewidth]{mnist_dataset.png}
-	\label{fig:samples:mnist}
+	\includegraphics[width=0.5\linewidth]{mnist_dataset.png}
+	\label{fig:dataset:mnist}
 }
-
 \subfloat[FashionMNIST]{
-	\includegraphics[width=0.8\linewidth]{fashion_dataset.png}
-	\label{fig:samples:fashion}
+	\includegraphics[width=0.5\linewidth]{fashion_dataset.png}
+	\label{fig:dataset:fashion}
 }
 
 \subfloat[CelebA]{
-	\includegraphics[width=0.8\linewidth]{celeba_dataset.png}
-	\label{fig:samples:celeba}
+	\includegraphics[width=0.5\linewidth]{celeba_dataset.png}
+	\label{fig:dataset:celeba}
+}
+\subfloat[UTZap50K]{
+	\includegraphics[width=0.5\linewidth]{utzap50k_dataset.png}
+	\label{fig:dataset:utzap50k}
 }
 
-\subfloat[UTZap50K]{
-	\includegraphics[width=0.8\linewidth]{utzap50k_dataset.png}
-	\label{fig:samples:shoes}
-}
-
-\subfloat[UTZap50K]{
-	\includegraphics[width=0.8\linewidth]{flowers_dataset.png}
-	\label{fig:samples:shoes}
+\subfloat[Oxford Flowers]{
+	\includegraphics[width=0.5\linewidth]{flowers_dataset.png}
+	\label{fig:dataset:flowers}
 }
 \end{center}
 \caption{Samples from data sets.}
@@ -559,31 +557,84 @@ We use trees of different depths, and we also test a flat mixture of generators 
 \begin{figure}[htbp]
 \begin{center}
 \subfloat[MNIST]{
-	\includegraphics[width=0.6\linewidth]{mnist_samples.png}
+	\includegraphics[width=0.5\linewidth]{samples_mnist.png}
 	\label{fig:samples:mnist}
 }
-
 \subfloat[FashionMNIST]{
-	\includegraphics[width=0.6\linewidth]{fashion_samples.png}
+	\includegraphics[width=0.5\linewidth]{samples_fashion.png}
 	\label{fig:samples:fashion}
 }
 
+\subfloat[CelebA]{
+	\includegraphics[width=0.5\linewidth]{samples_celeb.png}
+	\label{fig:samples:celeb}
+}
 \subfloat[UTZap50K]{
-	\includegraphics[width=0.6\linewidth]{shoes_samples.png}
-	\label{fig:samples:shoes}
+	\includegraphics[width=0.5\linewidth]{samples_utzap50k.png}
+	\label{fig:samples:utzap50k}
 }
 
-\subfloat[CelebA]{
-	\includegraphics[width=0.6\linewidth]{celeba_samples.png}
-	\label{fig:samples:celeba}
+\subfloat[Oxford Flowers]{
+	\includegraphics[width=0.5\linewidth]{samples_flowers.png}
+	\label{fig:samples:flowers}
 }
 \end{center}
-\caption{Samples generated using our proposed hierarchical mixture of generators.}
+\caption{Samples generated using our proposed HME-6 model.}
 \vskip\baselineskip
 \label{fig:samples}
 \end{figure}
 
-Some generated examples for different data sets using the hierarchical mixture model are shown in Figure \ref{fig:samples}. It can be seen that these are quite realistic and contain diversity. Here, we use a tree with depth 5 for all data sets, except FashionMNIST where we use a tree with depth 7.
+\begin{figure}[htbp]
+\begin{center}
+\subfloat[MNIST]{
+	\includegraphics[width=0.8\linewidth]{inter_mnist.png}
+	\label{fig:inter:mnist}
+}
+
+\subfloat[FashionMNIST]{
+	\includegraphics[width=0.8\linewidth]{inter_fashion.png}
+	\label{fig:inter:fashion}
+}
+
+\subfloat[CelebA]{
+	\includegraphics[width=0.8\linewidth]{inter_celeb.png}
+	\label{fig:inter:celeb}
+}
+
+\subfloat[UTZap50K]{
+	\includegraphics[width=0.8\linewidth]{inter_utzap50k.png}
+	\label{fig:inter:utzap50k}
+}
+
+\subfloat[Oxford Flowers]{
+	\includegraphics[width=0.8\linewidth]{inter_flowers.png}
+	\label{fig:inter:flowers}
+}
+\end{center}
+\caption{Interpolation between random $z$ vectors with HME-6 model.}
+\vskip\baselineskip
+\label{fig:interpolations}
+\end{figure}
+
+Some generated examples for different data sets using the hierarchical mixture model are shown in Figure \ref{fig:samples}. It can be seen that these are quite realistic and contain diversity.
+
+\begin{figure}[htbp]
+\begin{center}
+\subfloat[ME]{
+	\includegraphics[width=0.5\linewidth]{cov_me.pdf}
+	\label{fig:cov:me}
+}
+\subfloat[HME]{
+	\includegraphics[width=0.5\linewidth]{cov_hme.pdf}
+	\label{fig:cov:hme}
+}
+\end{center}
+\caption{Covariance matrix of leaf densities for ME-64 and HME-6.}
+\vskip\baselineskip
+\label{fig:covariances}
+\end{figure}
+
+**explain Figure \ref{fig:covariances}.**
 
 \section{Fully-connected vs. HME}
 \label{sec:fc-vs-hme}
@@ -595,7 +646,7 @@ Experiment results are reported in Table \ref{tab:fc-hme}. HME-$k$ refers to a t
 \label{sec:hme-linear}
 \begin{table}[thbp]
 \vskip\baselineskip
-\caption[HME with linear experts for different tree depths]{HME with linear experts for different tree depths. $dim(\boldsymbol{z})$ is fixed to 100.}
+\caption[HME with linear experts for different tree depths]{HME with linear experts for different tree depths. $dim(\boldsymbol{z})$ is fixed to 100. **welch's t-test yapılacak**}
 \begin{center}
 \begin{tabular}{|c|c|c|c|c|c|}
 \hline
@@ -608,7 +659,7 @@ Experiment results are reported in Table \ref{tab:fc-hme}. HME-$k$ refers to a t
 \cline{2-6}
 & \rotatebox{90}{FID} & $10.27 \pm 0.41$ & $9.86 \pm 0.24$ & $9.15 \pm 0.45$ & $9.07 \pm 0.44$ \\
 \hline
-\multicolumn{2}{|c|}{params.} & 540K & 1.08M & 2.16M & 4.32M \\
+\multicolumn{2}{|c|}{params.} & 1.65M & 3.31M & 6.62M & 13.24M \\
 \hline
 \multirow{3}{*}{\rotatebox{90}{Fashion}}
 & \rotatebox{90}{Real} & $72.18 \pm 0.38$ & $71.15 \pm 0.88$ & $70.08 \pm 0.84$ & $69.99 \pm 0.70$ \\
@@ -617,7 +668,7 @@ Experiment results are reported in Table \ref{tab:fc-hme}. HME-$k$ refers to a t
 \cline{2-6}
 & \rotatebox{90}{FID} & $20.88 \pm 0.17$ & $19.64 \pm 0.89$ & $18.79 \pm 0.77$ & $18.24 \pm 0.91$ \\
 \hline
-\multicolumn{2}{|c|}{params.} & 540K & 1.08M & 2.16M & 4.32M \\
+\multicolumn{2}{|c|}{params.} & 1.65M & 3.31M & 6.62M & 13.24M \\
 \hline
 \multirow{3}{*}{\rotatebox{90}{CelebA}}
 & \rotatebox{90}{Real} & $62.96 \pm 0.81$ & $63.15 \pm 1.42$ & $62.07 \pm 0.88$ & $62.02 \pm 1.02$ \\
@@ -626,7 +677,7 @@ Experiment results are reported in Table \ref{tab:fc-hme}. HME-$k$ refers to a t
 \cline{2-6}
 & \rotatebox{90}{FID} & $12.41 \pm 0.40$ & $12.48 \pm 0.65$ & $12.23 \pm 0.56$ & $12.09 \pm 0.56$ \\
 \hline
-\multicolumn{2}{|c|}{params.} & 1.08M & 2.16M & 4.32M & 8.65M \\
+\multicolumn{2}{|c|}{params.} & 3.30M & 6.61M & 13.23M & 26.47M \\
 \hline
 \multirow{3}{*}{\rotatebox{90}{UTZap50K}}
 & \rotatebox{90}{Real} & $87.26 \pm 0.80$ & $87.39 \pm 0.96$ & $87.61 \pm 1.21$ & $87.77 \pm 1.17$ \\
@@ -635,7 +686,7 @@ Experiment results are reported in Table \ref{tab:fc-hme}. HME-$k$ refers to a t
 \cline{2-6}
 & \rotatebox{90}{FID} & $42.35 \pm 3.27$ & $42.99 \pm 2.08$ & $44.88 \pm 3.48$ & $45.54 \pm 3.46$ \\
 \hline
-\multicolumn{2}{|c|}{params.} & 1.08M & 2.16M & 4.32M & 8.65M \\
+\multicolumn{2}{|c|}{params.} & 3.30M & 6.61M & 13.23M & 26.47M \\
 \hline
 \multirow{3}{*}{\rotatebox{90}{Flowers}}
 & \rotatebox{90}{Real} & $88.96 \pm 0.93$ & $89.30 \pm 1.49$ & $88.89 \pm 1.51$ & $90.15 \pm 1.60$ \\
@@ -644,7 +695,7 @@ Experiment results are reported in Table \ref{tab:fc-hme}. HME-$k$ refers to a t
 \cline{2-6}
 & \rotatebox{90}{FID} & $111.06 \pm 4.84$ & $111.85 \pm 3.65$ & $112.78 \pm 3.13$ & $114.79 \pm 4.20$ \\
 \hline
-\multicolumn{2}{|c|}{params.} & 1.08M & 2.16M & 4.32M & 8.65M \\
+\multicolumn{2}{|c|}{params.} & 3.30M & 6.61M & 13.23M & 26.47M \\
 \hline
 \end{tabular}
 \label{tab:hme-depth}
@@ -653,7 +704,7 @@ Experiment results are reported in Table \ref{tab:fc-hme}. HME-$k$ refers to a t
 
 \begin{table}[thbp]
 \vskip\baselineskip
-\caption[ME with linear experts for different number of experts]{ME with linear experts for different number of experts. $dim(\boldsymbol{z})$ is fixed to 100.}
+\caption[ME with linear experts for different number of experts]{ME with linear experts for different number of experts. $dim(\boldsymbol{z})$ is fixed to 100. **welch's t-test yapılacak**}
 \begin{center}
 \begin{tabular}{|c|c|c|c|c|c|}
 \hline
@@ -666,7 +717,7 @@ Experiment results are reported in Table \ref{tab:fc-hme}. HME-$k$ refers to a t
 \cline{2-6}
 & \rotatebox{90}{FID} & $9.74 \pm 0.64$ & $8.95 \pm 0.28$ & $8.56 \pm 0.53$ & x \\
 \hline
-\multicolumn{2}{|c|}{params.} & 540K & 1.08M & 2.16M & 4.32M \\
+\multicolumn{2}{|c|}{params.} & 1.65M & 3.31M & 6.62M & 13.24M \\
 \hline
 \multirow{3}{*}{\rotatebox{90}{Fashion}}
 & \rotatebox{90}{Real} & $72.28 \pm 0.60$ & $70.90 \pm 0.96$ & $69.45 \pm 0.71$ & x \\
@@ -675,7 +726,7 @@ Experiment results are reported in Table \ref{tab:fc-hme}. HME-$k$ refers to a t
 \cline{2-6}
 & \rotatebox{90}{FID} & $20.90 \pm 0.87$ & $19.37 \pm 0.90$ & $18.09 \pm 0.89$ & x \\
 \hline
-\multicolumn{2}{|c|}{params.} & 540K & 1.08M & 2.16M & 4.32M \\
+\multicolumn{2}{|c|}{params.} & 1.65M & 3.31M & 6.62M & 13.24M \\
 \hline
 \multirow{3}{*}{\rotatebox{90}{CelebA}}
 & \rotatebox{90}{Real} & x & $61.44 \pm 1.27$ & $62.63 \pm 0.67$ & x \\
@@ -684,7 +735,7 @@ Experiment results are reported in Table \ref{tab:fc-hme}. HME-$k$ refers to a t
 \cline{2-6}
 & \rotatebox{90}{FID} & x & $11.99 \pm 0.27$ & $12.41 \pm 0.45$ & x \\
 \hline
-\multicolumn{2}{|c|}{params.} & 1.08M & 2.16M & 4.32M & 8.65M \\
+\multicolumn{2}{|c|}{params.} & 3.30M & 6.61M & 13.23M & 26.47M \\
 \hline
 \multirow{3}{*}{\rotatebox{90}{UTZap50K}}
 & \rotatebox{90}{Real} & x & $86.83 \pm 1.12$ & $86.97 \pm 0.54$ & x \\
@@ -693,7 +744,7 @@ Experiment results are reported in Table \ref{tab:fc-hme}. HME-$k$ refers to a t
 \cline{2-6}
 & \rotatebox{90}{FID} & x & $41.95 \pm 2.82$ & $41.45 \pm 1.99$ & x \\
 \hline
-\multicolumn{2}{|c|}{params.} & 1.08M & 2.16M & 4.32M & 8.65M \\
+\multicolumn{2}{|c|}{params.} & 3.30M & 6.61M & 13.23M & 26.47M \\
 \hline
 \multirow{3}{*}{\rotatebox{90}{Flowers}}
 & \rotatebox{90}{Real} & x & $88.59 \pm 1.43$ & $89.33 \pm 1.39$ & x \\
@@ -702,7 +753,7 @@ Experiment results are reported in Table \ref{tab:fc-hme}. HME-$k$ refers to a t
 \cline{2-6}
 & \rotatebox{90}{FID} & x & $113.37 \pm 3.92$ & $115.45 \pm 3.02$ & x \\
 \hline
-\multicolumn{2}{|c|}{params.} & 1.08M & 2.16M & 4.32M & 8.65M \\
+\multicolumn{2}{|c|}{params.} & 3.30M & 6.61M & 13.23M & 26.47M \\
 \hline
 \end{tabular}
 \label{tab:me-depth}
@@ -711,7 +762,7 @@ Experiment results are reported in Table \ref{tab:fc-hme}. HME-$k$ refers to a t
 
 \begin{table}[thbp]
 \vskip\baselineskip
-\caption[HME with linear experts for embedding spaces with different dimensionalities]{HME with linear experts for embedding spaces with different dimensionalities. Depth is fixed to 5.}
+\caption[HME with linear experts for embedding spaces with different dimensionalities]{HME with linear experts for embedding spaces with different dimensionalities.}
 \begin{center}
 \begin{tabular}{|c|c|c|c|c|c|}
 \hline
@@ -782,7 +833,7 @@ Experiment results are reported in Table \ref{tab:fc-hme}. HME-$k$ refers to a t
 \cline{2-6}
 & \rotatebox{90}{FID} & x & $10.97 \pm 0.85$ & $10.84 \pm 0.52$ & $11.13 \pm 0.44$ \\
 \hline
-\multicolumn{2}{|c|}{params.} & 655K & 4.32M & 8.52M & 13.24M \\
+\multicolumn{2}{|c|}{params.} & 20K & 135K & 266K & 413K \\
 \hline
 \multirow{3}{*}{\rotatebox{90}{Fashion}}
 & \rotatebox{90}{Real} & x & x & x & $75.01 \pm 0.20$ \\
@@ -791,7 +842,7 @@ Experiment results are reported in Table \ref{tab:fc-hme}. HME-$k$ refers to a t
 \cline{2-6}
 & \rotatebox{90}{FID} & x & x & x & $26.50 \pm 0.63$ \\
 \hline
-\multicolumn{2}{|c|}{params.} & 655K & 4.32M & 8.52M & 13.24M \\
+\multicolumn{2}{|c|}{params.} & 20K & 135K & 266K & 413K \\
 \hline
 \multirow{3}{*}{\rotatebox{90}{CelebA}}
 & \rotatebox{90}{Real} & x & x & x & $66.14 \pm 1.17$ \\
@@ -800,7 +851,7 @@ Experiment results are reported in Table \ref{tab:fc-hme}. HME-$k$ refers to a t
 \cline{2-6}
 & \rotatebox{90}{FID} & x & x & x & $14.93 \pm 0.48$ \\
 \hline
-\multicolumn{2}{|c|}{params.} & 1.31M & 8.65M & 17.04M & 26.47M \\
+\multicolumn{2}{|c|}{params.} & 40K & 270K & 532K & 827K \\
 \hline
 \multirow{3}{*}{\rotatebox{90}{UTZap50K}}
 & \rotatebox{90}{Real} & x & x & x & $89.59 \pm 1.40$ \\
@@ -809,7 +860,7 @@ Experiment results are reported in Table \ref{tab:fc-hme}. HME-$k$ refers to a t
 \cline{2-6}
 & \rotatebox{90}{FID} & x & x & x & $54.48 \pm 5.36$ \\
 \hline
-\multicolumn{2}{|c|}{params.} & 1.31M & 8.65M & 17.04M & 26.47M \\
+\multicolumn{2}{|c|}{params.} & 40K & 270K & 532K & 827K \\
 \hline
 \multirow{3}{*}{\rotatebox{90}{Flowers}}
 & \rotatebox{90}{Real} & x & x & x & $93.80 \pm 1.02$ \\
@@ -818,24 +869,60 @@ Experiment results are reported in Table \ref{tab:fc-hme}. HME-$k$ refers to a t
 \cline{2-6}
 & \rotatebox{90}{FID} & x & x & x & $135.28 \pm 7.28$ \\
 \hline
-\multicolumn{2}{|c|}{params.} & 1.31M & 8.65M & 17.04M & 26.47M \\
+\multicolumn{2}{|c|}{params.} & 40K & 270K & 532K & 827K \\
 \hline
 \end{tabular}
-\label{tab:hme-zdim}
+\label{tab:fc-zdim}
 \end{center}
 \end{table}
 
 \section{Interpretation of the Learned Model}
 \label{sec:interpret}
-Though our proposed model is not as good as the FC in terms of FID or 5-NN scores, its main advantage is interpretability. To investigate the learned representation, we generate $100$ samples from the generated model and for each node $m$, we take a weighted average of the generated samples. In a hard decision tree where we choose left or right, a hard count corresponds to the path from root to prediction leaf. Here, we instead find the soft count of a node by multiplying the gating values up to that node. The result is visualized in Figure \ref{fig:tree}. We see that earlier levels of the tree correspond to the means of larger samples and as we go down to the leaves, there is specialization, an indication that the tree structure divides the input space into regions. We can think of the structure implementing a soft hierarchical clustering. 
+Though our proposed model is not as good as the FC in terms of FID or 5-NN scores, its main advantage is interpretability. To investigate the learned representation, we generate $100$ samples from the generated model and for each node $m$, we take a weighted average of the generated samples. In a hard decision tree where we choose left or right, a hard count corresponds to the path from root to prediction leaf. Here, we instead find the soft count of a node by multiplying the gating values up to that node. The result is visualized in Figure \ref{fig:polar:mnist}. We see that earlier levels of the tree correspond to the means of larger samples and as we go down to the leaves, there is specialization, an indication that the tree structure divides the input space into regions. We can think of the structure implementing a soft hierarchical clustering. 
 
 \begin{figure}[htbp]
 \begin{center}
-\includegraphics[width=\columnwidth]{tree_mnist.pdf}
+\includegraphics[width=\columnwidth]{polar_mnist.pdf}
 \end{center}
-\caption{Mean responses of each node. As we go down in the tree, granularity level increases.}
+\caption{Mean responses of each node. At the center, there is the root. As we go outer, the depth increases and therefore granularity level increases.}
 \vskip\baselineskip % Leave a vertical skip below the figure
-\label{fig:tree}
+\label{fig:polar:mnist}
+\end{figure}
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=\columnwidth]{polar_fashion.pdf}
+\end{center}
+\caption{Mean responses of each node. At the center, there is the root. As we go outer, the depth increases and therefore granularity level increases.}
+\vskip\baselineskip % Leave a vertical skip below the figure
+\label{fig:polar:fashion}
+\end{figure}
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=\columnwidth]{polar_celeb.pdf}
+\end{center}
+\caption{Mean responses of each node. At the center, there is the root. As we go outer, the depth increases and therefore granularity level increases.}
+\vskip\baselineskip % Leave a vertical skip below the figure
+\label{fig:polar:celeb}
+\end{figure}
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=\columnwidth]{polar_utzap50k.pdf}
+\end{center}
+\caption{Mean responses of each node. At the center, there is the root. As we go outer, the depth increases and therefore granularity level increases.}
+\vskip\baselineskip % Leave a vertical skip below the figure
+\label{fig:polar:utzap50k}
+\end{figure}
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=\columnwidth]{polar_flowers.pdf}
+\end{center}
+\caption{Mean responses of each node. At the center, there is the root. As we go outer, the depth increases and therefore granularity level increases.}
+\vskip\baselineskip % Leave a vertical skip below the figure
+\label{fig:polar:flowers}
 \end{figure}
 
 \chapter{CONCLUSION}
