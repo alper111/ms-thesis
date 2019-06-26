@@ -93,16 +93,16 @@ In the above setting, we are concerned with the statistical regularities between
 
 Another important research direction in machine learning is \emph{unsupervised learning}. Here, we are not given a set of pre-defined targets. So we do not know the outcome of $y$ that is dependent on the given input $x$. We do not even know if there is any $y$. The aim is to model the probability distribution of $x$, to see what normally happens. Therefore the aim is to find statistical regularities within the $x$-space. However, without any supervision, it is not quite clear what is a statistical regularity. For example in Figure \ref{fig:spiral}, if we use Cartesian coordinates, we probably fail, or rather find poor estimates. If we know the transformation to polar coordinates, then we can model the distribution better by first transforming Cartesian coordinates to polar coordinates. Therefore, the transformation $\phi(x)$ is the golden nugget.
 
-The same argument is also true for supervised learning. However, we have the information that can direct us to find appropriate transformations: targets. Previously, people searched for better transformations to increase model performance. \emph{Deep learning} approach tries to solve the problem by also learning transformations. That is, we train a multi-layer perceptron (MLP), also called artificial neural network (ANN), to estimate $p(y|x)$. The idea is to learn basic transformations at earlier layers and using them to construct higher level, more abstract transformations \cite{bengio2009}. When we learn abstract transformations from the data, we end up with models that have better \emph{generalization}, that is the performance on unseen data.
+The same argument is also true for supervised learning. However, we have the information that can direct us to find appropriate transformations: targets. Previously, people searched for better transformations to increase model performance. \emph{Deep learning} approach tries to solve the problem by also learning transformations. That is, we train a multi-layer perceptron (MLP), also called artificial neural network (ANN), to estimate $p(y|x)$. The idea is to learn basic transformations at earlier layers and using them to construct higher level, more abstract transformations \cite{bengio2009learning}. When we learn abstract transformations from the data, we end up with models that have better \emph{generalization}, that is the performance on unseen data.
 
 Apart from supervised and unsupervised learning, there also another dichotomy which we should mention: generative models and discriminative models. Discriminative models try to model the probability distribution $p(y|x)$. These are mostly used for classification tasks. On the other hand, generative models try to model $p(x, y)$. With a generative model, one can do several things: detect the probability of a new data, generate new data, and also classify data. We can use generative models as discriminative ones since we can find $p(y|x)$:
 \begin{equation}
 p(y|x) = \frac{p(x, y)}{\sum_{y'} p(x, y')}
 \end{equation}
 
-Deep neural networks (DNNs) achieved great success on real-world problems that requires generalization such as object recognition \cite{alexnet}, speech recognition \cite{acoustic} and statistical machine translation \cite{seq2seq}. These models are discriminative models and trained in a supervised fashion. The success of \emph{deep learning} did not translate to generative models until the proposal of \emph{generative adversarial networks} (GANs) \cite{gan}. This was partly because we did not know a clear objective as we did in discriminative modeling. How do we learn transformations that are good for modeling $p(x)$? How do we quantify the goodness of a transformation? At this moment, there is still no consensus on the answers of these questions.
+Deep neural networks (DNNs) achieved great success on real-world problems that requires generalization such as object recognition \cite{krizhevsky2012imagenet}, speech recognition \cite{hinton2012deep} and statistical machine translation \cite{sutskever2014sequence}. These models are discriminative models and trained in a supervised fashion. The success of \emph{deep learning} did not translate to generative models until the proposal of \emph{generative adversarial networks} (GANs) \cite{gan}. This was partly because we did not know a clear objective as we did in discriminative modeling. How do we learn transformations that are good for modeling $p(x)$? How do we quantify the goodness of a transformation? At this moment, there is still no consensus on the answers of these questions.
 
-GANs seem to be a promising way to train DNNs for generative modeling. In this thesis, we propose to use hierarchical mixture of generators as the generative part of GAN. This lets us interpret the learned representation. The rest of this work is organized as follows. Chapter \ref{chapter:gan} reviews the prerequisite knowledge about GANs. In Chapter \ref{chapter:me}, we discuss works that also use multiple generators. We explain our proposed model in detail in Chapter \ref{chapter:hme}. Our experimental results are given in \ref{chapter:exps}. We make a conclusion and discuss future work in Chapter \ref{chapter:conc}.
+GANs seem to be a promising way to train DNNs for generative modeling. In this thesis, we propose to use hierarchical mixture of generators as the generative part of GAN. This lets us interpret the learned representation. The rest of this work is organized as follows. Chapter \ref{chapter:gan} reviews the prerequisite knowledge about GANs. In Chapter \ref{chapter:multiple_gan}, we discuss works that also use multiple generators. We explain our proposed model in detail in Chapter \ref{chapter:mixture_gan}. Our experimental results are given in \ref{chapter:exps}. We make a conclusion and discuss future work in Chapter \ref{chapter:conc}.
 
 \chapter{GENERATIVE ADVERSARIAL NETWORKS}
 \label{chapter:gan}
@@ -110,14 +110,14 @@ GANs seem to be a promising way to train DNNs for generative modeling. In this t
 \section{Introduction}
 \label{sec:gan:intro}
 
-The generative adversarial network (GAN) \cite{gan} has been proposed to learn a generative model to model a data distribution, $p(x)$. GAN is composed of two learners, a generator network $G$ and a discriminator network $D$. $G(z;\theta)$ learns to map $z$ sampled from an arbitrary distribution $p(z)$ to the target distribution $p(x)$. It is a trained model, generally a deep neural network, parameterized by $\theta$. The discriminator $D(x;\phi)$, another neural network with weights $\phi$, is trained to assign low scores to ``fake'' samples generated by $G(z;\theta)$ and high scores to samples from true $p(x)$ given in the training set. We do not show any true samples to $G$, instead train it to generate samples that will get high score from $D$. This is achieved with the following objective:
+The generative adversarial network (GAN) \cite{goodfellow2014generative} has been proposed to learn a generative model to model a data distribution, $p(x)$. GAN is composed of two learners, a generator network $G$ and a discriminator network $D$. $G(z;\theta)$ learns to map $z$ sampled from an arbitrary distribution $p(z)$ to the target distribution $p(x)$. It is a trained model, generally a deep neural network, parameterized by $\theta$. The discriminator $D(x;\phi)$, another neural network with weights $\phi$, is trained to assign low scores to ``fake'' samples generated by $G(z;\theta)$ and high scores to samples from true $p(x)$ given in the training set. We do not show any true samples to $G$, instead train it to generate samples that will get high score from $D$. This is achieved with the following objective:
 \begin{equation}
 \label{eq:gan}
 \underset{G}{\text{min}} \quad \underset{D}{\text{max}} \quad \mathbb{E}_{x \sim p(x)} [ \log{D(x;\phi)} ] + 
 \mathbb{E}_{z \sim p(z)} [ \log{(1-D(G(z;\theta);\phi))} ]
 \end{equation} 
 
-We optimize Equation \ref{eq:gan} by alternating between optimizing $D$ and $G$ with stochastic gradient descent (SGD) (Figure \ref{fig:gan}). In the original paper  \cite{gan}, it is shown that if $D$ and $G$ have enough capacity, this optimization minimizes the Jensen-Shannon divergence (JSD) between $p_{\text{true}}$ and $p_{\text{fake}}$, and therefore will converge to a point where $G$ exactly generates the target distribution $p(x)$. Though it should be noted that we use a parametric family of functions defined by neural networks. This might limit our functions' capacity and break the convergence guarantee. 
+We optimize Equation \ref{eq:gan} by alternating between optimizing $D$ and $G$ with stochastic gradient descent (SGD) (Figure \ref{fig:gan}). In the original paper  \cite{goodfellow2014generative}, it is shown that if $D$ and $G$ have enough capacity, this optimization minimizes the Jensen-Shannon divergence (JSD) between $p_{\text{true}}$ and $p_{\text{fake}}$, and therefore will converge to a point where $G$ exactly generates the target distribution $p(x)$. Though it should be noted that we use a parametric family of functions defined by neural networks. This might limit our functions' capacity and break the convergence guarantee. 
 %
 \begin{figure}[htbp]
 \begin{center}
@@ -133,7 +133,7 @@ If training converges, $G$ can generate new data simply by sampling an input poi
 \section{Problems Related with GANs}
 \label{sec:problems}
 
-GANs are used successfully especially in image generation. A well-trained GAN can generate images that are almost indistinguishable by humans \cite{proggan,biggan,stylegan}. Yet, there remain two main difficulties regarding the training: The first problem of mode collapse means that $G$ learns to generate some parts of $p(x)$ but not all; there are ways of being $x$ that cannot be generated for any $G(z)$. This is depicted in Figure \ref{fig:modecollapse}. The second problem is of vanishing gradients. In order to optimize Equation \ref{eq:gan} for $G$, we should find gradients with respect to $\theta$. However $\nabla_{\theta} \log(1-D(G(z)))$ becomes zero in regions where $D$ is perfectly able to discriminate $p_{\text{true}}$ and $p_{\text{fake}}$. To remedy this, it is suggested to use a proxy loss, also known as non-saturating loss \cite{manypaths}: $-\log D(G(z))$. This loss provides better gradients even when $D$ is optimal. However, Arjovsky and Bottou \cite{principledmethods} showed that this loss no longer minimizes the JSD, but rather $KL(p_{\text{fake}} || p_{\text{true}}) - 2 JSD(p_{\text{fake}} || p_{\text{true}})$, where $KL$ is the Kullback-Leibler divergence. Moreover, they show that when $D$ gets better, gradients of $G$ increases with an increasing variance. They concluded that this increasing variance might be the cause of the notorious instability of GANs.
+GANs are used successfully especially in image generation. A well-trained GAN can generate images that are almost indistinguishable by humans \cite{karras2017progressive,brock2018large,karras2018style}. Yet, there remain two main difficulties regarding the training: The first problem of mode collapse means that $G$ learns to generate some parts of $p(x)$ but not all; there are ways of being $x$ that cannot be generated for any $G(z)$. This is depicted in Figure \ref{fig:modecollapse}. The second problem is of vanishing gradients. In order to optimize Equation \ref{eq:gan} for $G$, we should find gradients with respect to $\theta$. However $\nabla_{\theta} \log(1-D(G(z)))$ becomes zero in regions where $D$ is perfectly able to discriminate $p_{\text{true}}$ and $p_{\text{fake}}$. To remedy this, it is suggested to use a proxy loss, also known as non-saturating loss \cite{manypaths}: $-\log D(G(z))$. This loss provides better gradients even when $D$ is optimal. However, Arjovsky and Bottou \cite{principledmethods} showed that this loss no longer minimizes the JSD, but rather $KL(p_{\text{fake}} || p_{\text{true}}) - 2 JSD(p_{\text{fake}} || p_{\text{true}})$, where $KL$ is the Kullback-Leibler divergence. Moreover, they show that when $D$ gets better, gradients of $G$ increases with an increasing variance. They concluded that this increasing variance might be the cause of the notorious instability of GANs.
 
 \begin{figure}[htbp]
 \begin{center}
@@ -144,7 +144,7 @@ GANs are used successfully especially in image generation. A well-trained GAN ca
 \label{fig:modecollapse}
 \end{figure}
 
-Recent works mainly focus on these two problems. To solve problems related to training people proposed different GAN objectives \cite{wgan,infogan,leastgan,lsgan}, regularization methods \cite{improved_wgan,sngan,dcgan}, architectures \cite{biggan,bigan,ali,proggan,stylegan,dcgan,sagan} and several other tricks mentioned in these papers. A good review of these works can be found in \cite{ganreview,ganreview2,ganreview3}.
+Recent works mainly focus on these two problems. To solve problems related to training people proposed different GAN objectives \cite{arjovsky2017wasserstein,infogan,leastgan,qi2018loss}, regularization methods \cite{improved_wgan,sngan,dcgan}, architectures \cite{brock2018large,bigan,ali,karras2017progressive,karras2018style,dcgan,sagan} and several other tricks mentioned in these papers. A good review of these works can be found in \cite{ganreview,ganreview2,ganreview3}.
 
 Another problem is of evaluating GANs. Unlike Bayesian generative models where we can evaluate the quality of a model with marginal likelihood (or with evidence lower bounds), there is no proper way of evaluating GAN models. At the moment, people seem to agree on Inception score (IS) \cite{improvedtechniques} and Fr\'echet Inception distance (FID) \cite{twotimes} since most of papers include these scores. These two scores use Inception v3 network \cite{inceptionv3} that is pre-trained on ImageNet \cite{imagenet}. 
 
@@ -166,31 +166,31 @@ Apart from this, people heavily use human judgment by printing samples that are 
 
 \section{Wasserstein GAN}
 \label{sec:wgan}
-In \cite{principledmethods}, authors show the shortcomings of the original GAN loss (Fedus \textit{et al.} \cite{manypaths} call this minimax loss and we will use this notation), including the non-saturating version. If $D$ becomes optimal discriminator, then the gradients of $G$ vanish for the minimax loss. On the other hand, the non-saturating loss makes gradients unstable. One can think of training $D$ less, not until optimality, however there is no such principled way to control the optimality in GAN framework. In a follow-up work \cite{wgan}, their motivation is to build a new distance measure that has good convergence properties even when the discriminator is optimal. They propose minimizing Earth-Mover (EM) distance, also known as 1st Wasserstein distance. The advantage is that Wasserstein distance is a convex function even when two distributions' supports do not intersect. It is defined as follows:
+In \cite{principledmethods}, authors show the shortcomings of the original GAN loss (Fedus \textit{et al.} \cite{manypaths} call this minimax loss and we will use this notation), including the non-saturating version. If $D$ becomes optimal discriminator, then the gradients of $G$ vanish for the minimax loss. On the other hand, the non-saturating loss makes gradients unstable. One can think of training $D$ less, not until optimality, however there is no such principled way to control the optimality in GAN framework. In a follow-up work \cite{arjovsky2017wasserstein}, their motivation is to build a new distance measure that has good convergence properties even when the discriminator is optimal. They propose minimizing Earth-Mover (EM) distance, also known as 1st Wasserstein distance. The advantage is that Wasserstein distance is a convex function even when two distributions' supports do not intersect. It is defined as follows:
 \begin{equation}
 W_1(p_t, p_f) = \inf \quad \mathbb{E}_{(x,y) \sim (p_t, p_f)} [ \| x-y \| ]
 \label{eq:emd}
 \end{equation}
-However, this formulation is known to be intractable. From the optimal transport view, this formulation tells us the distance is the minimum one out of all transportation plans. Instead, we use the Kantorovich-Rubinstein duality as in \cite{wgan}:
+However, this formulation is known to be intractable. From the optimal transport view, this formulation tells us the distance is the minimum one out of all transportation plans. Instead, we use the Kantorovich-Rubinstein duality as in \cite{arjovsky2017wasserstein}:
 \begin{equation}
 W_1(p_t, p_f) = \underset{\|f\|_L \leq 1}{\sup} \mathbb{E}_{x\sim p_t} [f(x)] - \mathbb{E}_{x \sim p_f} [f(x)]
 \label{eq:wd}
 \end{equation}
 where $\|f\|_L \leq 1$ implies 1-Lipschitz functions. Equation \ref{eq:wd} tells us that in order to find $W_1$ distance, we should find such $f$ that will maximize the difference. If there is no Lipschitz constraint, then we can find functions that will maximize the difference indefinitely. Lipschitz constraint ensures that we are searching the function in a bounded region.
 
-Now, to find Wasserstein distance between two distributions, we can simply create a random neural network $f$ and maximize Equation \ref{eq:wd} with SGD. The function $f$ can be thought as a ``critic'' instead of discriminator since the output of the critic tells the generator how far it is from the true distribution. Then, for the generator, we minimize the Wasserstein distance since we know that doing so will bring two distributions closer. This formulation is called Wasserstein GAN (WGAN) \cite{wgan}.  Differences between WGAN and GAN are:
+Now, to find Wasserstein distance between two distributions, we can simply create a random neural network $f$ and maximize Equation \ref{eq:wd} with SGD. The function $f$ can be thought as a ``critic'' instead of discriminator since the output of the critic tells the generator how far it is from the true distribution. Then, for the generator, we minimize the Wasserstein distance since we know that doing so will bring two distributions closer. This formulation is called Wasserstein GAN (WGAN) \cite{arjovsky2017wasserstein}.  Differences between WGAN and GAN are:
 \begin{itemize}
 	\item The discriminator outputs a real value, instead of a probability.
 	\item The discriminator is constrained to be 1-Lipschitz.
 	\item The discriminator should be trained till optimality as opposed to GANs since better discriminator implies better $W_1$ distance, and therefore better gradients to $G$.
 \end{itemize}
 
-To enforce Lipschitz constrained, Arjovsky \textit{et al.} \cite{wgan} suggested clipping weights of the critic function. They also warned that this is not a good way enforcing Lipschitz. A follow-up work \cite{improved_wgan} introduced a more principled way by applying gradient penalty to the critic.
+To enforce Lipschitz constrained, Arjovsky \textit{et al.} \cite{arjovsky2017wasserstein} suggested clipping weights of the critic function. They also warned that this is not a good way enforcing Lipschitz. A follow-up work \cite{improved_wgan} introduced a more principled way by applying gradient penalty to the critic.
 
 WGANs show better convergence properties both in theory and in practice when compared with the original GANs. For this reason, we use WGAN formulation with the gradient penalty \cite{improved_wgan} in our experiments.
 
-\chapter{MIXTURES OF GENERATORS}
-\label{chapter:me}
+\chapter{COMBINING MULTIPLE GENERATORS OF GAN}
+\label{chapter:multiple_gan}
 
 The direction we pursue is to use multiple generators each one responsible from a local region of the $p(z)$, and hence $p(x)$. Different local generators will learn to cover different modes and this will help alleviate the mode collapse problem. We review three previously proposed approaches that also uses a set of generators but in a quite different way.
 
@@ -254,8 +254,8 @@ Different from MAD-GAN and MGAN, in this approach $p(z)$ is partitioned into loc
 Many unsupervised learning methods assume that $x$ is determined by a set of factors $z$ and an unpredictable noise factor $\epsilon$. So instead of finding $p(x)$, we try to find $p(z)$ and the mapping between $p(z)$ and $p(x)$. In the GAN framework, we generally fix $p(z)$ to be a spherical Gaussian distribution and let $G$ to find the relation between $p(z)$ and $p(x)$. Since DNNs are very powerful function approximators, we hope that $G$ can map $p(z)$ to $p(x)$ even if we fix $p(z)$. However, this mapping might be arbitrarily hard. We instead propose to transform $p(z)$ at the earlier layers then use a shared network to generate the data. By this way, generator can decide how to transform $p(z)$. Also, we can analyze the $p(z)$ after the training to see the relation between clusters in $p(z)$.
 %
 %
-\chapter{HIERARCHICAL MIXTURES OF GENERATORS}
-\label{chapter:hme}
+\chapter{MIXTURES OF GENERATORS}
+\label{chapter:mixture_gan}
 
 \section{Mixtures of Experts}
 \label{sec:me}
@@ -329,8 +329,12 @@ The difference between HME and ME is the gating function. Note that given an inp
 
 Let us now repeat the same experiment that we did in ME (Figure \ref{fig:hme:model}). We trained an HME model with a depth of 3 (therefore 8 experts). The response is quite the same. However, in Figure \ref{fig:hme:coop}, the curve is almost rainbow colored. In order for this to happen, each expert should be responsible of output, in the same order of color spectrum. This is shown more clearly in Figure \ref{fig:hme:experts}. In short, HME model first divides the spiral in half, use the left subtree for the outer region and the right subtree for the inner region. The same procedure is repeated for children (though the order may change).
 
-\section{HME-GAN}
-\label{sec:hmegan}
+\section{Flat Mixture of Generators}
+\label{sec:flat_gen}
+Our first proposed architecture uses mixtures of experts \cite{me}
+
+\section{Hierarchical Mixture of Generators}
+\label{sec:hme_gen}
 
 We propose the hierarchical mixture of generators, which learns a tree structure with internal decision nodes that divide up the input space and the leaves are local generators responsible from a local $z$ region generating a subset of $p(x)$. Since the splits are soft, given the tree structure, the parameters of the internal nodes as well as of the generators in the leaves can be updated using gradient-descent over Wasserstein loss. Note that it is only $G$ that is modeled this way, $D$ remains the usual deep neural network.
 
@@ -428,7 +432,7 @@ These settings are applied to all experiments unless otherwise stated. The convo
 \end{center}
 \end{table}
 
-Wasserstein loss \cite{wgan} with gradient penalty \cite{improved_wgan} is used. We adopted the suggested hyperparameter setting of Wasserstein loss recommended in \cite{improved_wgan}, namely two-sided gradient penalty with a constant of $10.0$. The discriminator is trained 5 times per optimization step of the generator. We used Adam optimizer \cite{adam} with amsgrad option \cite{amsgrad}. Learning rate is set to $0.0001$ with beta values of Adam set to $(0.5, 0.999)$. We do not apply learning rate decay. Batch size is set to 128.
+Wasserstein loss \cite{arjovsky2017wasserstein} with gradient penalty \cite{improved_wgan} is used. We adopted the suggested hyperparameter setting of Wasserstein loss recommended in \cite{improved_wgan}, namely two-sided gradient penalty with a constant of $10.0$. The discriminator is trained 5 times per optimization step of the generator. We used Adam optimizer \cite{adam} with amsgrad option \cite{amsgrad}. Learning rate is set to $0.0001$ with beta values of Adam set to $(0.5, 0.999)$. We do not apply learning rate decay. Batch size is set to 128.
 
 For the evaluation of GAN methods, we used the most popular evaluation criteria that are the Fr\'echet Inception distance (FID) \cite{twotimes} and the two-sample test (C2ST) \cite{twosample}, here, 5-nearest neighbor (5-NN) leave-one-out accuracy. Both FID and 5-NN accuracy are calculated with the activations before the softmax layer (2048-dim) of InceptionV3 \cite{inceptionv3}. Lower FID scores are better and 5-NN accuracies that are close to 50\% are better. All models are run five times with different random seeds, and we report the average and standard deviations.
 
@@ -625,7 +629,7 @@ Some samples generated from ME-64 and HME-6 are shown in Figure \ref{fig:samples
 \label{fig:samples}
 \end{figure}
 
-We also tried to visualize the learned experts representations for ME and HME, as we did in Chapter \ref{chapter:hme}. To do this, we count the responsibility values (gating values) of leafs for each generated image. Then, for each leaf, we take a weighted average of generated images where weights are responsibilities of the leaf for each image. This will give us the leaf's expected responsibility, in other words its contribution. The result is shown in Figure \ref{fig:leafs}. We can say from the figure that HME leafs are more diverse and local when compared with ME leafs. Interpretation of this figure is important. This figure is not about sample quality or sample diversity. It is rather about the relation of leafs with each other. In Figure \ref{fig:leafs:me_fashion}, leafs seem more blurry. This says that leafs of ME are not specialized for a region of $p(z)$ but rather used throughout many regions of $p(z)$. To understand this clearly, we show the covariance matrices of leaf gating values in Figure \ref{fig:covariances}. These are $64 \times 64$ matrices where each index corresponds to a leaf. For example, for both matrices we see that the diagonal values are higher than others. This implies leafs are rather used alone, or used with high proportion. For ME in Figure \ref{fig:cov:me}, correlations are randomly scattered. Its counterpart HME (Figure \ref{fig:cov:hme}) has correlations gathered around the diagonal. Furthermore, we can see spectral squares of sizes $4 \times 4$ and $8 \times 8$. This shows that cooperations are done in a hierarchical way.
+We also tried to visualize the learned experts representations for ME and HME, as we did in Chapter \ref{chapter:mixture_gan}. To do this, we count the responsibility values (gating values) of leafs for each generated image. Then, for each leaf, we take a weighted average of generated images where weights are responsibilities of the leaf for each image. This will give us the leaf's expected responsibility, in other words its contribution. The result is shown in Figure \ref{fig:leafs}. We can say from the figure that HME leafs are more diverse and local when compared with ME leafs. Interpretation of this figure is important. This figure is not about sample quality or sample diversity. It is rather about the relation of leafs with each other. In Figure \ref{fig:leafs:me_fashion}, leafs seem more blurry. This says that leafs of ME are not specialized for a region of $p(z)$ but rather used throughout many regions of $p(z)$. To understand this clearly, we show the covariance matrices of leaf gating values in Figure \ref{fig:covariances}. These are $64 \times 64$ matrices where each index corresponds to a leaf. For example, for both matrices we see that the diagonal values are higher than others. This implies leafs are rather used alone, or used with high proportion. For ME in Figure \ref{fig:cov:me}, correlations are randomly scattered. Its counterpart HME (Figure \ref{fig:cov:hme}) has correlations gathered around the diagonal. Furthermore, we can see spectral squares of sizes $4 \times 4$ and $8 \times 8$. This shows that cooperations are done in a hierarchical way.
 
 \begin{figure}[htbp]
 \begin{center}
@@ -745,150 +749,34 @@ One possible cause for the decreased diversity is to use constant vectors in the
 \multicolumn{2}{|c|}{params.} & 1.65M & 3.31M & 6.62M & 13.24M \\
 \hline
 \multirow{3}{*}{\rotatebox{90}{CelebA}}
-& \rotatebox{90}{Real} & x & $61.44 \pm 1.27$ & $62.63 \pm 0.67$ & x \\
+& \rotatebox{90}{Real} & x & $61.44 \pm 1.27$ & $62.63 \pm 0.67$ & $63.01 \pm 1.08$ \\
 \cline{2-6}
-& \rotatebox{90}{Fake} & x & $77.36 \pm 0.50$ & $78.11 \pm 0.96$ & x \\
+& \rotatebox{90}{Fake} & x & $77.36 \pm 0.50$ & $78.11 \pm 0.96$ & $77.74 \pm 1.31$ \\
 \cline{2-6}
-& \rotatebox{90}{FID} & x & $11.99 \pm 0.27$ & $12.41 \pm 0.45$ & x \\
+& \rotatebox{90}{FID} & x & $11.99 \pm 0.27$ & $12.41 \pm 0.45$ & $12.64 \pm 0.63$ \\
 \hline
 \multicolumn{2}{|c|}{params.} & 3.30M & 6.61M & 13.23M & 26.47M \\
 \hline
 \multirow{3}{*}{\rotatebox{90}{UTZap50K}}
-& \rotatebox{90}{Real} & $87.30 \pm 1.27$ & $86.83 \pm 1.12$ & $86.97 \pm 0.54$ & x \\
+& \rotatebox{90}{Real} & $87.30 \pm 1.27$ & $86.83 \pm 1.12$ & $86.97 \pm 0.54$ & $87.68 \pm 0.76$ \\
 \cline{2-6}
-& \rotatebox{90}{Fake} & $77.82 \pm 1.40$ & $77.25 \pm 1.53$ & $77.50 \pm 1.13$ & x \\
+& \rotatebox{90}{Fake} & $77.82 \pm 1.40$ & $77.25 \pm 1.53$ & $77.50 \pm 1.13$ & $77.96 \pm 0.68$ \\
 \cline{2-6}
-& \rotatebox{90}{FID} & $43.05 \pm 3.83$ & $41.95 \pm 2.82$ & $41.45 \pm 1.99$ & x \\
+& \rotatebox{90}{FID} & $43.05 \pm 3.83$ & $41.95 \pm 2.82$ & $41.45 \pm 1.99$ & $44.80 \pm 2.39$ \\
 \hline
 \multicolumn{2}{|c|}{params.} & 3.30M & 6.61M & 13.23M & 26.47M \\
 \hline
 \multirow{3}{*}{\rotatebox{90}{Flowers}}
-& \rotatebox{90}{Real} & $89.25 \pm 2.64$ & $88.59 \pm 1.43$ & $89.33 \pm 1.39$ & x \\
+& \rotatebox{90}{Real} & $89.25 \pm 2.64$ & $88.59 \pm 1.43$ & $89.33 \pm 1.39$ & $90.12 \pm 1.17$ \\
 \cline{2-6}
-& \rotatebox{90}{Fake} & $96.84 \pm 0.85$ & $96.79 \pm 0.69$ & $96.93 \pm 0.36$ & x \\
+& \rotatebox{90}{Fake} & $96.84 \pm 0.85$ & $96.79 \pm 0.69$ & $96.93 \pm 0.36$ & $97.11 \pm 0.80$ \\
 \cline{2-6}
-& \rotatebox{90}{FID} & $112.05 \pm 6.88$ & $113.37 \pm 3.92$ & $115.45 \pm 3.02$ & x \\
+& \rotatebox{90}{FID} & $112.05 \pm 6.88$ & $113.37 \pm 3.92$ & $115.45 \pm 3.02$ & $118.00 \pm 4.52$ \\
 \hline
 \multicolumn{2}{|c|}{params.} & 3.30M & 6.61M & 13.23M & 26.47M \\
 \hline
 \end{tabular}
 \label{tab:me-depth}
-\end{center}
-\end{table}
-
-\begin{table}[thbp]
-\vskip\baselineskip
-\caption[HME with linear experts for embedding spaces with different dimensionalities]{HME with linear experts for embedding spaces with different dimensionalities.}
-\begin{center}
-\begin{tabular}{|c|c|c|c|c|c|}
-\hline
-\multicolumn{2}{|c|}{$dim(\boldsymbol{z})$} & 4 & 32 & 64 & 100 \\
-\hline
-\multirow{3}{*}{\rotatebox{90}{MNIST}}
-& \rotatebox{90}{Real} & $74.94 \pm 0.67$ & $70.81 \pm 0.39^-$ & $71.27 \pm 0.46^-$ & $72.14 \pm 0.54^-$ \\
-\cline{2-6}
-& \rotatebox{90}{Fake} & $86.88 \pm 0.65^+$ & $65.05 \pm 0.65^-$ & $65.33 \pm 0.60^-$ & $65.63 \pm 0.25^-$ \\
-\cline{2-6}
-& \rotatebox{90}{FID} & $17.42 \pm 0.88^+$ & $8.46 \pm 0.28^-$ & $8.55 \pm 0.25^-$ & $9.07 \pm 0.44^-$ \\
-\hline
-\multicolumn{2}{|c|}{params.} & 655K & 4.32M & 8.52M & 13.24M \\
-\hline
-\multirow{3}{*}{\rotatebox{90}{Fashion}}
-& \rotatebox{90}{Real} & $73.33 \pm 0.87^-$ & $69.08 \pm 0.64^-$ & $69.62 \pm 0.87^-$ & $69.99 \pm 0.70^-$ \\
-\cline{2-6}
-& \rotatebox{90}{Fake} & $96.62 \pm 0.44^+$ & $78.27 \pm 1.29^-$ & $77.99 \pm 0.70^-$ & $78.10 \pm 0.60^-$ \\
-\cline{2-6}
-& \rotatebox{90}{FID} & $28.37 \pm 1.40^+$ & $18.01 \pm 0.73^-$ & $18.32 \pm 0.67^-$ & $18.24 \pm 0.91^-$ \\
-\hline
-\multicolumn{2}{|c|}{params.} & 655K & 4.32M & 8.52M & 13.24M \\
-\hline
-\multirow{3}{*}{\rotatebox{90}{CelebA}}
-& \rotatebox{90}{Real} & $75.88 \pm 0.83^+$ & $61.73 \pm 0.94^-$ & $61.91 \pm 0.72^-$ & $62.02 \pm 1.02^-$ \\
-\cline{2-6}
-& \rotatebox{90}{Fake} & $98.10 \pm 0.26^+$ & $77.72 \pm 0.46^-$ & $77.14 \pm 0.83^-$ & $77.02 \pm 0.98^-$ \\
-\cline{2-6}
-& \rotatebox{90}{FID} & $26.21 \pm 0.38^+$ & $12.03 \pm 0.25^-$ & $11.99 \pm 0.40^-$ & $12.09 \pm 0.56^-$ \\
-\hline
-\multicolumn{2}{|c|}{params.} & 1.31M & 8.65M & 17.04M & 26.47M \\
-\hline
-\multirow{3}{*}{\rotatebox{90}{UTZap50K}}
-& \rotatebox{90}{Real} & $92.45 \pm 0.47^+$ & $86.49 \pm 0.71^-$ & $85.98 \pm 0.87^-$ & $87.77 \pm 1.17$ \\
-\cline{2-6}
-& \rotatebox{90}{Fake} & $91.39 \pm 0.66^+$ & $77.25 \pm 0.92^-$ & $76.40 \pm 1.08^-$ & $78.42 \pm 1.36^-$ \\
-\cline{2-6}
-& \rotatebox{90}{FID} & $70.91 \pm 4.65^+$ & $40.88 \pm 2.13^-$ & $38.79 \pm 2.26^-$ & $45.54 \pm 3.46^-$ \\
-\hline
-\multicolumn{2}{|c|}{params.} & 1.31M & 8.65M & 17.04M & 26.47M \\
-\hline
-\multirow{3}{*}{\rotatebox{90}{Flowers}}
-& \rotatebox{90}{Real} & $94.13 \pm 1.08$ & $89.08 \pm 1.71^-$ & $88.30 \pm 1.21^-$ & $90.15 \pm 1.60^-$ \\
-\cline{2-6}
-& \rotatebox{90}{Fake} & $98.16 \pm 0.29$ & $96.28 \pm 0.67^-$ & $96.77 \pm 0.65$ & $96.55 \pm 0.76$ \\
-\cline{2-6}
-& \rotatebox{90}{FID} & $133.34 \pm 1.24$ & $109.88 \pm 4.28^-$ & $110.93 \pm 4.54^-$ & $114.79 \pm 4.20^-$ \\
-\hline
-\multicolumn{2}{|c|}{params.} & 1.31M & 8.65M & 17.04M & 26.47M \\
-\hline
-\end{tabular}
-\label{tab:hme-zdim}
-\end{center}
-\end{table}
-
-\begin{table}[thbp]
-\vskip\baselineskip
-\caption{FC for embedding spaces with different dimensionalities.}
-\begin{center}
-\begin{tabular}{|c|c|c|c|c|c|}
-\hline
-\multicolumn{2}{|c|}{$dim(\boldsymbol{z})$} & 4 & 32 & 64 & 100 \\
-\hline
-\multirow{3}{*}{\rotatebox{90}{MNIST}}
-& \rotatebox{90}{Real} & x & $74.42 \pm 0.64$ & $74.40 \pm 0.51$ & $74.90 \pm 0.59$ \\
-\cline{2-6}
-& \rotatebox{90}{Fake} & x & $67.44 \pm 0.67$ & $67.52 \pm 0.85$ & $67.89 \pm 0.30$ \\
-\cline{2-6}
-& \rotatebox{90}{FID} & x & $10.97 \pm 0.85$ & $10.84 \pm 0.52$ & $11.13 \pm 0.44$ \\
-\hline
-\multicolumn{2}{|c|}{params.} & 20K & 135K & 266K & 413K \\
-\hline
-\multirow{3}{*}{\rotatebox{90}{Fashion}}
-& \rotatebox{90}{Real} & x & $74.47 \pm 0.35$ & $75.02 \pm 0.43$ & $75.01 \pm 0.20$ \\
-\cline{2-6}
-& \rotatebox{90}{Fake} & x & $84.40 \pm 0.33$ & $84.85 \pm 0.56$ & $84.89 \pm 0.39$ \\
-\cline{2-6}
-& \rotatebox{90}{FID} & x & $25.66 \pm 0.58$ & $26.64 \pm 0.88$ & $26.50 \pm 0.63$ \\
-\hline
-\multicolumn{2}{|c|}{params.} & 20K & 135K & 266K & 413K \\
-\hline
-\multirow{3}{*}{\rotatebox{90}{CelebA}}
-& \rotatebox{90}{Real} & x & x & x & $66.14 \pm 1.17$ \\
-\cline{2-6}
-& \rotatebox{90}{Fake} & x & x & x & $80.96 \pm 1.56$ \\
-\cline{2-6}
-& \rotatebox{90}{FID} & x & x & x & $14.93 \pm 0.48$ \\
-\hline
-\multicolumn{2}{|c|}{params.} & 40K & 270K & 532K & 827K \\
-\hline
-\multirow{3}{*}{\rotatebox{90}{UTZap50K}}
-& \rotatebox{90}{Real} & x & x & x & $89.59 \pm 1.40$ \\
-\cline{2-6}
-& \rotatebox{90}{Fake} & x & x & x & $81.51 \pm 1.16$ \\
-\cline{2-6}
-& \rotatebox{90}{FID} & x & x & x & $54.48 \pm 5.36$ \\
-\hline
-\multicolumn{2}{|c|}{params.} & 40K & 270K & 532K & 827K \\
-\hline
-\multirow{3}{*}{\rotatebox{90}{Flowers}}
-& \rotatebox{90}{Real} & x & x & x & $93.80 \pm 1.02$ \\
-\cline{2-6}
-& \rotatebox{90}{Fake} & x & x & x & $97.60 \pm 0.71$ \\
-\cline{2-6}
-& \rotatebox{90}{FID} & x & x & x & $135.28 \pm 7.28$ \\
-\hline
-\multicolumn{2}{|c|}{params.} & 40K & 270K & 532K & 827K \\
-\hline
-\end{tabular}
-\label{tab:fc-zdim}
 \end{center}
 \end{table}
 
