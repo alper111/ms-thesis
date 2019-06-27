@@ -78,6 +78,7 @@ Generative adversarial networks are used successfully to model complex data dist
 \chapter{INTRODUCTION}
 \label{chapter:intro}
 \pagenumbering{arabic}
+
 One of the main problems in machine learning is how to learn to predict the outcome of an event $y$ that is dependent on another event $x$. These events, $x$ and $y$, can be thought as random variables with probability distributions $p(x)$ and $p(y)$ respectively. Learning corresponds to finding the appropriate mapping $f$, that satisfies $f(x) = y$. In general, we do not explicitly know the probability distributions of these events. Rather, we are given a set of data points $X=\{x^{(i)}\}_{i=1}^{N}\thicksim p(x)$ with their respective targets $Y=\{y^{(i)}\}_{i=1}^{N}\thicksim p(y)$. We construct a function $f(x; \theta)=\hat{y}$. Every function has a set of parameters that defines the function itself. Here, $\theta$ is the set of parameters of the function. Based on our data set $X$, and corresponding targets $Y$, we tweak the parameters of the function so that $\sum_i L(f(x^{(i)}; \theta), y^{(i)})$ is minimized for a function $L$ that measures the difference between two values. From this point, the problem becomes an optimization problem. In most cases, we use gradient-based optimization techniques due to its cheap computational demand. When we use gradient-based techniques, the curvature of the function that we optimize with respect to its parameters are important. Therefore, we tend to choose $L$ to be a convex function due to a set of desired convergence properties.
 
 In the above setting, we are concerned with the statistical regularities between $X$ and $Y$. The learned mapping $f^{*}(x)$ maps the $x$-space to the $y$-space. An alternative interpretation is that we partition the $x$-space into regions with respect to outcomes of $y$. We can think of this process as finding discriminative borders in $p(x)$ to predict the outcome of $y$. One can see that these borders are totally dependent on $y$. If there happens to be only one outcome of event $y$, then the $x$-space has no borders and there is only one color (there is only one region). On the other extreme, if each data point $x^{(i)}$ corresponds to a different target $y^{(i)}$, then each point will have a different color in the $x$-space and there will be lots of borders. Trying to learn a mapping from $x$-space to some target~$y$-space is called \emph{supervised learning}. This is supervised because we specify a target for each data point.
@@ -146,23 +147,9 @@ GANs are used successfully especially in image generation. A well-trained GAN ca
 
 Recent works mainly focus on these two problems. To solve problems related to training people proposed different GAN objectives \cite{arjovsky2017wasserstein,chen2016infogan,mao2017least,qi2017loss}, regularization methods \cite{gulrajani2017improved,miyato2018spectral,radford2015unsupervised}, architectures \cite{brock2018large,donahue2016adversarial,dumoulin2016adversarially,karras2017progressive,karras2019style,radford2015unsupervised,zhang2018self} and several other tricks mentioned in these papers. A good review of these works can be found in \cite{creswell2018generative,hong2019generative,kurach2018gan}.
 
-Another problem is of evaluating GANs. Unlike Bayesian generative models where we can evaluate the quality of a model with marginal likelihood (or with evidence lower bounds), there is no proper way of evaluating GAN models. At the moment, people seem to agree on Inception score (IS) \cite{salimans2016improved} and Fr\'echet Inception distance (FID) \cite{heusel2017gans} since most of papers include these scores. These two scores use Inception v3 network \cite{szegedy2016rethinking} that is pre-trained on ImageNet \cite{deng2009imagenet}. 
+\section{Variants of GAN}
+\label{sec:variants}
 
-In IS, the conditional class distribution $p(y|x)$ is compared with the marginal class distribution $\int_x p(y|x) p(x)$. Here, probabilities are provided from Inception network. The idea is the entropy of $p(y|x)$ should be low if $x$ contains real-looking images since we believe Inception v3 is a good image classifier. On the other hand, the entropy of $\int_x p(y | x) p(x)$ should be high if the model outputs different images, therefore different probabilities. The overall formulation is:
-\begin{equation}
-\label{eq:is}
-\text{IS}=\exp (\mathbb{E}_{x \sim p_f} KL (p(y|x) || p(y))) 
-\end{equation}
-
-There are known shortcomings of IS \cite{heusel2017gans,barratt2018note}. One issue is we never look at the class distribution of target images. FID is proposed to remedy this problem. Here, we take Inception network's activations in the layer before the last layer for both true samples and fake samples. These activations are then modeled with multivariate Gaussian distributions. Let us call mean and covariance of true samples and fake samples $(\mu_t, \Sigma_t)$ and $(\mu_f, \Sigma_f)$ respectively. Then, FID is calculated as follows:
-\begin{equation}
-\label{eq:fid}
-\text{FID} = \| \mu_t - \mu_f \|_2^2 + \text{Tr}(\Sigma_t + \Sigma_f - 2(\Sigma_t \Sigma_f)^{1/2})
-\end{equation}
-
-Other than these two methods, classifier two-sample test (C2ST) \cite{lopez2016revisiting} is a simple and effective way of evaluating GAN models. In short, we train a classifier for two-class classification where classes are true samples and fake samples, then use this classifier to assess whether the two distributions are close to each other. If these two distributions are very close to each other, the classifier cannot perform better than chance. In \cite{xu2018empirical}, they show that 1-nearest neighbor (1-NN) leave-one-out (LOO) classifier can detect mode collapse, mode drop and sample diversity. The procedure is as follows. We take a set of real samples and fake samples. For each sample, we look at its nearest neighbor's label. This counts as the prediction of the model for the current sample. If the overall accuracy is around 50\%, we say these two distributions are very close to each other. We can (and should) also evaluate the accuracy only on one class. Let us make the test only for real images and call this prediction accuracy metric 1-NN real. A higher 1-NN real accuracy implies samples that are near real samples are also real, therefore a mode drop. If this is very low (let's say 3\%), we can suspect that the generator may overfit to the target distribution. On the other hand, 1-NN fake accuracy assesses the sample diversity. If 1-NN fake accuracy is high, then samples are not diverse. 
-
-Apart from this, people heavily use human judgment by printing samples that are generated from the model to asses quality. Although this is not a good approach and only works for the image domain, we have no choice until we find a rigorous metric that can be trusted. An extensive review of evaluation methods can be found in \cite{evalreview}. We used FID and 5-NN accuracy as evaluation metrics. 5-NN accuracy is calculated with the same activations we calculate FID score with. Also, we show a set of generated samples to let the reader decide the quality.
 
 \section{Wasserstein GAN}
 \label{sec:wgan}
@@ -188,6 +175,33 @@ Now, to find Wasserstein distance between two distributions, we can simply creat
 To enforce Lipschitz constrained, Arjovsky \textit{et al.} \cite{arjovsky2017wasserstein} suggested clipping weights of the critic function. They also warned that this is not a good way enforcing Lipschitz. A follow-up work \cite{gulrajani2017improved} introduced a more principled way by applying gradient penalty to the critic.
 
 WGANs show better convergence properties both in theory and in practice when compared with the original GANs. For this reason, we use WGAN formulation with the gradient penalty \cite{gulrajani2017improved} in our experiments.
+
+\section{Evaluation Metrics}
+\label{sec:evaluation}
+
+Another problem is of evaluating GANs. Unlike Bayesian generative models where we can evaluate the quality of a model with marginal likelihood (or with evidence lower bounds), there is no proper way of evaluating GAN models. At the moment, people seem to agree on Inception score (IS) \cite{salimans2016improved} and Fr\'echet Inception distance (FID) \cite{heusel2017gans} since most of papers include these scores. These two scores use Inception v3 network \cite{szegedy2016rethinking} that is pre-trained on ImageNet \cite{deng2009imagenet}.
+
+\subsection{Inception Score}
+\label{subsec:is}
+In IS, the conditional class distribution $p(y|x)$ is compared with the marginal class distribution $\int_x p(y|x) p(x)$. Here, probabilities are provided from Inception network. The idea is the entropy of $p(y|x)$ should be low if $x$ contains real-looking images since we believe Inception v3 is a good image classifier. On the other hand, the entropy of $\int_x p(y | x) p(x)$ should be high if the model outputs different images, therefore different probabilities. The overall formulation is:
+\begin{equation}
+\label{eq:is}
+\text{IS}=\exp (\mathbb{E}_{x \sim p_f} KL (p(y|x) || p(y))) 
+\end{equation}
+
+\subsection{Fr\'echet Inception Distance}
+\label{subsec:fid}
+There are known shortcomings of IS \cite{heusel2017gans,barratt2018note}. One issue is we never look at the class distribution of target images. FID is proposed to remedy this problem. Here, we take Inception network's activations in the layer before the last layer for both true samples and fake samples. These activations are then modeled with multivariate Gaussian distributions. Let us call mean and covariance of true samples and fake samples $(\mu_t, \Sigma_t)$ and $(\mu_f, \Sigma_f)$ respectively. Then, FID is calculated as follows:
+\begin{equation}
+\label{eq:fid}
+\text{FID} = \| \mu_t - \mu_f \|_2^2 + \text{Tr}(\Sigma_t + \Sigma_f - 2(\Sigma_t \Sigma_f)^{1/2})
+\end{equation}
+
+\subsection{Nearest Neighbor Accuracy}
+\label{subsec:nn}
+Other than these two methods, classifier two-sample test (C2ST) \cite{lopez2016revisiting} is a simple and effective way of evaluating GAN models. In short, we train a classifier for two-class classification where classes are true samples and fake samples, then use this classifier to assess whether the two distributions are close to each other. If these two distributions are very close to each other, the classifier cannot perform better than chance. In \cite{xu2018empirical}, they show that 1-nearest neighbor (1-NN) leave-one-out (LOO) classifier can detect mode collapse, mode drop and sample diversity. The procedure is as follows. We take a set of real samples and fake samples. For each sample, we look at its nearest neighbor's label. This counts as the prediction of the model for the current sample. If the overall accuracy is around 50\%, we say these two distributions are very close to each other. We can (and should) also evaluate the accuracy only on one class. Let us make the test only for real images and call this prediction accuracy metric 1-NN real. A higher 1-NN real accuracy implies samples that are near real samples are also real, therefore a mode drop. If this is very low (let's say 3\%), we can suspect that the generator may overfit to the target distribution. On the other hand, 1-NN fake accuracy assesses the sample diversity. If 1-NN fake accuracy is high, then samples are not diverse. 
+
+Apart from this, people heavily use human judgment by printing samples that are generated from the model to asses quality. Although this is not a good approach and only works for the image domain, we have no choice until we find a rigorous metric that can be trusted. An extensive review of evaluation methods can be found in \cite{borji2019pros}. We used FID and 5-NN accuracy as evaluation metrics. 5-NN accuracy is calculated with the same activations we calculate FID score with. Also, we show a set of generated samples to let the reader decide the quality.
 
 \chapter{COMBINING MULTIPLE GENERATORS OF GAN}
 \label{chapter:multiple_gan}
@@ -331,7 +345,7 @@ Let us now repeat the same experiment that we did in ME (Figure \ref{fig:hme:mod
 
 \section{Flat Mixture of Generators}
 \label{sec:flat_gen}
-Our first proposed architecture uses mixtures of experts \cite{me}
+Our first proposed architecture uses mixtures of experts \cite{jacobs1991adaptive}. 
 
 \section{Hierarchical Mixture of Generators}
 \label{sec:hme_gen}
