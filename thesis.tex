@@ -81,7 +81,7 @@ Generative adversarial networks are used successfully to model complex data dist
 
 We are interested in the problem of density estimation. That is, we are given a set of data points $X = \{x^{(i)} \in \mathbb{R}^d\}_{i=1}^N$ and assume that these are random events generated from some probability density function (PDF) $p(x)$. Our aim is to approximate $p(x)$ with a proposal PDF $\hat{p}(x)$, based on a finite number of observations $X$. If we successfully approximate $p(x)$ with $\hat{p}(x)$, then we can use $\hat{p}(x)$ for later downstream tasks such as detecting the probability of an event, classification and generating new samples.
 
-If we treat the problem more concretely, we are in a search of a function $f(x)$ that mimics $p(x)$. Though we do not have $p(x)$ at hand but only a set of observations $X$, that we think generated from this distribution. How do we find $f(x)$? First of all, we know that $f(x) \neq 0$ for points in $X$ since these events are already happened. This narrows down our space of plausible functions but it is still quite large. From this point on, we must start to make some assumptions to be able to continue. One such example is that we assume $f(x)$ to be a 2nd order polynomial function. Now, we restrict the space of plausible functions into $\mathbb{R}^3$ because a 2nd order polynomial is uniquely defined by 3 parameters. If we further say that the true $f(x)$ should give the highest total probability for points in $X$ out of all functions. This is sometimes interpreted as ``the model that best explains the data'' and known as the \emph{maximum likelihood estimation}:
+If we treat the problem more concretely, we are in a search of a function $f(x)$ that mimics $p(x)$. Though we do not have $p(x)$ at hand but only a set of observations $X$, that we think generated from this distribution. How do we find $f(x)$? First of all, we know that $f(x) \neq 0$ for points in $X$ since these events are already happened. This narrows down our space of plausible functions but it is still quite large. From this point on, we must start to make some assumptions to be able to continue. One such example is that we assume the function to be in the form $f(x)=e^{g(x)}$, where $g(x)$ is a 2nd order polynomial function. Now, we restrict the space of plausible functions into $\mathbb{R}^3$ because a 2nd order polynomial is uniquely defined by 3 parameters. If we further say that the true $f(x)$ should give the highest total probability for points in $X$ out of all functions. This is sometimes interpreted as ``the model that best explains the data'' and known as the \emph{maximum likelihood estimation}:
 \begin{equation}
 \underset{f \in \mathcal{F}}{\text{argmax}} \prod_{x^{(i)} \in X} f(x^{(i)}) 
 \label{eq:mle}
@@ -93,7 +93,7 @@ There are also \emph{non-parametric} estimation methods. Here, we do not require
 \hat{f}(x) = \frac{1}{nh} \sum_{i=1}^N K\left(\frac{x^{(i)}-x}{h}\right)
 \label{eq:kde}
 \end{equation}
-where $K$ is the kernel function, and $h$ is called \emph{bandwidth}. $K$ and $h$ changes the function family of the model. These are not parameters of the model as in parametric methods. For example, the degree of the polynomial in parametric methods can be analogous to $K$ and $h$, hyperparameters of the model. $K$ can be any function that satisfies $\int K(u) du = 1$. A simple example, also known as the rectangular kernel:
+where $K$ is the kernel function, and $h$ is called \emph{bandwidth}. $K$ and $h$ changes the function family of the model. These are not parameters of the model as in parametric methods. The degree of the polynomial $g(x)$ in the previous example can be analogous to $K$ and $h$; they are hyperparameters of the model. $K$ can be any function that satisfies $\int K(u) du = 1$. A simple example, also known as the rectangular kernel:
 \begin{equation}
 K(u) = \frac{1}{2} I (|u| \leq 1)
 \label{eq:rectangular_kernel}
@@ -102,7 +102,7 @@ where $I$ is the indicator function. In parametric methods, we can quickly answe
 
 \begin{figure}[htbp]
 \begin{center}
-\includegraphics[width=0.6\columnwidth]{euc.pdf}
+\includegraphics[width=0.5\columnwidth]{euc.pdf}
 \end{center}
 \caption{A spiral data set. The data is one-dimensional, if we know $x_1=r*cos(r)$, $x_2=r*sin(r)$.}
 \vskip\baselineskip % Leave a vertical skip below the figure
