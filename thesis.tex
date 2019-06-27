@@ -79,31 +79,46 @@ Generative adversarial networks are used successfully to model complex data dist
 \label{chapter:intro}
 \pagenumbering{arabic}
 
-One of the main problems in machine learning is how to learn to predict the outcome of an event $y$ that is dependent on another event $x$. These events, $x$ and $y$, can be thought as random variables with probability distributions $p(x)$ and $p(y)$ respectively. Learning corresponds to finding the appropriate mapping $f$, that satisfies $f(x) = y$. In general, we do not explicitly know the probability distributions of these events. Rather, we are given a set of data points $X=\{x^{(i)}\}_{i=1}^{N}\thicksim p(x)$ with their respective targets $Y=\{y^{(i)}\}_{i=1}^{N}\thicksim p(y)$. We construct a function $f(x; \theta)=\hat{y}$. Every function has a set of parameters that defines the function itself. Here, $\theta$ is the set of parameters of the function. Based on our data set $X$, and corresponding targets $Y$, we tweak the parameters of the function so that $\sum_i L(f(x^{(i)}; \theta), y^{(i)})$ is minimized for a function $L$ that measures the difference between two values. From this point, the problem becomes an optimization problem. In most cases, we use gradient-based optimization techniques due to its cheap computational demand. When we use gradient-based techniques, the curvature of the function that we optimize with respect to its parameters are important. Therefore, we tend to choose $L$ to be a convex function due to a set of desired convergence properties.
+We are interested in the problem of density estimation. That is, we are given a set of data points $X = \{x^{(i)} \in \mathbb{R}^d\}_{i=1}^N$ and assume that these are random events generated from some probability density function (PDF) $p(x)$. Our aim is to approximate $p(x)$ with a proposal PDF $\hat{p}(x)$, based on a finite number of observations $X$. If we successfully approximate $p(x)$ with $\hat{p}(x)$, then we can use $\hat{p}(x)$ for later downstream tasks such as detecting the probability of an event, classification and generating new samples.
 
-In the above setting, we are concerned with the statistical regularities between $X$ and $Y$. The learned mapping $f^{*}(x)$ maps the $x$-space to the $y$-space. An alternative interpretation is that we partition the $x$-space into regions with respect to outcomes of $y$. We can think of this process as finding discriminative borders in $p(x)$ to predict the outcome of $y$. One can see that these borders are totally dependent on $y$. If there happens to be only one outcome of event $y$, then the $x$-space has no borders and there is only one color (there is only one region). On the other extreme, if each data point $x^{(i)}$ corresponds to a different target $y^{(i)}$, then each point will have a different color in the $x$-space and there will be lots of borders. Trying to learn a mapping from $x$-space to some target~$y$-space is called \emph{supervised learning}. This is supervised because we specify a target for each data point.
+If we treat the problem more concretely, we are in a search of a function $f(x)$ that mimics $p(x)$. Though we do not have $p(x)$ at hand but only a set of observations $X$, that we think generated from this distribution. How do we find $f(x)$? First of all, we know that $f(x) \neq 0$ for points in $X$ since these events are already happened. This narrows down our space of plausible functions but it is still quite large. From this point on, we must start to make some assumptions to be able to continue. One such example is that we assume $f(x)$ to be a 2nd order polynomial function. Now, we restrict the space of plausible functions into $\mathbb{R}^3$ because a 2nd order polynomial is uniquely defined by 3 parameters. If we further say that the true $f(x)$ should give the highest total probability for points in $X$ out of all functions. This is sometimes interpreted as ``the model that best explains the data'' and known as the \emph{maximum likelihood estimation}:
+\begin{equation}
+\underset{f \in \mathcal{F}}{\text{argmax}} \prod_{x^{(i)} \in X} f(x^{(i)}) 
+\label{eq:mle}
+\end{equation}
+where $\mathcal{F}$ is the space of functions. We converted the problem into that of optimization. There are many optimization methods that can help us solve \ref{eq:mle} analytically and/or approximately. Our solution is a \emph{parametric} one because the function we are searching is defined by a finite set parameters.
+
+There are also \emph{non-parametric} estimation methods. Here, we do not require ourselves to find the global form of the function $f$. We define \emph{kernels} that measures the distance of the queried point with its neighbors. For example, kernel density estimators can be written as:
+\begin{equation}
+\hat{f}(x) = \frac{1}{nh} \sum_{i=1}^N K\left(\frac{x^{(i)}-x}{h}\right)
+\label{eq:kde}
+\end{equation}
+where $K$ is the kernel function, and $h$ is called \emph{bandwidth}. $K$ and $h$ changes the function family of the model. These are not parameters of the model as in parametric methods. For example, the degree of the polynomial in parametric methods can be analogous to $K$ and $h$, hyperparameters of the model. $K$ can be any function that satisfies $\int K(u) du = 1$. A simple example, also known as the rectangular kernel:
+\begin{equation}
+K(u) = \frac{1}{2} I (|u| \leq 1)
+\label{eq:rectangular_kernel}
+\end{equation}
+where $I$ is the indicator function. In parametric methods, we can quickly answer $p(x_k)$ for an arbitrary point $x_k$ after we find the approximate function $\hat{f}$. On the other hand in non-parametric methods, we do not spend time to find $\hat{f}$ but must calculate distances between $x_k$ to $x \in X$.
 
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[width=0.6\columnwidth]{euc.pdf}
 \end{center}
-\caption{A spiral data set. The data is one-dimensional, if we know $x=r*cos(r)$, $y=r*sin(r)$.}
+\caption{A spiral data set. The data is one-dimensional, if we know $x_1=r*cos(r)$, $x_2=r*sin(r)$.}
 \vskip\baselineskip % Leave a vertical skip below the figure
 \label{fig:spiral}
 \end{figure}
 
-Another important research direction in machine learning is \emph{unsupervised learning}. Here, we are not given a set of pre-defined targets. So we do not know the outcome of $y$ that is dependent on the given input $x$. We do not even know if there is any $y$. The aim is to model the probability distribution of $x$, to see what normally happens. Therefore the aim is to find statistical regularities within the $x$-space. However, without any supervision, it is not quite clear what is a statistical regularity. For example in Figure \ref{fig:spiral}, if we use Cartesian coordinates, we probably fail, or rather find poor estimates. If we know the transformation to polar coordinates, then we can model the distribution better by first transforming Cartesian coordinates to polar coordinates. Therefore, the transformation $\phi(x)$ is the golden nugget.
+Each approach has its own advantages and disadvantages. Yet, for both approaches, it is important to first transform the data into appropriate representation. For example in Figure \ref{fig:spiral}, if we use Cartesian coordinates, we probably fail, or rather find poor estimates for $p(x)$. If we know the transformation to polar coordinates, then we can model the distribution better by first transforming Cartesian coordinates to polar coordinates. Both parametric models and non-parametric models will likely to yield better results in polar coordinates for this specific problem. Therefore, the transformation is the golden nugget.
 
-The same argument is also true for supervised learning. However, we have the information that can direct us to find appropriate transformations: targets. Previously, people searched for better transformations to increase model performance. \emph{Deep learning} approach tries to solve the problem by also learning transformations. That is, we train a multi-layer perceptron (MLP), also called artificial neural network (ANN), to estimate $p(y|x)$. The idea is to learn basic transformations at earlier layers and using them to construct higher level, more abstract transformations \cite{bengio2009learning}. When we learn abstract transformations from the data, we end up with models that have better \emph{generalization}, that is the performance on unseen data.
-
-Apart from supervised and unsupervised learning, there also another dichotomy which we should mention: generative models and discriminative models. Discriminative models try to model the probability distribution $p(y|x)$. These are mostly used for classification tasks. On the other hand, generative models try to model $p(x, y)$. With a generative model, one can do several things: detect the probability of a new data, generate new data, and also classify data. We can use generative models as discriminative ones since we can find $p(y|x)$:
+We focus on a method known as \emph{generative adversarial networks} (GANs) \cite{goodfellow2014generative} for approximating densities with \emph{deep neural networks} (DNNs). Advantage of DNNs is that they learn to hierarchically transform the data. Here, the transformation means that we map $X$ to $f_1(X)$, where $f_1$ denotes the computation that is done in the first layer of a DNN. In DNN, layers are aligned consequently therefore we compute the following:
 \begin{equation}
-p(y|x) = \frac{p(x, y)}{\sum_{y'} p(x, y')}
+\text{DNN}(X) = f_L (f_{L-1} (f_{L-2} ( \dots f_2( f_1(X) ) ) ) )
+\label{eq:dnn}
 \end{equation}
+where $f_i$ denotes the $i$th layer of the DNN. Due to its inherent structure, earlier layers of DNN learns basic primitives about $X$. Subsequent layers built more abstract transformations using primitive transformations. When we learn abstract transformations from the data, we end up with models that have better \emph{generalization}, that is the performance on unseen data \cite{bengio2009learning}. DNNs achieved great success on real-world problems that requires generalization such as object recognition \cite{krizhevsky2012imagenet}, speech recognition \cite{hinton2012deep} and statistical machine translation \cite{sutskever2014sequence}. Recent developments in GAN literature also show that GAN is a promising way to approximate highly complex probability distributions.
 
-Deep neural networks (DNNs) achieved great success on real-world problems that requires generalization such as object recognition \cite{krizhevsky2012imagenet}, speech recognition \cite{hinton2012deep} and statistical machine translation \cite{sutskever2014sequence}. These models are discriminative models and trained in a supervised fashion. The success of \emph{deep learning} did not translate to generative models until the proposal of \emph{generative adversarial networks} (GANs) \cite{goodfellow2014generative}. This was partly because we did not know a clear objective as we did in discriminative modeling. How do we learn transformations that are good for modeling $p(x)$? How do we quantify the goodness of a transformation? At this moment, there is still no consensus on the answers of these questions.
-
-GANs seem to be a promising way to train DNNs for generative modeling. In this thesis, we propose to use hierarchical mixture of generators as the generative part of GAN. This lets us interpret the learned representation. The rest of this work is organized as follows. Chapter \ref{chapter:gan} reviews the prerequisite knowledge about GANs. In Chapter \ref{chapter:multiple_gan}, we discuss works that also use multiple generators. We explain our proposed model in detail in Chapter \ref{chapter:mixture_gan}. Our experimental results are given in \ref{chapter:exps}. We make a conclusion and discuss future work in Chapter \ref{chapter:conc}.
+In this thesis, we propose to use hierarchical mixture of generators as the generative part of GAN. This lets us interpret the learned representation. The rest of this work is organized as follows. Chapter \ref{chapter:gan} reviews the prerequisite knowledge about GANs. In Chapter \ref{chapter:multiple_gan}, we discuss works that also use multiple generators. We explain our proposed model in detail in Chapter \ref{chapter:mixture_gan}. Our experimental results are given in \ref{chapter:exps}. We make a conclusion and discuss future work in Chapter \ref{chapter:conc}.
 
 \chapter{GENERATIVE ADVERSARIAL NETWORKS}
 \label{chapter:gan}
@@ -149,6 +164,12 @@ Recent works mainly focus on these two problems. To solve problems related to tr
 
 \section{Variants of GAN}
 \label{sec:variants}
+* Conditional GAN
+* BiGAN
+* Cycle GAN
+* VAE GAN
+* Adversarial AE
+* Image to image translation, impainting, super-resolution
 
 
 \section{Wasserstein GAN}
