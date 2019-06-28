@@ -166,14 +166,16 @@ Recent works mainly focus on these two problems. To solve problems related to tr
 
 GANs can be extended in many ways since its formulation is a generic one: approximating $p(x)$.
 
-Conditional GAN (CGAN) \cite{mirza2014conditional} incorporates a label information $y$ to approximate class conditional distribution $p(x|y)$. The extension is simple: we concatenate the one-hot label information $y$ to the noise vector $z$ and give it to $G$ as input. To get a conditioned gradient, we also give $y$ together with $x$ as input to the $D$. Since $D$ learns the true class conditional distribution $p(x|y)$, it pushes $G$ to approximate $p(x|y)$. After training, we can use $G$ to generate a sample from a specific class.
+Conditional GAN (CGAN) \cite{mirza2014conditional} incorporates a label information $y$ to approximate class conditional distribution $p(x|y)$. The extension is simple: we concatenate the one-hot label information $y$ to the noise vector $z$ and give it to $G$ as input. To get a conditioned gradient, we give $y$ together with $x$ as input to the $D$. Since $D$ learns the true class conditional distribution $p(x|y)$, it pushes $G$ to approximate $p(x|y)$. After training, we can use $G$ to generate a sample from a specific class. Here, $y$ is a one-hot vector that contains the class information. However we can embed more information in $y$. Image-to-image translation is such an example where instead of a class information we give a sketch of an image and try to fill the image realistically \cite{isola2017image}. Given a real image (corresponds to $x$) and its sketch (corresponds to $y$), we ask $D$ whether this is a real example or not. Consequently, $G$ learns to create an image from its sketch. This is extended as translating winter scenes into summer scenes, satellite views to map views and so on. The same idea is also applied to super-resolution \cite{ledig2017photo} and image inpainting \cite{yeh2017semantic} where we only change the $(x, y)$ pairs. For example in super-resolution, $x$ is the high-resolution image and $y$ is its low-resolution version.
+
+Bidirectional GAN (BiGAN) \cite{donahue2016adversarial,dumoulin2016adversarially}.
+
 
 
 * BiGAN
 * Cycle GAN
 * VAE GAN
 * Adversarial AE
-* Image to image translation, impainting, super-resolution
 
 
 \section{Wasserstein GAN}
