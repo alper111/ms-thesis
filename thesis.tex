@@ -86,7 +86,7 @@ If we treat the problem more concretely, we are in a search of a function $f(x)$
 \underset{f \in \mathcal{F}}{\text{argmax}} \prod_{x^{(i)} \in X} f(x^{(i)}) 
 \label{eq:mle}
 \end{equation}
-where $\mathcal{F}$ is the space of functions. We converted the problem into that of optimization. There are many optimization methods that can help us solve \ref{eq:mle} analytically and/or approximately. Our solution is a \emph{parametric} one because the function we are searching is defined by a finite set parameters.
+where $\mathcal{F}$ is the space of functions. We converted the problem into that of optimization. There are many optimization methods that can help us solve \ref{eq:mle} analytically and/or approximately. Our solution is a \emph{parametric} one because the function we are searching is defined by a finite set of parameters.
 
 There are also \emph{non-parametric} estimation methods. Here, we do not require ourselves to find the global form of the function $f$. We define \emph{kernels} that measures the distance of the queried point with its neighbors. For example, kernel density estimators can be written as:
 \begin{equation}
@@ -105,7 +105,7 @@ where $I$ is the indicator function. In parametric methods, we can quickly answe
 \includegraphics[width=0.5\columnwidth]{euc.pdf}
 \end{center}
 \caption{A spiral data set. The data is one-dimensional, if we know $x_1=r*cos(r)$, $x_2=r*sin(r)$.}
-\vskip\baselineskip % Leave a vertical skip below the figure
+\vskip\baselineskip
 \label{fig:spiral}
 \end{figure}
 
@@ -164,19 +164,18 @@ Recent works mainly focus on these two problems. To solve problems related to tr
 \section{Variants of GAN}
 \label{sec:variants}
 
-GANs can be extended in many ways since its formulation is a generic one: approximating $p(x)$.
+Before reviewing variants of GAN, we should first mention variational auto-encoders (VAEs) \cite{kingma2013auto} which is a close idea to GAN but quite different. VAEs also approximate probability distributions using DNNs. A regular auto-encoder (AE) consists of an encoder network $E$, and a decoder network $D$. Given a data set $X=\{x^{(i)}\}_{i=1}^N$, AE tries to minimize the following:
+\begin{equation}
+\mathcal{L}_{rec} = \sum_{i=1}^N \frac{1}{2} \| x^{(i)} - D(E(x^{(i)})) \|_2^2
+\label{eq:recons}
+\end{equation}
+which is also known as the $\ell_2$ reconstruction loss. VAEs transform the idea to graphical models. They define the generative model as $p(z; \theta) p( x | z; \theta)$ and approximate the true posterior distribution $p(z|x)$ with a variational distribution $q(z|x;\phi)$. Here, $p(x | z; \theta)$ is the decoder and $q(z|x;\phi)$ is the encoder. A spherical Gaussian prior is assumed for $p(z)$. Two make computations easier, the variational distribution $q(z|x;\phi)$ is also chosen to be a multivariate Gaussian with diagonal covariance. Therefore, $q(z|x;\phi)$ outputs a mean and a standard deviation for each latent factor. To train the model, we simply minimize the reconstruction loss as in regular AE, and also minimize the KL divergence between $p(z)$ and $q(z|x;\phi)$ to approximate posterior. The reparameterization trick which they proposed \cite{kingma2013auto} should also be noted because it yields a gradient estimator which have lower variance then the na\"{i}ve Monte Carlo gradient estimator, which then helps us to train the variational model, $q(z|x;\phi)$. After training, we can simply draw $z$ from $p(z)$ and use the decoder network to produce $x$.
 
-Conditional GAN (CGAN) \cite{mirza2014conditional} incorporates a label information $y$ to approximate class conditional distribution $p(x|y)$. The extension is simple: we concatenate the one-hot label information $y$ to the noise vector $z$ and give it to $G$ as input. To get a conditioned gradient, we give $y$ together with $x$ as input to the $D$. Since $D$ learns the true class conditional distribution $p(x|y)$, it pushes $G$ to approximate $p(x|y)$. After training, we can use $G$ to generate a sample from a specific class. Here, $y$ is a one-hot vector that contains the class information. However we can embed more information in $y$. Image-to-image translation is such an example where instead of a class information we give a sketch of an image and try to fill the image realistically \cite{isola2017image}. Given a real image (corresponds to $x$) and its sketch (corresponds to $y$), we ask $D$ whether this is a real example or not. Consequently, $G$ learns to create an image from its sketch. This is extended as translating winter scenes into summer scenes, satellite views to map views and so on. The same idea is also applied to super-resolution \cite{ledig2017photo} and image inpainting \cite{yeh2017semantic} where we only change the $(x, y)$ pairs. For example in super-resolution, $x$ is the high-resolution image and $y$ is its low-resolution version.
+Conditional GAN (CGAN) \cite{mirza2014conditional} incorporates a label information $y$ to approximate class conditional distribution $p(x|y)$. The extension is simple: we concatenate the one-hot label information $y$ to the noise vector $z$ and give it to $G$ as input. To get a conditioned gradient, we give $y$ together with $x$ as input to the $D$. Since $D$ learns the true class conditional distribution $p(x|y)$, it pushes $G$ to approximate $p(x|y)$. After training, we can use $G$ to generate a sample from a specific class. Here, $y$ is a one-hot vector that contains the class information. However we can embed more information in $y$. Image-to-image translation is such an example where instead of a class information we give a sketch of an image and try to fill the image realistically \cite{isola2017image}. Given a real image (corresponds to $x$) and its sketch (corresponds to $y$), we ask $D$ whether this is a real example or not. Consequently, $G$ learns to create an image from its sketch. This is extended as translating winter scenes into summer scenes, satellite views to map views and so on. The same idea is also applied to super-resolution \cite{ledig2017photo} and image inpainting \cite{yeh2017semantic} where we only change the $(x, y)$ pairs. For example in super-resolution, $x$ is the high-resolution image and $y$ is its low-resolution version. Cycle GAN \cite{zhu2017unpaired} further extends the idea to also work with unpaired images by introducing a cycle-consistency loss. Apart from the extensions of CGAN, people also proposed methods that incorporate the information $y$ in a better way than concatenating it with the input \cite{miyato2018cgans}.
 
-Bidirectional GAN (BiGAN) \cite{donahue2016adversarial,dumoulin2016adversarially}.
+In the original GAN, we do the mapping from $p(z)$ to $p(x)$.  After training, $p(z)$ can be thought as a distribution of latent factors of $p(x)$. However, given a sample $x_k$ we cannot determine its latent factors $z_k$ because the reverse direction, that is from $p(x)$ to $p(z)$ is not available. Bidirectional GAN (BiGAN) \cite{donahue2016adversarial,dumoulin2016adversarially} is proposed to remedy this issue. In BiGAN, there are networks: a generator $G$ and an encoder $E$. $G$ is as usual generates a sample $G(z)$ given a noise vector $z$. On the other hand, $E$ generates a latent code $E(x)$ given a real sample $x$. Both $G$ and $E$ concatenates their input with their output producing pairs $(z, G(z))$ and $(E(x), x)$ respectively. The discriminator $D$ tries to discriminate between these two pairs. To maximize the loss of the discriminator, $G$ must produce vectors that look like $x$, likewise $E$ must produce vectors that look like $z$. When the training converges, these pairs $(z, G(z))$ and $(E(x), x)$ must be coherent with each other in order to maximize $D$'s loss. That is we expect $E(G(z))=z$  and $G(E(x))=x$ to hold.
 
-
-
-* BiGAN
-* Cycle GAN
-* VAE GAN
-* Adversarial AE
-
+There are yet many ideas that are tried with GANs. The gimmick is the same: we train a DNN for a specific problem, which helps us to train another DNN for another problem, which in turn helps to train  the first DNN. Because they are trained in an iterative fashion, one can think that each DNN creates a curriculum for the other. For the case of GANs, $G$ first creates random noise. $D$ learns to discriminate the random noise and the training data, which is quite easy for high-dimensional data. With the help of $D$, $G$ starts to create better samples but not the best ones. The task gets harder for $D$ each turn and likewise when $D$ gets proficient, $G$ must learn finer details which can be considered as a harder task. The problem emerges when the curriculum becomes unfair and the gradients vanish (or become unstable). In the next section, we review an approach to this problem which we also use in our experiments.
 
 \section{Wasserstein GAN}
 \label{sec:wgan}
@@ -245,15 +244,15 @@ In multi-agent diverse GAN (MAD-GAN) \cite{ghosh2018multi} there are multiple ge
 \includegraphics[width=0.75\columnwidth]{madgan.pdf}
 \end{center}
 \caption{Multi-agent diverse GAN}
-\vskip\baselineskip % Leave a vertical skip below the figure
+\vskip\baselineskip
 \label{fig:models:madgan}
 \end{figure}
 
-The model is shown in Figure \ref{fig:models:madgan}. Given $z$, a shared neural network block produces $z'$, an intermediate representation that is higher dimensional than $z$, which is used by a set of generators $\{G_i(z')\}_{i=1}^m$. The discriminator is a $m+1$-class classifier with 0 for true, and $1$ to $m$ for the fake instances. The discriminator should push the different generators to different modes to be able to solve the classification problem. More formally, the discriminator tries to minimize the following:
+The model is shown in Figure \ref{fig:models:madgan}. Given $z$, a shared neural network block produces $z'$, an intermediate representation that is higher dimensional than $z$, which is used by a set of generators $\{G_i(z')\}_{i=1}^K$. The discriminator is a $K+1$-class classifier with 0 for true, and $1$ to $K$ for the fake instances. The discriminator should push the different generators to different modes to be able to solve the classification problem. More formally, the discriminator tries to minimize the following:
 \begin{equation}
-\min_{\phi} \quad -\mathbb{E}_{x \sim (p_t \cup p_f)} \left[ \sum_{j=0}^m r_j(x) \log D_j(x;\phi)\right]
+\min_{\phi} \quad -\mathbb{E}_{x \sim (p_t \cup p_f)} \left[ \sum_{j=0}^K r_j(x) \log D_j(x;\phi)\right]
 \end{equation}
-where $p_t$  and $p_f$ are the target and the fake distribution respectively, $r$ is a one-hot vector with $m+1$ length. This is the regular cross-entropy error function. The cost function for generators remains the same with a little twist that we try to minimize $\log (1 - D_0(x;\phi))$ instead of $\log (1 - D(x;\phi))$ since now $D_0$ represents the probability of $x$ coming from the true distribution.
+where $p_t$  and $p_f$ are the target and the fake distribution respectively, $r$ is a one-hot vector with $K+1$ length. This is the regular cross-entropy error function. The cost function for generators remains the same with a little twist that we try to minimize $\log (1 - D_0(x;\phi))$ instead of $\log (1 - D(x;\phi))$ since now $D_0$ represents the probability of $x$ coming from the true distribution.
 
 Though there are multiple generators, we do not mix them in a co-operative manner. We also do not partition $p(z)$ and use each partition for different generators. This should rather be thought as each generator produces their own interpretation of $p(z)$. Therefore, instead of partitioning $p(z)$ we introduce alternative $p(z)$'s.
 %
@@ -261,18 +260,18 @@ Though there are multiple generators, we do not mix them in a co-operative manne
 \section{Mixture GAN}
 \label{sec:mgan}
 
-MGAN \cite{hoang2018mgan} is similar to MAD-GAN except that the classifer and the discriminator are separate. The discriminator is two-class as usual discriminating between true and fake examples, and there is a separate $m$-class classifier only for the fake examples.
+MGAN \cite{hoang2018mgan} is similar to MAD-GAN except that the classifer and the discriminator are separate. The discriminator is two-class as usual discriminating between true and fake examples, and there is a separate $K$-class classifier only for the fake examples.
 
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[width=0.75\columnwidth]{mgan.pdf}
 \end{center}
 \caption{Mixture GAN}
-\vskip\baselineskip % Leave a vertical skip below the figure
+\vskip\baselineskip
 \label{fig:models:mgan}
 \end{figure}
 
-The model is shown in Figure \ref{fig:models:mgan}. There is also the difference is that the split of the generators is earlier. A set of generators $\{G_i(z)\}_{i=1}^m$, transform $z$ and for all, the shared network $G_s$ produces the final output. A multinomial distribution is sampled to randomly select one of the generators. Parameters of the multinomial distribution are fixed. While the discriminator tries to discriminate between fake and real data as usual, the classifier tries to predict the index of the generator that produced the fake sample. These two networks share parameters treating discriminator/classifier as a multi-task learning problem. This approach also treats $p(z)$ as in MAD-GAN, creating alternative $p(z)$'s.
+The model is shown in Figure \ref{fig:models:mgan}. There is also the difference is that the split of the generators is earlier. A set of generators $\{G_i(z)\}_{i=1}^K$, transform $z$ and for all, the shared network $G_s$ produces the final output. A multinomial distribution is sampled to randomly select one of the generators. Parameters of the multinomial distribution are fixed. While the discriminator tries to discriminate between fake and real data as usual, the classifier tries to predict the index of the generator that produced the fake sample. These two networks share parameters treating discriminator/classifier as a multi-task learning problem. This approach also treats $p(z)$ as in MAD-GAN, creating alternative $p(z)$'s.
 
 \section{Mixtures of Experts GAN}
 \label{sec:megan}
@@ -284,114 +283,132 @@ In the MEGAN \cite{park2018megan}, inspired from the mixtures of experts \cite{j
 \includegraphics[width=0.75\columnwidth]{megan.pdf}
 \end{center}
 \caption{Mixture of experts GAN}
-\vskip\baselineskip % Leave a vertical skip below the figure
+\vskip\baselineskip
 \label{fig:models:megan}
 \end{figure}
 
-The model is shown in Figure \ref{fig:models:megan}. There is a set of generators $\{G_i(z)\}_{i=1}^{m}$ and an additional gating function, which takes as its input $z$ and some features from the generated $x$. Then Straight-Through Gumbel Softmax is applied which only selects one expert while allowing differentiability. The discriminator is still two-class. The gating model also has its parameters that are updated together with the generators. Although all generators generate an output, it is the gating model that decides which one is to be used. 
+The model is shown in Figure \ref{fig:models:megan}. There is a set of generators $\{G_i(z)\}_{i=1}^{K}$ and an additional gating function, which takes as its input $z$ and some features from the generated $x$. Then Straight-Through Gumbel Softmax is applied which only selects one expert while allowing differentiability. The discriminator is still two-class. The gating model also has its parameters that are updated together with the generators. Although all generators generate an output, it is the gating model that decides which one is to be used. 
 
 Different from MAD-GAN and MGAN, in this approach $p(z)$ is partitioned into local parts. Since there is a gating network, each generator is only responsible for a local part of $p(z)$. However, this partitioning is rather hard since we only let one generator to be used. Also, the gating network takes features from the generators' outputs as its input, therefore the partitioning might be non-smooth.
 
-Many unsupervised learning methods assume that $x$ is determined by a set of factors $z$ and an unpredictable noise factor $\epsilon$. So instead of finding $p(x)$, we try to find $p(z)$ and the mapping between $p(z)$ and $p(x)$. In the GAN framework, we generally fix $p(z)$ to be a spherical Gaussian distribution and let $G$ to find the relation between $p(z)$ and $p(x)$. Since DNNs are very powerful function approximators, we hope that $G$ can map $p(z)$ to $p(x)$ even if we fix $p(z)$. However, this mapping might be arbitrarily hard. We instead propose to transform $p(z)$ at the earlier layers then use a shared network to generate the data. By this way, generator can decide how to transform $p(z)$. Also, we can analyze the $p(z)$ after the training to see the relation between clusters in $p(z)$.
-%
 %
 \chapter{MIXTURES OF GENERATORS}
 \label{chapter:mixture_gan}
-
-\section{Mixtures of Experts}
-\label{sec:me}
-A mixture of experts (ME) model consists of local experts $\{f_i(x)\}_{i=1}^{m}$, and a gating function $g(x)$ \cite{jacobs1991adaptive}. Instead of learning a global function, we divide the input space into regions and learn a set of local functions. For a given input $x$, the gating function outputs probabilities that decide which experts to use. Each expert is responsible for modeling input-output mapping in its region. Experts can be simple models since each expert needs to learn a local input-output mapping instead of a global one. The formal definition of the model is as follows:
-\begin{gather}
-g(x) = \text{softmax}(W_g x + b_g)\\
-y = \sum_{i=1}^m g_i(x) f_i(x)\\
-\text{softmax}_i(x) = \frac{e^{x_i}}{\sum_j e^{x_j}}
-\end{gather}
-where $y$ is the response of the model. Experts can be any differentiable function. It is recommended that we keep experts simple since we employ a multiple of them. For example, this can be a constant response, $f_i(x)=\rho_i$, or a linear response, $f_i(x)=W_i x + b_i$.
-%
-\begin{figure}[htbp]
-\begin{center}
-\subfloat[Regression]{
-	\includegraphics[width=0.5\linewidth]{me_regression.pdf}
-	\label{fig:me:regression}
-}
-\subfloat[Cooperation]{
-	\includegraphics[width=0.5\linewidth]{me_coop.pdf}
-	\label{fig:me:coop}
-}
-
-\subfloat[Experts]{
-	\includegraphics[width=\linewidth]{me_experts.pdf}
-	\label{fig:me:experts}
-}
-\end{center}
-\caption{Results of regression task on a spiral data set with a mixture of experts model.}
-\vskip\baselineskip
-\label{fig:me:model}
-\end{figure}
-%
-For a visual understanding of the model, let us look at Figure \ref{fig:me:model}. We are given a spiral-like shaped two-dimensional data set. We trained an ME model with 8 linear experts. In Figure \ref{fig:me:regression}, we see the trained model's response. To see which expert is responsible for which part, we pick a color for each expert and visualize its response with the respective color. The responsibility of each expert is calculated by softly counting the gating function's output for each point. This soft count decides the transparency level (alpha level) of the visualized point. This is shown in Figure \ref{fig:me:coop}. The horizontal line in Figure \ref{fig:me:coop} shows the color of each expert. As we expect, we see that the color changes when we change the region. Responses of each expert alone is also shown in Figure \ref{fig:me:experts}. We understand that some experts are not used at all.
-
-\section{Hierarchical Mixtures of Experts}
-\label{sec:hme}
-In hierarchical mixtures of experts model (HME) \cite{jordan1994hierarchical}, we define a tree structure where internal nodes contain gating functions and leaves contain experts. The difference between the ME model is that we replace the softmax gating function with a hierarchical mixture of sigmoid functions. The response of a binary tree node $m$ can be recursively defined as:
-\begin{gather}
-y_m(x)=
-	\begin{cases}
-		\hfil f_m(x) &\text{if $m$ is a leaf} \\
-		\hfil y_m^{L}(x)g_m(x) + y_m^{R}(x)(1 - g_m(x)) &\text{otherwise}
-	\end{cases}\\
-g_m(x) = \frac{1}{1+e^{-(w_m x + b_m)}}
-\end{gather}
-where $y_m^L$ and $y_m^R$ are the responses of the left and the right children of node $m$ respectively. This can be also interpreted as a soft decision tree. In a hard decision tree, we either select the left child or the right child in a node whereas in a soft decision tree we take a convex combination of the child responses. One can fix the tree structure beforehand, or grow the tree adaptively based on the error \cite{irsoy2012soft,irsoy2014budding}. Since the whole model is continuous, we can use gradient based optimization to learn the model parameters.
-%
-\begin{figure}[htbp]
-\begin{center}
-\subfloat[Regression]{
-	\includegraphics[width=0.5\linewidth]{hme_regression.pdf}
-	\label{fig:hme:regression}
-}
-\subfloat[Cooperation]{
-	\includegraphics[width=0.5\linewidth]{hme_coop.pdf}
-	\label{fig:hme:coop}
-}
-
-\subfloat[Experts]{
-	\includegraphics[width=\linewidth]{hme_experts.pdf}
-	\label{fig:hme:experts}
-}
-\end{center}
-\caption{Results of regression task on a spiral data set with a hierarchical mixture of experts model.}
-\vskip\baselineskip
-\label{fig:hme:model}
-\end{figure}
-%
-
-The difference between HME and ME is the gating function. Note that given an input, each model takes a convex combination of their experts. However, the way this combination calculated is rather different. Because of the inherent tree structure of HME, experts that are children of the same parent are expected to have similar responses since the regions they are selected are closer. This brings such an interpretational advantage that we can understand the problem's procedural solution by looking at different levels of the tree. This will be further explained in later sections.
-
-Let us now repeat the same experiment that we did in ME (Figure \ref{fig:hme:model}). We trained an HME model with a depth of 3 (therefore 8 experts). The response is quite the same. However, in Figure \ref{fig:hme:coop}, the curve is almost rainbow colored. In order for this to happen, each expert should be responsible of output, in the same order of color spectrum. This is shown more clearly in Figure \ref{fig:hme:experts}. In short, HME model first divides the spiral in half, use the left subtree for the outer region and the right subtree for the inner region. The same procedure is repeated for children (though the order may change).
+All previous approaches use multiple generators yet these generators do not work in a cooperative manner. We use a mixture of generators that work cooperatively while also specialize on different regions of $p(z)$. We propose two different models: a flat mixture of generators and a hierarchical mixture of generators that are based on mixtures of experts (ME) \cite{jacobs1991adaptive} and hierarchical mixtures of experts (HME) \cite{jordan1994hierarchical} formulations respectively. Unlike MEGAN which also uses ME idea, we combine generators softly and only use the noise vector $z$ as the input. Now, we explain our models in detail in the following sections.
 
 \section{Flat Mixture of Generators}
-\label{sec:flat_gen}
-Our first proposed architecture uses mixtures of experts \cite{jacobs1991adaptive}. 
+\label{sec:fmgan}
+Flat mixture of generators model, which we call FM-GAN, consists of local generators $\{g_i(z)\}_{i=1}^{K}$, a gating function $\alpha(z)$. The idea is that instead of learning a global generator, we divide the input space into regions and learn a set of local generators.
+\begin{gather}
+\alpha_i(z) = \frac{e^{w_{\alpha}^{(i)}z+b_{\alpha}^{(i)}}}{\sum_{j=1}^K e^{w_{\alpha}^{(j)}z+b_{\alpha}^{(j)}}} \label{eq:fmgan1}\\
+x = \sum_{i=1}^K \alpha_i(z) g_i(z) \label{eq:fmgan2}
+\end{gather}
+For a given input $z$, the gating function outputs probabilities that decide which generators to use (Equation \ref{eq:fmgan1}). Because the gating function outputs a probability, we do not select just one generator but a convex combination of them (Equation \ref{eq:fmgan2}). For generators, we consider two options:
+\begin{align}
+g_i(z) &= \rho_i  & (\textbf{Constant model}) \label{eq:constant}\\
+g_i(z) &= W_i z + b_i  & (\textbf{Linear model}) \label{eq:linear}
+\end{align}
+In the constant model (Equation \ref{eq:constant}), generators do not look at inputs and only generate a constant vector response $\rho_i$. Although the generator response is constant, their combination weights $\alpha$ are still dependent on the gating function and therefore dependent on $z$. Because the combination of generators is convex, the set of possible outputs are constrained on the convex hull that is defined by $\{\rho_i\}_{i=1}^K$. Then, it is the region that is learned inside this convex hull. Therefore the most of the information about the generative model is encapsulated in the gating function. The linear model (Equation \ref{eq:linear}) relaxes the job of the gating function since the output is not confined in a convex hull any longer. The error that is propagated through the discriminator, $\partial E / \partial x$, is distributed along generators with respect to their contribution (due to the chain rule). In this way, each generator is responsible for modeling input-output mapping in the region they operate. In both formulations, we can learn parameters of the gating function $\{w_{\alpha}^{(i)}, b_{\alpha}^{(i)}\}_{i=1}^K$ and parameters of generators $\{W_i, b_i \}_{i=1}^K$ (or $\{ \rho_i \}_{i=1}^K$ for constant model) with SGD.
+
+%
+%\begin{figure}[htbp]
+%\begin{center}
+%\subfloat[Regression]{
+%	\includegraphics[width=0.5\linewidth]{me_regression.pdf}
+%	\label{fig:me:regression}
+%}
+%\subfloat[Cooperation]{
+%	\includegraphics[width=0.5\linewidth]{me_coop.pdf}
+%	\label{fig:me:coop}
+%}
+%
+%\subfloat[Experts]{
+%	\includegraphics[width=\linewidth]{me_experts.pdf}
+%	\label{fig:me:experts}
+%}
+%\end{center}
+%\caption{Results of regression task on a spiral data set with a mixture of experts model.}
+%\vskip\baselineskip
+%\label{fig:me:model}
+%\end{figure}
+%
+% For a visual understanding of the model, let us look at Figure \ref{fig:me:model}. We are given a spiral-like shaped two-dimensional data set. We trained an ME model with 8 linear experts. In Figure \ref{fig:me:regression}, we see the trained model's response. To see which expert is responsible for which part, we pick a color for each expert and visualize its response with the respective color. The responsibility of each expert is calculated by softly counting the gating function's output for each point. This soft count decides the transparency level (alpha level) of the visualized point. This is shown in Figure \ref{fig:me:coop}. The horizontal line in Figure \ref{fig:me:coop} shows the color of each expert. As we expect, we see that the color changes when we change the region. Responses of each expert alone is also shown in Figure \ref{fig:me:experts}. We understand that some experts are not used at all.
 
 \section{Hierarchical Mixture of Generators}
-\label{sec:hme_gen}
+\label{sec:hmgan}
+Just like the hierarchical mixture of experts \cite{jordan1994hierarchical} go from the flat organization of mixture of experts  \cite{jacobs1991adaptive} to a tree, our proposed hierarchical mixture of generators (HM-GAN) go from a flat mixture of generators to a tree. HM-GAN and FM-GAN are the same except the formulation of the gating function. Let us think of a binary decision tree. Generators are located on the leaves of this tree. At each internal node $m$ of the tree, there is a logistic function $\alpha_m$ with parameters $\{w_{\alpha}^{(m)}, b_{\alpha}^{(m)}\}$:
+\begin{equation}
+\alpha_m(z) = \frac{1}{1+e^{-(w_{\alpha}^{(m)} z + b_{\alpha}^{(m)})}}
+\label{eq:sigmoid}
+\end{equation}
+Given an input $z$, this logistic function outputs a probability which serves as the mixture weights of the left and the right child. The response of an internal node $m$ can be written as:
+\begin{equation}
+x_m(z)=
+	\begin{cases}
+		\hfil g_m(z) &\text{if $m$ is a leaf} \\
+		\hfil x_m^{L}(z)\alpha_m(x) + x_m^{R}(z)(1 - \alpha_m(x)) &\text{otherwise}
+	\end{cases}
+\label{eq:hmgan2}
+\end{equation}
+where $x_m^L$ and $x_m^R$ are the responses of the left and the right child respectively. At each internal node $m$, we make a soft split and use $\alpha_m(z)$ of the response of the left tree and $1-\alpha_m(z)$ of the response of the right tree. This is carried recursively until we arrive at leaves, where we have the generator responses, $g_i(z)$. Again, we are taking a convex combination of generator responses. While in FM-GAN, the $i$th generator is mixed with the weight:
+\begin{equation}
+\frac{e^{w_{\alpha}^{(i)} z + b_{\alpha}^{(i)}}}{\sum_{j=1}^K e^{w_{\alpha}^{(j)} z + b_{\alpha}^{(j)}}}
+\label{eq:fm_mix}
+\end{equation}
+in HM-GAN this is:
+\begin{gather}
+\prod_{j \in Pred(i)} \alpha_j^{\delta_1^{(j)}}(z) (1-\alpha_j(z))^{\delta_2^{(j)}} g_i(z)\\
+(\delta_1^{(j)}, \delta_2^{(j)}) =
+	\begin{cases}
+		(1, 0) & \text{if $i$ lies in the left subtree of $j$} \\
+		(0, 1) & \text{otherwise}	
+	\end{cases}
+\label{eq:hm_mix}
+\end{gather}
+where $Pred(i)$ is the predecessors of the $i$th leaf. This model is differentiable, too, which lets us to learn parameters with SGD.
 
-We propose the hierarchical mixture of generators, which learns a tree structure with internal decision nodes that divide up the input space and the leaves are local generators responsible from a local $z$ region generating a subset of $p(x)$. Since the splits are soft, given the tree structure, the parameters of the internal nodes as well as of the generators in the leaves can be updated using gradient-descent over Wasserstein loss. Note that it is only $G$ that is modeled this way, $D$ remains the usual deep neural network.
+This structure can be though as a soft decision tree as opposed to a hard decision tree. In hard decision trees we only choose one path from root to leaves whereas in soft decision trees we consider all paths from root to leaves. There are extension of soft decision tree where we can grow the tree adaptively based on some error metric \cite{irsoy2012soft,irsoy2014budding}.
+
+Our experiments are done in the image domain. It is known that using a convolutional architecture for tasks that involve images increases performance dramatically. For example, although the set of human face images contain many modes, textures are quite the same. For this reason, we incorporate transposed convolutional (also known as deconvolutional) layers in both of our models. Instead of generating samples directly in the data domain $x$, our mixture models first generates an intermediate hidden representation $h$, that is given to a transposed convolutional architecture $G_s$. This architecture then produces the output $x$. For the human face example, local generators create an intermediate representation which may hold information about the location and the color of eyes,  and $G_s$ produces eyes given these features. For other domains where data points share common features, another domain specific architecture can be used to increase the performance given that the architecture is differentiable. The pipeline is depicted in Figure \ref{fig:models:hmegan}.
+%
+%\begin{figure}[htbp]
+%\begin{center}
+%\subfloat[Regression]{
+%	\includegraphics[width=0.5\linewidth]{hme_regression.pdf}
+%	\label{fig:hme:regression}
+%}
+%\subfloat[Cooperation]{
+%	\includegraphics[width=0.5\linewidth]{hme_coop.pdf}
+%	\label{fig:hme:coop}
+%}
+%
+%\subfloat[Experts]{
+%	\includegraphics[width=\linewidth]{hme_experts.pdf}
+%	\label{fig:hme:experts}
+%}
+%\end{center}
+%\caption{Results of regression task on a spiral data set with a hierarchical mixture of experts model.}
+%\vskip\baselineskip
+%\label{fig:hme:model}
+%\end{figure}
+%
+
+% Let us now repeat the same experiment that we did in ME (Figure \ref{fig:hme:model}). We trained an HME model with a depth of 3 (therefore 8 experts). The response is quite the same. However, in Figure \ref{fig:hme:coop}, the curve is almost rainbow colored. In order for this to happen, each expert should be responsible of output, in the same order of color spectrum. This is shown more clearly in Figure \ref{fig:hme:experts}. In short, HME model first divides the spiral in half, use the left subtree for the outer region and the right subtree for the inner region. The same procedure is repeated for children (though the order may change).
+
+%Note that it is only $G$ that is modeled this way, $D$ remains the usual deep neural network.
 
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[width=0.75\columnwidth]{hmegan.pdf}
 \end{center}
 \caption{Hierarchical mixture of experts GAN}
-\vskip\baselineskip % Leave a vertical skip below the figure
+\vskip\baselineskip
 \label{fig:models:hmegan}
 \end{figure}
 
-% We use a widely adopted DCGAN \cite{radford2015unsupervised} architecture for the generator. In DCGAN, we project the input noise vector $\boldsymbol{z}$ into a high dimensional vector and reshape it to apply transposed convolution operation. This projection is done with a fully-connected perceptron layer. Here, we remove this layer and add a SDT. Given an input vector $\boldsymbol{z}$, SDT softly decides which leaves (experts) to use. Leaves contain high-dimensional vectors (to be used for transposed convolution), that are also learned throughout the training. The model is visually summarized in Figure \ref{fig:models:hmegan}. Instead of a tree structure, a flat gating function can also be used as in \cite{me}.
-Just like the hierarchical mixture of experts \cite{jordan1994hierarchical} go from the flat organization of mixture of experts  \cite{jacobs1991adaptive} to a tree, our proposed hierarchical mixture of generators go from a flat mixture of generators to a tree. As shown in Figure \ref{fig:models:hmegan}, we have a binary tree where each internal node has a gating model that chooses between the two children based on $z$. The leaves of the tree give the output $\{z_i\}_{i=1}^m$. The final $z'$ is the weighted sum of all of the leaves weighted by the gating values on each path. A shared network then generates $x$ from this final $z'$.  We used the deconvolutional part of a widely used GAN architecture, namely DCGAN \cite{radford2015unsupervised}, as the shared network. Using a shared network is optional and depends on the domain we want to model. For image data sets, since images share lots of common texture, use of a shared network is essential for an economic (in terms of number of parameters) model.
+% As shown in Figure \ref{fig:models:hmegan}, we have a binary tree where each internal node has a gating model that chooses between the two children based on $z$. The leaves of the tree give the output $\{z_i\}_{i=1}^m$. The final $z'$ is the weighted sum of all of the leaves weighted by the gating values on each path. A shared network then generates $x$ from this final $z'$.  We used the deconvolutional part of a widely used GAN architecture, namely DCGAN \cite{radford2015unsupervised}, as the shared network. Using a shared network is optional and depends on the domain we want to model. For image data sets, since images share lots of common texture, use of a shared network is essential for an economic (in terms of number of parameters) model.
 
-Let $z \in \mathbb{R}^{d}$. In the original DCGAN architecture, the data lies in $\mathbb{R}^{d}$ after the first transformation even though the resulting vector is high-dimensional. When we use constant leaf vectors, HME can only output values in the \emph{convex hull} that is defined by its leaves since it takes a convex combination of its leaf vectors. Therefore, the data lies in $\mathbb{R}^m$ after the HME transformation where $m$ is the number of leaves. As a result, we separate the relation between the dimensionality of the input vector and the latent distribution. For example, we can set the dimensionality of the noise vector as $2$ but have a $128$-dimensional latent distribution that is defined by the output of the HME by using 128 leaves. The parameters of the gating functions and the leaves are learned throughout the training. The leaf values decide the vertices of the convex hull and the gating functions decide the distribution between the leaf values.
+% Let $z \in \mathbb{R}^{d}$. In the original DCGAN architecture, the data lies in $\mathbb{R}^{d}$ after the first transformation even though the resulting vector is high-dimensional. When we use constant leaf vectors, HME can only output values in the \emph{convex hull} that is defined by its leaves since it takes a convex combination of its leaf vectors. Therefore, the data lies in $\mathbb{R}^m$ after the HME transformation where $m$ is the number of leaves. As a result, we separate the relation between the dimensionality of the input vector and the latent distribution. For example, we can set the dimensionality of the noise vector as $2$ but have a $128$-dimensional latent distribution that is defined by the output of the HME by using 128 leaves. The parameters of the gating functions and the leaves are learned throughout the training. The leaf values decide the vertices of the convex hull and the gating functions decide the distribution between the leaf values.
 
 \chapter{EXPERIMENTS}
 \label{chapter:exps}
@@ -446,6 +463,9 @@ Examples from each data set is shown in Figure \ref{fig:datasets}. All images co
 
 \section{Experimental Setup}
 \label{sec:setup}
+
+\subsection{Architecture Details}
+\label{subsec:architecture}
 These settings are applied to all experiments unless otherwise stated. The convolutional architecture that we use is the DCGAN \cite{radford2015unsupervised}. Since MNIST and FashionMNIST are $32\times 32$ pixels and other data sets are $64\times 64$ pixels, we used different networks with different sizes. The network architectures used for the former and latter data sets are given in Table \ref{tab:models} that shows the number of units in each layer and the convolutional structure. Layers 2 to 5 are transposed convolutional layers and layer 1 is fully connected for FC, or is where we have the HME or ME structure embedded. The dimensionality of the input $z$ is set to 100. We did not use normalization in $G$ but used layer normalization \cite{lei2016layer} in $D$.
 
 \begin{table}[thbp]
@@ -473,11 +493,26 @@ These settings are applied to all experiments unless otherwise stated. The convo
 \end{center}
 \end{table}
 
+\subsection{Hyperparameters}
+\label{subsec:hyperparameter}
 Wasserstein loss \cite{arjovsky2017wasserstein} with gradient penalty \cite{gulrajani2017improved} is used. We adopted the suggested hyperparameter setting of Wasserstein loss recommended in \cite{gulrajani2017improved}, namely two-sided gradient penalty with a constant of $10.0$. The discriminator is trained 5 times per optimization step of the generator. We used Adam optimizer \cite{kingma2014adam} with amsgrad option \cite{reddi2019convergence}. Learning rate is set to $0.0001$ with beta values of Adam set to $(0.5, 0.999)$. We do not apply learning rate decay. Batch size is set to 128.
 
-For the evaluation of GAN methods, we used the most popular evaluation criteria that are the Fr\'echet Inception distance (FID) \cite{heusel2017gans} and the two-sample test (C2ST) \cite{lopez2016revisiting}, here, 5-nearest neighbor (5-NN) leave-one-out accuracy. Both FID and 5-NN accuracy are calculated with the activations before the softmax layer (2048-dim) of InceptionV3 \cite{szegedy2016rethinking}. Lower FID scores are better and 5-NN accuracies that are close to 50\% are better. All models are run five times with different random seeds, and we report the average and standard deviations.
+\subsection{Evaluation}
+\label{subsec:eval}
+For the evaluation of GAN methods, we used the most popular evaluation criteria that are the Fr\'echet Inception distance (FID) \cite{heusel2017gans} and the two-sample test (C2ST) \cite{lopez2016revisiting}, here, 5-nearest neighbor (5-NN) leave-one-out accuracy. Both FID and 5-NN accuracy are calculated with the activations before the softmax layer (2048-dim) of InceptionV3 \cite{szegedy2016rethinking}. Lower FID scores are better and 5-NN accuracies that are close to 50\% are better. All models are run five times with different random seeds, and we report the mean and standard deviations.
 
-Seed numbers are set to {2019, 2020, 2021, 2022, 2023}. Except CuDNN \cite{chetlur2014cudnn} operations which are not deterministic but do not effect experiment results, all experiments are reproducible with given seeds. PyTorch auto-differentiation library \cite{paszke2017automatic} is used to automatically calculate gradients by exploiting the chain rule of Calculus. 
+We use these statistics to compare models with Welch's $t$-test. Welch's $t$-test is a method to test whether two populations have the same mean or not, when we do not know whether these two populations have the same variance. Basically, we calculate the $t$ statistic:
+\begin{equation}
+t = \frac{\bar{X}_1-\bar{X}_2}{\sqrt{\frac{s_1^2}{N_1} + \frac{s_2^2}{N_2}}}
+\label{eq:tstat}
+\end{equation}
+where $\bar{X}_1$, $\bar{X}_2$ are sample means, $s_1^2$, $s_2^2$ are sample variances and $N_1$, $N_2$ are the number of observations for the first and the second distribution respectively. We use the $t$-distribution with $\nu$ degree of freedoms where $\nu$ is estimated as follows:
+\begin{equation}
+\nu \approx \frac{\left(\frac{s_1^2}{N_1} + \frac{s_2^2}{N_2}\right)^2}{\frac{s_1^4}{N_1^2(N_1-1)}+\frac{s_2^4}{N_2^2(N_2-1)}}
+\label{eq:dof}
+\end{equation}
+
+Seed numbers are set to {2019, 2020, 2021, 2022, 2023} for five different runs.. Except CuDNN \cite{chetlur2014cudnn} operations which are not deterministic but do not effect experiment results, all experiments are reproducible with given seeds. PyTorch auto-differentiation library \cite{paszke2017automatic} is used to automatically calculate gradients by exploiting the chain rule of Calculus. 
 
 \section{Tree Structure vs. Flat Structure}
 \label{sec:hme-vs-me}
