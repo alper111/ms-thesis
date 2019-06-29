@@ -705,7 +705,7 @@ Some samples generated from ME-64 and HME-6 are shown in Figure \ref{fig:samples
 \label{fig:samples}
 \end{figure}
 
-We also tried to visualize the learned experts representations for ME and HME, as we did in Chapter \ref{chapter:mixture_gan}. To do this, we count the responsibility values (gating values) of leafs for each generated image. Then, for each leaf, we take a weighted average of generated images where weights are responsibilities of the leaf for each image. This will give us the leaf's expected responsibility, in other words its contribution. The result is shown in Figure \ref{fig:leafs}. We can say from the figure that HME leafs are more diverse and local when compared with ME leafs. Interpretation of this figure is important. This figure is not about sample quality or sample diversity. It is rather about the relation of leafs with each other. In Figure \ref{fig:leafs:me_fashion}, leafs seem more blurry. This says that leafs of ME are not specialized for a region of $p(z)$ but rather used throughout many regions of $p(z)$. To understand this clearly, we show the covariance matrices of leaf gating values in Figure \ref{fig:covariances}. These are $64 \times 64$ matrices where each index corresponds to a leaf. For example, for both matrices we see that the diagonal values are higher than others. This implies leafs are rather used alone, or used with high proportion. For ME in Figure \ref{fig:cov:me}, correlations are randomly scattered. Its counterpart HME (Figure \ref{fig:cov:hme}) has correlations gathered around the diagonal. Furthermore, we can see spectral squares of sizes $4 \times 4$ and $8 \times 8$. This shows that cooperations are done in a hierarchical way.
+We also tried to visualize the learned experts representations for ME and HME. To do this, we count the responsibility values (gating values) of leafs for each generated image. Then, for each leaf, we take a weighted average of generated images where weights are responsibilities of the leaf for each image. This will give us the leaf's expected responsibility, in other words its contribution. The result is shown in Figure \ref{fig:leafs}. We can say from the figure that HME leafs are more diverse and local when compared with ME leafs. Interpretation of this figure is important. This figure is not about sample quality or sample diversity. It is rather about the relation of leafs with each other. In Figure \ref{fig:leafs:me_fashion}, leafs seem more blurry. This says that leafs of ME are not specialized for a region of $p(z)$ but rather used throughout many regions of $p(z)$. To understand this clearly, we show the covariance matrices of leaf gating values in Figure \ref{fig:covariances}. These are $64 \times 64$ matrices where each index corresponds to a leaf. For example, for both matrices we see that the diagonal values are higher than others. This implies leafs are rather used alone, or used with high proportion. For ME in Figure \ref{fig:cov:me}, correlations are randomly scattered. Its counterpart HME (Figure \ref{fig:cov:hme}) has correlations gathered around the diagonal. Furthermore, we can see spectral squares of sizes $4 \times 4$ and $8 \times 8$. This shows that cooperations are done in a hierarchical way.
 
 \begin{figure}[htbp]
 \begin{center}
@@ -723,22 +723,108 @@ We also tried to visualize the learned experts representations for ME and HME, a
 \label{fig:covariances}
 \end{figure}
 
-\section{Fully-connected vs. HME}
+\section{Fully-connected vs. Mixture of Constants}
 \label{sec:fc-vs-hme}
-Now that we see the difference between ME and HME, we rather focus on HME and compare it with a fully-connected (FC) layer. In Figure \ref{fig:models:hmegan}, this corresponds to having one fully connected layer between $z$ and $z'$.
+Now that we see the difference between ME and HME, we rather focus on the difference between a mixture of constants layer and a fully-connected (FC) layer. In Figure \ref{fig:models:hmegan}, this corresponds to having one fully connected layer between $z$ and $h$.
 
 % One advantage of HME lies in complexity. Let us say $z$ is 100 dimensional and $z'$ is 1000 dimensional; a fully connected layer has 100,000 weights, but a tree uses gating nodes all of which are 100 dimensional, so unless the tree has more than 100 leaves, the tree is much simpler in terms of memory and computation.
 
-Experiment results are reported in Table \ref{tab:fc-hme}. These results show that though HME is good, is not as good as FC in terms of FID score or 5-NN accuracy. Its performance improves as the structure gets larger; note that trees with depth 5 and 6 are smaller than FC. We conjecture that performance drop might be due to decreased sample diversity. Although 5-NN real accuracies are quite close, there is a gap between 5-NN fake accuracies. High 5-NN fake accuracy implies that fake samples are located near fake samples in $p(x)$.
+Experiment results are reported in Table \ref{tab:fc-hme} and \ref{tab:me}. We made a Welch's t-test to test whether there is a significant difference between these metrics. We took FC results as the baseline and mark ME and HME results with plus (or minus) where those metrics are significantly higher (or lower) than the one for FCs (Table \ref{tab:fc-hme} and \ref{tab:me}). These results show that though ME and HME are good, are not as good as FC in terms of FID score or 5-NN accuracy. Their performance improves as the structure gets larger; note that trees with depth 5 and 6 are smaller than FC. We conjecture that performance drop might be due to decreased sample diversity. Although 5-NN real accuracies are quite close, there is a gap between 5-NN fake accuracies. High 5-NN fake accuracy implies that fake samples are located near fake samples in $p(x)$.
 
 One possible cause for the decreased diversity is to use constant vectors in the leafs. In FC version, the random vector $z$ is gone through an affine transformation and a rectified linear unit (ReLU) non-linearity. HME, on the other hand, encapsulates the information of $z$ in its gatings. Gating units are sigmoid functions. Sigmoid functions get saturated for values that are too low or too high. Therefore, if gating weights get too high or too low, which also means that it mimics a hard split instead of a soft one, the variety is lost due to sigmoid function. So although we want our experts to specialize, they output constant vectors when they are too specialized. To remedy this problem, we introduce linear experts in the leafs instead of constant vectors.
 
 \section{Linear Experts}
 \label{sec:hme-linear}
+We use linear functions as in Equation \ref{eq:linear} at leaves of both ME and HME models. We experimented with number of generators set to 4, 8, 16 and 32. We call these models as ME-L-$k$ and HME-L-$k$ where $k$ is the number of generators for the flat mixture and the depth level for the hierarchical mixture.
 
-* leaflerin işlevleri *
+\begin{figure}[htbp]
+\begin{center}
+\subfloat[ME-L-16 leafs]{
+	\includegraphics[width=0.5\linewidth]{me_lin_leafs_fashion.png}
+	\label{fig:leafs_lin:me_fashion}
+}
+\subfloat[HME-L-4 leafs]{
+	\includegraphics[width=0.5\linewidth]{hme_lin_leafs_fashion.png}
+	\label{fig:leafs_lin:hme_fashion}
+}
+\end{center}
+\caption{Leaf responsibilities of ME-L-16 (left) and HME-L-4 (right).}
+\vskip\baselineskip
+\label{fig:leafs_lin}
+\end{figure}
 
-* datayı hapsetme meselesi *
+\begin{figure}[htbp]
+\begin{center}
+\subfloat{
+	\includegraphics[width=0.5\linewidth]{me_lin_samples_mnist.png}
+	\label{fig:samples_lin:me_mnist}
+}
+\subfloat{
+	\includegraphics[width=0.5\linewidth]{hme_lin_samples_mnist.png}
+	\label{fig:samples_lin:hme_mnist}
+}
+
+\subfloat{
+	\includegraphics[width=0.5\linewidth]{me_lin_samples_fashion.png}
+	\label{fig:samples_lin:me_fashion}
+}
+\subfloat{
+	\includegraphics[width=0.5\linewidth]{hme_lin_samples_fashion.png}
+	\label{fig:samples_lin:hme_fashion}
+}
+
+\subfloat{
+	\includegraphics[width=0.5\linewidth]{me_lin_samples_celeb.png}
+	\label{fig:samples_lin:me_celeb}
+}
+\subfloat{
+	\includegraphics[width=0.5\linewidth]{hme_lin_samples_celeb.png}
+	\label{fig:samples_lin:hme_celeb}
+}
+
+\subfloat{
+	\includegraphics[width=0.5\linewidth]{me_lin_samples_utzap50k.png}
+	\label{fig:samples_lin:me_utzap50k}
+}
+\subfloat{
+	\includegraphics[width=0.5\linewidth]{hme_lin_samples_utzap50k.png}
+	\label{fig:samples_lin:hme_utzap50k}
+}
+
+\subfloat{
+	\includegraphics[width=0.5\linewidth]{me_lin_samples_flowers.png}
+	\label{fig:samples_lin:me_flowers}
+}
+\subfloat{
+	\includegraphics[width=0.5\linewidth]{hme_lin_samples_flowers.png}
+	\label{fig:samples_lin:hme_flowers}
+}
+\end{center}
+\caption{Samples generated using ME-L-16 (left) and HME-L-4 (right).}
+\vskip\baselineskip
+\label{fig:samples_lin}
+\end{figure}
+
+The experimental results on five data sets are given in Table \ref{tab:hme-depth} and \ref{tab:me-depth}. First, we see that both ME-L and HME-L models outperform FC model. Welch's t-test results say that both ME-L and HME-L have significantly lower 5-NN real, 5-NN fake and FID scores for all data sets. Though one can expect these results since the number of parameters increases. Both 5-NN real and 5-NN fake accuracy drops, which says our mixture models fit better to $p(x)$ with more variety. Some samples are visualized in Figure \ref{fig:samples_lin}.
+
+When we compare ME-L and HME-L models, we see that ME slightly enjoys more from having linear experts. If we look at Figure \ref{fig:leafs_lin}, ME-L leafs are now more local and diverse. Figure \ref{fig:cov_lin:me} also confirms this since the diagonal is now more prominent. On the other hand, in Figure \ref{fig:cov_lin:hme} HME seems to use its leaves in a more cooperative way when compared with its constant counterpart. For both formulations, results stagnates at their largest models. We argue that the training time may increase when the number of generators increase since we distribute the error to multiple generators. More generators imply we update generators with smaller gradients. Also, the bottleneck may be caused by other factors.
+
+
+\begin{figure}[htbp]
+\begin{center}
+\subfloat[ME-64]{
+	\includegraphics[width=0.5\linewidth]{cov_me_lin.pdf}
+	\label{fig:cov_lin:me}
+}
+\subfloat[HME-6]{
+	\includegraphics[width=0.5\linewidth]{cov_hme_lin.pdf}
+	\label{fig:cov_lin:hme}
+}
+\end{center}
+\caption{Covariance matrix of leaf densities for ME-L-16 and HME-L-4.}
+\vskip\baselineskip
+\label{fig:covariances_lin}
+\end{figure}
 
 \begin{table}[thbp]
 \vskip\baselineskip
