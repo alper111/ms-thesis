@@ -367,15 +367,24 @@ This structure can be though as a soft decision tree as opposed to a hard decisi
 \label{fig:toy}
 \end{figure}
 %
-For a visual understanding of the model, let us look at Figure \ref{fig:hme:toy}. We are given a spiral-like shaped two-dimensional data set. We trained an HME-GAN model with a depth of 3, therefore 8 linear generators. In Figure \ref{fig:hme:samples}, we see the trained model's response. To see which generator is responsible for which part, we pick a color for each generator and visualize its response with the respective color. The responsibility of each generator is calculated by softly counting the gating function's output for each point. This soft count decides the transparency level (alpha level) of the visualized point. This is shown in Figure \ref{fig:toy:coop}. The horizontal line in Figure \ref{fig:toy:coop} shows the color of each generator. As we expect, we see that the color changes when we change the region. Responses of each generator alone is also shown in Figure \ref{fig:toy:experts}. We understand that some generators are not used at all.
+For a visual understanding of the model, let us look at Figure \ref{fig:toy}. We are given a spiral-like shaped two-dimensional data set. We trained an HME-GAN model with a depth of 3, therefore 8 linear generators. In Figure \ref{fig:toy:samples}, we see the trained model's response. To see which generator is responsible for which part, we pick a color for each generator and visualize its response with the respective color. The responsibility of each generator is calculated by softly counting the gating function's output for each point. This soft count decides the transparency level (alpha level) of the visualized point. This is shown in Figure \ref{fig:toy:coop}. The horizontal line in Figure \ref{fig:toy:coop} shows the color of each generator. As we expect, we see that the color changes when we change the region. Responses of each generator alone is also shown in Figure \ref{fig:toy:experts}. We understand that some generators are not used at all.
 
-Our experiments are done in the image domain. It is known that using a convolutional architecture for tasks that involve images increases performance dramatically. For example, although the set of human face images contain many modes, textures are quite the same. For this reason, we incorporate transposed convolutional (also known as deconvolutional) layers in both of our models. Instead of generating samples directly in the data domain $x$, our mixture models first generates an intermediate hidden representation $h$, that is given to a transposed convolutional architecture $G_s$. This architecture then produces the output $x$. For the human face example, local generators create an intermediate representation which may hold information about the location and the color of eyes,  and $G_s$ produces eyes given these features. For other domains where data points share common features, another domain specific architecture can be used to increase the performance given that the architecture is differentiable. The pipeline is depicted in Figure \ref{fig:models:hmegan}. Note that it is only $G$ that is modeled this way, $D$ remains the usual deep neural network.
+Our experiments are done in the image domain. It is known that using a convolutional architecture for tasks that involve images increases performance dramatically. For example, although the set of human face images contain many modes, textures are quite the same. For this reason, we incorporate transposed convolutional (also known as deconvolutional) layers in both of our models. Instead of generating samples directly in the data domain $x$, our mixture models first generates an intermediate hidden representation $h$, that is given to a transposed convolutional architecture $G_s$. This architecture then produces the output $x$. For the human face example, local generators create an intermediate representation which may hold information about the location and the color of eyes,  and $G_s$ produces eyes given these features. For other domains where data points share common features, another domain specific architecture can be used to increase the performance given that the architecture is differentiable. The pipeline is depicted in Figure \ref{fig:models:hmegan}. Note that it is only $G$ that is modeled with ME or HME, $D$ remains the usual deep neural network.
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=0.75\columnwidth]{me-gan.pdf}
+\end{center}
+\caption{ME-GAN}
+\vskip\baselineskip
+\label{fig:models:me-gan}
+\end{figure}
 
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[width=0.75\columnwidth]{hmegan.pdf}
 \end{center}
-\caption{Hierarchical mixture of experts GAN}
+\caption{HME-GAN}
 \vskip\baselineskip
 \label{fig:models:hmegan}
 \end{figure}
