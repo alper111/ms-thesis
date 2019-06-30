@@ -20,8 +20,8 @@
 \newtheorem{lem}[thm]{Lemma}
 \newtheorem{cor}[thm]{Corollary}
 % COVER PAGE
-\title{HIERARCHICAL MIXTURES OF GENERATORS}
-\turkcebaslik{ÜRETİCİLERİN HİYERARŞİK KARIŞIMLARI}
+\title{HIERARCHICAL MIXTURES OF GENERATORS IN GENERATIVE ADVERSARIAL NETWORKS}
+\turkcebaslik{ÇEKİŞMELİ ÜRETİCİ AĞLARDA HİYERARŞİK ÜRETİCİ KARIŞIMLARI}
 \degree{B.S., Computer Engineering, Boğaziçi University, 2017}
 \author{Alper Ahmetoğlu}
 \program{Computer Engineering}
@@ -42,10 +42,11 @@
 Empty for now.
 \end{acknowledgements}
 \begin{abstract}
-Generative adversarial networks are used successfully to model complex data distributions. One variant trains multiple generators each one responsible from one local mode of the data distribution. In this work, we review such approaches and propose a hierarchical mixture of generators, learning a hierarchical division in the tree structure as well as the local generators in the leaves. Since these experts are combined softly, the whole model is continuous and can be trained using gradient-based optimization. Our experiments on five image data sets, namely, MNIST, FashionMNIST, CelebA, UTZap50K and Oxford Flowers, show that our proposed model is as successful as the fully connected neural network; the learned hierarchical structure also allows for knowledge extraction.
+Recently proposed generative adversarial networks (GANs) are deep neural networks that are designed to model complex data distributions. The idea is to create a discriminator network that learns the borders of the data distribution; and a generator network which is trained to maximize the discriminator's loss to learn generating samples from the data distribution. Because there usually exists multiple modes in a data distribution, GANs often suffer to model all modes of the data. Instead of learning a global generator, one variant trains multiple generators each one responsible from one local mode of the data distribution. In this thesis, we review such approaches and propose a hierarchical mixture of generators, learning a hierarchical division in the tree structure as well as the local generators in the leaves. Since these generators are combined softly, the whole model is continuous and can be trained using gradient-based optimization. Our experiments on five image data sets, namely, MNIST, FashionMNIST, CelebA, UTZap50K and Oxford Flowers, show that our proposed model is as successful as the fully connected neural network; the learned hierarchical structure also allows for knowledge extraction.
 \end{abstract}
 \begin{ozet}
-Generative adversarial networks are used successfully to model complex data distributions. One variant trains multiple generators each one responsible from one local mode of the data distribution. In this work, we review such approaches and propose a hierarchical mixture of generators, learning a hierarchical division in the tree structure as well as the local generators in the leaves. Since these experts are combined softly, the whole model is continuous and can be trained using gradient-based optimization. Our experiments on four image data sets, namely, MNIST, FashionMNIST, CelebA, UTZap50K and Oxford Flowers, show that our proposed model is as successful as the fully connected neural network; the learned hierarchical structure also allows for knowledge extraction.
+Çekişmeli üretici ağlar (ÇÜA), karmaşık veri dağılımlarını modellemek için öne sürülmüş derin sinir ağlarıdır. Ana düşünce, veri dağılımının sınırlarını öğrenen bir ayırıcı ağ üretip, bu ayırıcı ağ yardımı ile bir başka üretici ağı eğitmektir. Üretici ağ ayırıcı ağın hatasını yükseltmeye çalışarak örnekleme yapmayı öğrenir. Veri dağılımla-rında genelde birden fazla tepe bulunduğu için, ÇÜA'lar veri dağılımının hepsini öğren-mekte zorlanırlar. Evrensel tek bir üretici öğrenmek yerine, her biri dağılımın yerel bir kısmından sorumlu olan birden fazla üretici öğrenen varyantlar da bulunmaktadır. Bu tezde bu varyantları inceleyerek yeni bir mimari öne sürdük: hiyerarşik üretici karışımları. Bu mimaride ağaç, dağılımı hiyerarşik bir şekilde bölmeyi öğrenir; ağacın yapraklarında ise yerel üreticiler bulunmaktadır. Bu üreticiler esnek bir biçimde birleş-tirildiklerinden dolayı bütün model sürekli bir fonksiyondur ve türev bilgisine dayanan en iyileme metotları ile eğitilebilir. 5 farklı veri kümesinde (MNIST, FashionMNIST, CelebA, UTZap50K ve Oxford Flowers) yaptığımız deneyler göstermektedir ki öne sürdüğümüz mimari yoğun katmanlı sinir ağları kadar başarılıdır. Bunun dışında öğrenilen hiyerarşik yapı, veri dağılımı hakkında damıtılmış bir bilgi vermektedir.
+
 \end{ozet}
 \tableofcontents
 \listoffigures
@@ -828,7 +829,7 @@ When we compare ME-L and HME-L models, we see that ME slightly enjoys more from 
 
 \begin{table}[thbp]
 \vskip\baselineskip
-\caption[HME with linear experts for different tree depths]{HME with linear experts for different tree depths. $dim(\boldsymbol{z})$ is fixed to 100. **welch's t-test yapılacak**}
+\caption[HME with linear experts for different tree depths]{HME with linear experts for different tree depths. $dim(\boldsymbol{z})$ is fixed to 100.}
 \begin{center}
 \begin{tabular}{|c|c|c|c|c|c|}
 \hline
@@ -886,7 +887,7 @@ When we compare ME-L and HME-L models, we see that ME slightly enjoys more from 
 
 \begin{table}[thbp]
 \vskip\baselineskip
-\caption[ME with linear experts for different number of experts]{ME with linear experts for different number of experts. $dim(\boldsymbol{z})$ is fixed to 100. **welch's t-test yapılacak**}
+\caption[ME with linear experts for different number of experts]{ME with linear experts for different number of experts. $dim(\boldsymbol{z})$ is fixed to 100.}
 \begin{center}
 \begin{tabular}{|c|c|c|c|c|c|}
 \hline
@@ -944,14 +945,14 @@ When we compare ME-L and HME-L models, we see that ME slightly enjoys more from 
 
 \section{Interpretation of the Learned Model}
 \label{sec:interpret}
-Though our proposed model is not as good as the FC in terms of FID or 5-NN scores, its main advantage is interpretability. To investigate the learned representation, we generate $100$ samples from the generated model and for each node $m$, we take a weighted average of the generated samples. In a hard decision tree where we choose left or right, a hard count corresponds to the path from root to prediction leaf. Here, we instead find the soft count of a node by multiplying the gating values up to that node. The result is visualized in Figure \ref{fig:polar:mnist}. We see that earlier levels of the tree correspond to the means of larger samples and as we go down to the leaves, there is specialization, an indication that the tree structure divides the input space into regions. We can think of the structure implementing a soft hierarchical clustering. 
+The main advantage HME model is its interpretability. To investigate the learned representation, we generate $100$ samples from the generated model and for each node $m$, we take a weighted average of the generated samples. These weights are counts that correspond to the number of times node $m$ is used. In a hard decision tree where we choose left or right, a hard count corresponds to the path from root to prediction leaf. Here, we instead find the soft count of a node by multiplying the gating values up to that node. As in Figures \ref{fig:leafs} and \ref{fig:leafs_lin}, we calculate responsibilities but for all nodes. Results for different data sets are visualized in Figures \ref{fig:polar:mnist}, \ref{fig:polar:fashion}, \ref{fig:polar:celeb}, \ref{fig:polar:utzap50k}, \ref{fig:polar:flowers}. We see that earlier levels of the tree correspond to the means of larger samples and as we go down to the leaves, there is specialization, an indication that the tree structure divides the input space into regions. We can think of the structure implementing a soft hierarchical clustering. For example in Oxford Flowers data set in Figure \ref{fig:polar:flowers}, at the 2nd level, we see splits that results in yellow and pink colored nodes. Pink colored subtree then further splits into nodes that cover more spectrum around the pink color. Although this is applied to the image domain here, it can be used in other domains as well. After training, we get a soft hierarchical clustering for free. Note that we cannot do such analysis for ME or other methods that use multiple generators mentioned in Chapter \ref{chapter:multiple_gan}, since none of these approaches are hierarchical.
 
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[width=\columnwidth]{polar_mnist.pdf}
 \end{center}
 \caption{Mean responses of each node. At the center, there is the root. As we go outer, the depth increases and therefore granularity level increases.}
-\vskip\baselineskip % Leave a vertical skip below the figure
+\vskip\baselineskip
 \label{fig:polar:mnist}
 \end{figure}
 
@@ -960,7 +961,7 @@ Though our proposed model is not as good as the FC in terms of FID or 5-NN score
 \includegraphics[width=\columnwidth]{polar_fashion.pdf}
 \end{center}
 \caption{Mean responses of each node. At the center, there is the root. As we go outer, the depth increases and therefore granularity level increases.}
-\vskip\baselineskip % Leave a vertical skip below the figure
+\vskip\baselineskip
 \label{fig:polar:fashion}
 \end{figure}
 
@@ -969,7 +970,7 @@ Though our proposed model is not as good as the FC in terms of FID or 5-NN score
 \includegraphics[width=\columnwidth]{polar_celeb.pdf}
 \end{center}
 \caption{Mean responses of each node. At the center, there is the root. As we go outer, the depth increases and therefore granularity level increases.}
-\vskip\baselineskip % Leave a vertical skip below the figure
+\vskip\baselineskip
 \label{fig:polar:celeb}
 \end{figure}
 
@@ -978,7 +979,7 @@ Though our proposed model is not as good as the FC in terms of FID or 5-NN score
 \includegraphics[width=\columnwidth]{polar_utzap50k.pdf}
 \end{center}
 \caption{Mean responses of each node. At the center, there is the root. As we go outer, the depth increases and therefore granularity level increases.}
-\vskip\baselineskip % Leave a vertical skip below the figure
+\vskip\baselineskip
 \label{fig:polar:utzap50k}
 \end{figure}
 
@@ -987,7 +988,7 @@ Though our proposed model is not as good as the FC in terms of FID or 5-NN score
 \includegraphics[width=\columnwidth]{polar_flowers.pdf}
 \end{center}
 \caption{Mean responses of each node. At the center, there is the root. As we go outer, the depth increases and therefore granularity level increases.}
-\vskip\baselineskip % Leave a vertical skip below the figure
+\vskip\baselineskip
 \label{fig:polar:flowers}
 \end{figure}
 
@@ -1023,13 +1024,31 @@ Though our proposed model is not as good as the FC in terms of FID or 5-NN score
 \label{fig:interpolations}
 \end{figure}
 
-\chapter{CONCLUSION}
+\chapter{CONCLUSIONS AND FUTURE WORK}
 \label{chapter:conc}
-We propose a hierarchical mixture of generators model for GAN. We show that the parameters can be trained using the gradient information. Our experimental results show that the model can generate samples that are realistic and diverse. Though results are not as good as the the fully connected vanilla model, they are promising.
 
-The greatest advantage of the proposed model is interpretability. Since this is a tree architecture, we can make post-hoc analysis to the learned tree to gain insight about the data. The tree structure indicates granularity at different levels and leaves correspond to modes of the distribıtion.
+\section{Conclusions}
+\label{sec:conc}
+\begin{itemize}
+\item We propose two mixture of generators architecture for GAN framework: the flat mixture of generators and the hierarchical mixture of generators. There are other works that also incorporate multiple generators however none of them mix the generator outputs. They train different generator models with some kind of regularizing effect that pushes different generators to different modes. Our formulation is the first to our knowledge that uses multiple generators cooperatively by mixing them. 
+\item As in regular GAN, parameters of our proposed models can be trained using the gradient information which can be calculated for each parameter with back-propagation without making any changes.
+\item Our experimental results show that the model can generate samples that are realistic and diverse for five different data sets.
+\item When local generators of ME and HME are constant, the model with a FC layer performs better. In this setting, there is too much burden on the gating functions which are quite simple units. When we make a relaxation by using linear models as local generators, 5-NN accuracy levels imply the plausibility and the diversity of samples get better. Furthermore, these models perform better than the model with a FC layer however the number of parameters gets bigger.
+\item When ME and HME are compared, they perform around the same. The increment in the number of generators generally enhances results. For the constant generators, results get saturated quicker for ME than HME when the number of generators are increased. However they both get saturated when generators are linear models. This might be caused by insufficient training or some other bottleneck.
+\item An important advantage of HME is its interpretability. Since HME is a tree architecture, we can make post-hoc analysis to the learned tree to gain insight about the data. At each level of the tree, nodes can be seen as clusters. When we go deep in the tree, clusters get more local.
+\end{itemize}
 
-One future direction is to increase complexity at the leaf level; instead of constant leaves as we have now, we can have linear leaves. Another direction is to adapt the tree structure, that is model complexity, as well as parameters, during learning.
+\section{Future Work}
+\label{sec:future}
+\begin{itemize}
+\item While constant leaves are cheap but restricts the model performance, linear leaves are expensive but enhances the performance. However, it is not specifically due to having linear leaves but due to the input resolution of the convolutional architecture. One option might be to use a bottleneck structure in between these layers as in deep residual network \cite{he2016identity}. Another option might be to increase gating functions' complexity while having constant leaves but we think that gating functions should be simple models as it is now, which lets the model act as a soft decision tree.
+
+\item Instead of fixing the tree structure, we can adaptively increase and decrease the tree structure as proposed in \cite{irsoy2012soft,irsoy2014budding}.
+
+\item There is also no related work that uses the \emph{competitive} version of ME formulation. We plan to experiment and compare competitive formulation with the cooperative formulation that we did.
+
+\item To test whether there is indeed a hierarchical soft clustering, we can compare the learned representations of leafs that we show in Figure \ref{fig:leafs:hme_fashion} with $k$-means algorithm and see which one yields lower $\ell_2$ distance error.
+\end{itemize}
 
 \bibliographystyle{styles/fbe_tez_v11}
 \bibliography{references}
