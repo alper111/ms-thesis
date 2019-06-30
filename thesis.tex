@@ -299,7 +299,7 @@ All previous approaches use multiple generators yet these generators do not work
 
 \section{Flat Mixture of Generators}
 \label{sec:fmgan}
-Flat mixture of generators model, which we call FM-GAN, consists of local generators $\{g_i(z)\}_{i=1}^{K}$, a gating function $\alpha(z)$. The idea is that instead of learning a global generator, we divide the input space into regions and learn a set of local generators.
+Flat mixture of generators model, which we call ME-GAN (although the name is similar to MEGAN, we fully use the ME model unlike MEGAN, therefore keep the name with a dash), consists of local generators $\{g_i(z)\}_{i=1}^{K}$, a gating function $\alpha(z)$. The idea is that instead of learning a global generator, we divide the input space into regions and learn a set of local generators.
 \begin{gather}
 \alpha_i(z) = \frac{e^{w_{\alpha}^{(i)}z+b_{\alpha}^{(i)}}}{\sum_{j=1}^K e^{w_{\alpha}^{(j)}z+b_{\alpha}^{(j)}}} \label{eq:fmgan1}\\
 x = \sum_{i=1}^K \alpha_i(z) g_i(z) \label{eq:fmgan2}
@@ -311,33 +311,9 @@ g_i(z) &= W_i z + b_i  & (\textbf{Linear model}) \label{eq:linear}
 \end{align}
 In the constant model (Equation \ref{eq:constant}), generators do not look at inputs and only generate a constant vector response $\rho_i$. Although the generator response is constant, their combination weights $\alpha$ are still dependent on the gating function and therefore dependent on $z$. Because the combination of generators is convex, the set of possible outputs are constrained on the convex hull that is defined by $\{\rho_i\}_{i=1}^K$. Then, it is the region that is learned inside this convex hull. Therefore the most of the information about the generative model is encapsulated in the gating function. The linear model (Equation \ref{eq:linear}) relaxes the job of the gating function since the output is not confined in a convex hull any longer. The error that is propagated through the discriminator, $\partial E / \partial x$, is distributed along generators with respect to their contribution (due to the chain rule). In this way, each generator is responsible for modeling input-output mapping in the region they operate. In both formulations, we can learn parameters of the gating function $\{w_{\alpha}^{(i)}, b_{\alpha}^{(i)}\}_{i=1}^K$ and parameters of generators $\{W_i, b_i \}_{i=1}^K$ (or $\{ \rho_i \}_{i=1}^K$ for constant model) with SGD.
 
-%
-%\begin{figure}[htbp]
-%\begin{center}
-%\subfloat[Regression]{
-%	\includegraphics[width=0.5\linewidth]{me_regression.pdf}
-%	\label{fig:me:regression}
-%}
-%\subfloat[Cooperation]{
-%	\includegraphics[width=0.5\linewidth]{me_coop.pdf}
-%	\label{fig:me:coop}
-%}
-%
-%\subfloat[Experts]{
-%	\includegraphics[width=\linewidth]{me_experts.pdf}
-%	\label{fig:me:experts}
-%}
-%\end{center}
-%\caption{Results of regression task on a spiral data set with a mixture of experts model.}
-%\vskip\baselineskip
-%\label{fig:me:model}
-%\end{figure}
-%
-% For a visual understanding of the model, let us look at Figure \ref{fig:me:model}. We are given a spiral-like shaped two-dimensional data set. We trained an ME model with 8 linear experts. In Figure \ref{fig:me:regression}, we see the trained model's response. To see which expert is responsible for which part, we pick a color for each expert and visualize its response with the respective color. The responsibility of each expert is calculated by softly counting the gating function's output for each point. This soft count decides the transparency level (alpha level) of the visualized point. This is shown in Figure \ref{fig:me:coop}. The horizontal line in Figure \ref{fig:me:coop} shows the color of each expert. As we expect, we see that the color changes when we change the region. Responses of each expert alone is also shown in Figure \ref{fig:me:experts}. We understand that some experts are not used at all.
-
 \section{Hierarchical Mixture of Generators}
 \label{sec:hmgan}
-Just like the hierarchical mixture of experts \cite{jordan1994hierarchical} go from the flat organization of mixture of experts  \cite{jacobs1991adaptive} to a tree, our proposed hierarchical mixture of generators (HM-GAN) go from a flat mixture of generators to a tree. HM-GAN and FM-GAN are the same except the formulation of the gating function. Let us think of a binary decision tree. Generators are located on the leaves of this tree. At each internal node $m$ of the tree, there is a logistic function $\alpha_m$ with parameters $\{w_{\alpha}^{(m)}, b_{\alpha}^{(m)}\}$:
+Just like the hierarchical mixture of experts \cite{jordan1994hierarchical} go from the flat organization of mixture of experts  \cite{jacobs1991adaptive} to a tree, our proposed hierarchical mixture of generators (HME-GAN) go from a flat mixture of generators to a tree. HME-GAN and ME-GAN are the same except the formulation of the gating function. Let us think of a binary decision tree. Generators are located on the leaves of this tree. At each internal node $m$ of the tree, there is a logistic function $\alpha_m$ with parameters $\{w_{\alpha}^{(m)}, b_{\alpha}^{(m)}\}$:
 \begin{equation}
 \alpha_m(z) = \frac{1}{1+e^{-(w_{\alpha}^{(m)} z + b_{\alpha}^{(m)})}}
 \label{eq:sigmoid}
@@ -370,33 +346,30 @@ where $Pred(i)$ is the predecessors of the $i$th leaf. This model is differentia
 
 This structure can be though as a soft decision tree as opposed to a hard decision tree. In hard decision trees we only choose one path from root to leaves whereas in soft decision trees we consider all paths from root to leaves. There are extension of soft decision tree where we can grow the tree adaptively based on some error metric \cite{irsoy2012soft,irsoy2014budding}.
 
-Our experiments are done in the image domain. It is known that using a convolutional architecture for tasks that involve images increases performance dramatically. For example, although the set of human face images contain many modes, textures are quite the same. For this reason, we incorporate transposed convolutional (also known as deconvolutional) layers in both of our models. Instead of generating samples directly in the data domain $x$, our mixture models first generates an intermediate hidden representation $h$, that is given to a transposed convolutional architecture $G_s$. This architecture then produces the output $x$. For the human face example, local generators create an intermediate representation which may hold information about the location and the color of eyes,  and $G_s$ produces eyes given these features. For other domains where data points share common features, another domain specific architecture can be used to increase the performance given that the architecture is differentiable. The pipeline is depicted in Figure \ref{fig:models:hmegan}.
-%
-%\begin{figure}[htbp]
-%\begin{center}
-%\subfloat[Regression]{
-%	\includegraphics[width=0.5\linewidth]{hme_regression.pdf}
-%	\label{fig:hme:regression}
-%}
-%\subfloat[Cooperation]{
-%	\includegraphics[width=0.5\linewidth]{hme_coop.pdf}
-%	\label{fig:hme:coop}
-%}
-%
-%\subfloat[Experts]{
-%	\includegraphics[width=\linewidth]{hme_experts.pdf}
-%	\label{fig:hme:experts}
-%}
-%\end{center}
-%\caption{Results of regression task on a spiral data set with a hierarchical mixture of experts model.}
-%\vskip\baselineskip
-%\label{fig:hme:model}
-%\end{figure}
-%
+\begin{figure}[htbp]
+\begin{center}
+\subfloat[Generated samples ]{
+	\includegraphics[width=0.5\linewidth]{hme_out.pdf}
+	\label{fig:toy:samples}
+}
+\subfloat[Cooperation]{
+	\includegraphics[width=0.5\linewidth]{hme_coop.pdf}
+	\label{fig:toy:coop}
+}
 
-% Let us now repeat the same experiment that we did in ME (Figure \ref{fig:hme:model}). We trained an HME model with a depth of 3 (therefore 8 experts). The response is quite the same. However, in Figure \ref{fig:hme:coop}, the curve is almost rainbow colored. In order for this to happen, each expert should be responsible of output, in the same order of color spectrum. This is shown more clearly in Figure \ref{fig:hme:experts}. In short, HME model first divides the spiral in half, use the left subtree for the outer region and the right subtree for the inner region. The same procedure is repeated for children (though the order may change).
+\subfloat[Experts]{
+	\includegraphics[width=\linewidth]{hme_experts.pdf}
+	\label{fig:toy:experts}
+}
+\end{center}
+\caption{Results of training a HME-GAN on a spiral data set.}
+\vskip\baselineskip
+\label{fig:toy}
+\end{figure}
+%
+For a visual understanding of the model, let us look at Figure \ref{fig:hme:toy}. We are given a spiral-like shaped two-dimensional data set. We trained an HME-GAN model with a depth of 3, therefore 8 linear generators. In Figure \ref{fig:hme:samples}, we see the trained model's response. To see which generator is responsible for which part, we pick a color for each generator and visualize its response with the respective color. The responsibility of each generator is calculated by softly counting the gating function's output for each point. This soft count decides the transparency level (alpha level) of the visualized point. This is shown in Figure \ref{fig:toy:coop}. The horizontal line in Figure \ref{fig:toy:coop} shows the color of each generator. As we expect, we see that the color changes when we change the region. Responses of each generator alone is also shown in Figure \ref{fig:toy:experts}. We understand that some generators are not used at all.
 
-%Note that it is only $G$ that is modeled this way, $D$ remains the usual deep neural network.
+Our experiments are done in the image domain. It is known that using a convolutional architecture for tasks that involve images increases performance dramatically. For example, although the set of human face images contain many modes, textures are quite the same. For this reason, we incorporate transposed convolutional (also known as deconvolutional) layers in both of our models. Instead of generating samples directly in the data domain $x$, our mixture models first generates an intermediate hidden representation $h$, that is given to a transposed convolutional architecture $G_s$. This architecture then produces the output $x$. For the human face example, local generators create an intermediate representation which may hold information about the location and the color of eyes,  and $G_s$ produces eyes given these features. For other domains where data points share common features, another domain specific architecture can be used to increase the performance given that the architecture is differentiable. The pipeline is depicted in Figure \ref{fig:models:hmegan}. Note that it is only $G$ that is modeled this way, $D$ remains the usual deep neural network.
 
 \begin{figure}[htbp]
 \begin{center}
@@ -406,8 +379,6 @@ Our experiments are done in the image domain. It is known that using a convoluti
 \vskip\baselineskip
 \label{fig:models:hmegan}
 \end{figure}
-
-% As shown in Figure \ref{fig:models:hmegan}, we have a binary tree where each internal node has a gating model that chooses between the two children based on $z$. The leaves of the tree give the output $\{z_i\}_{i=1}^m$. The final $z'$ is the weighted sum of all of the leaves weighted by the gating values on each path. A shared network then generates $x$ from this final $z'$.  We used the deconvolutional part of a widely used GAN architecture, namely DCGAN \cite{radford2015unsupervised}, as the shared network. Using a shared network is optional and depends on the domain we want to model. For image data sets, since images share lots of common texture, use of a shared network is essential for an economic (in terms of number of parameters) model.
 
 % Let $z \in \mathbb{R}^{d}$. In the original DCGAN architecture, the data lies in $\mathbb{R}^{d}$ after the first transformation even though the resulting vector is high-dimensional. When we use constant leaf vectors, HME can only output values in the \emph{convex hull} that is defined by its leaves since it takes a convex combination of its leaf vectors. Therefore, the data lies in $\mathbb{R}^m$ after the HME transformation where $m$ is the number of leaves. As a result, we separate the relation between the dimensionality of the input vector and the latent distribution. For example, we can set the dimensionality of the noise vector as $2$ but have a $128$-dimensional latent distribution that is defined by the output of the HME by using 128 leaves. The parameters of the gating functions and the leaves are learned throughout the training. The leaf values decide the vertices of the convex hull and the gating functions decide the distribution between the leaf values.
 
