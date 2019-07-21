@@ -52,29 +52,56 @@ Recently proposed generative adversarial networks (GANs) are deep neural network
 \listoffigures
 \listoftables
 \begin{symbols}
-% The title will be typeset as "LIST OF SYMBOLS".
-%
-% Use a separate \sym command for each symbols definition.
-% First Latin symbols in alphabetical order
-
-\sym{$a_{ij}$}{Description of $a_{ij}$}
-\sym{$\mathbf{A}$}{State transition matrix of a hidden Markov model}
-% Then Greek symbols in alphabetical order
-\sym{}{}
-\sym{$\alpha$}{Blending parameter \textit{or} scale}
-\sym{$\beta_t(i)$}{Backward variable}
-\sym{$\Theta$}{Parameter set}
+\sym{$\mathbb{E}$}{Expectation}
+\sym{$\|f\|_K$}{Function $f$ is $K$-Lipschitz}
+\sym{$\mathcal{F}$}{Function family}
+\sym{$I$}{Indicator function}
+\sym{$\theta$}{Parameter set of the generator network}
+\sym{$K$}{Kernel}
+\sym{$\nabla_x f$}{Gradient of $f$ with respect to $x$}
+\sym{$p(x)$}{Probability density function of random variable $x$}
+\sym{$\mathbb{R}^d$}{Set of d-dimensional real numbers}
+\sym{$p_{true}$}{Probability distribution of true samples}
+\sym{$p_{fake}$}{Probability distribution of fake samples}
+\sym{$W_1$}{1st Wasserstein distance}
+\sym{$x$}{Real-valued vector}
+\sym{$\|x\|_2$}{Euclidean norm of $x$}
+\sym{$X$}{Data set}
+\sym{$\phi$}{Parameter set of the discriminator network}
 
 \end{symbols}
 
 \begin{abbreviations}
  % Abbreviations in alphabetical order
-\sym{2D}{Two Dimensional}
-\sym{3D}{Three Dimensional}
-\sym{AAM}{Active Appearance Model}
-\sym{ASM}{Active Shape Model}
+\sym{AE}{Auto-encoder}
+\sym{BiGAN}{Bidirectional Generative Adversarial Network}
+\sym{C2ST}{Classifier Two-Sample Test}
+\sym{CGAN}{Conditional Generative Adversarial Network}
+\sym{D}{Discriminator}
+\sym{DCGAN}{Deep Convolutional Generative Adversarial Network}
+\sym{DNN}{Deep Neural Network}
+\sym{EM}{Earth-Mover}
+\sym{FID}{Fr\'echet Inception Distance}
+\sym{G}{Generator}
+\sym{GAN}{Generative Adversarial Network}
+\sym{HME}{Hierarchical Mixture of Experts}
+\sym{HME-GAN}{Hierarchical Mixture of Experts Generative Adversarial Network}
+\sym{IS}{Inception Score}
+\sym{JSD}{Jensen-Shannon Divergence}
+\sym{KL}{Kullback-Leibler Divergence}
+\sym{k-NN}{k-Nearest Neighbor}
+\sym{LOO}{Leave One Out}
+\sym{MAD-GAN}{Multi-agent Diverse Generative Adversarial Network}
+\sym{ME}{Mixture of Experts}
+\sym{ME-GAN}{Mixture of Experts Generative Adversarial Network (ours)}
+\sym{MEGAN}{Mixture of Experts Generative Adversarial Network}
+\sym{MGAN}{Mixture Generative Adversarial Network}
+\sym{PDF}{Probability Density Function}
+\sym{ReLU}{Rectified Linear Unit}
+\sym{SGD}{Stochastic Gradient Descent}
+\sym{VAE}{Variational Auto-encoder}
+\sym{WGAN}{Wasserstein Generative Adversarial Network}
 \end{abbreviations}
-
 
 \chapter{INTRODUCTION}
 \label{chapter:intro}
@@ -174,7 +201,7 @@ which is also known as the $\ell_2$ reconstruction loss. VAEs transform the idea
 
 Conditional GAN (CGAN) \cite{mirza2014conditional} incorporates a label information $y$ to approximate class conditional distribution $p(x|y)$. The extension is simple: we concatenate the one-hot label information $y$ to the noise vector $z$ and give it to $G$ as input. To get a conditioned gradient, we give $y$ together with $x$ as input to the $D$. Since $D$ learns the true class conditional distribution $p(x|y)$, it pushes $G$ to approximate $p(x|y)$. After training, we can use $G$ to generate a sample from a specific class. Here, $y$ is a one-hot vector that contains the class information. However we can embed more information in $y$. Image-to-image translation is such an example where instead of a class information we give a sketch of an image and try to fill the image realistically \cite{isola2017image}. Given a real image (corresponds to $x$) and its sketch (corresponds to $y$), we ask $D$ whether this is a real example or not. Consequently, $G$ learns to create an image from its sketch. This is extended as translating winter scenes into summer scenes, satellite views to map views and so on. The same idea is also applied to super-resolution \cite{ledig2017photo} and image inpainting \cite{yeh2017semantic} where we only change the $(x, y)$ pairs. For example in super-resolution, $x$ is the high-resolution image and $y$ is its low-resolution version. Cycle GAN \cite{zhu2017unpaired} further extends the idea to also work with unpaired images by introducing a cycle-consistency loss. Apart from the extensions of CGAN, people also proposed methods that incorporate the information $y$ in a better way than concatenating it with the input \cite{miyato2018cgans}.
 
-In the original GAN, we do the mapping from $p(z)$ to $p(x)$.  After training, $p(z)$ can be thought as a distribution of latent factors of $p(x)$. However, given a sample $x_k$ we cannot determine its latent factors $z_k$ because the reverse direction, that is from $p(x)$ to $p(z)$ is not available. Bidirectional GAN (BiGAN) \cite{donahue2016adversarial,dumoulin2016adversarially} is proposed to remedy this issue. In BiGAN, there are networks: a generator $G$ and an encoder $E$. $G$ is as usual generates a sample $G(z)$ given a noise vector $z$. On the other hand, $E$ generates a latent code $E(x)$ given a real sample $x$. Both $G$ and $E$ concatenates their input with their output producing pairs $(z, G(z))$ and $(E(x), x)$ respectively. The discriminator $D$ tries to discriminate between these two pairs. To maximize the loss of the discriminator, $G$ must produce vectors that look like $x$, likewise $E$ must produce vectors that look like $z$. When the training converges, these pairs $(z, G(z))$ and $(E(x), x)$ must be coherent with each other in order to maximize $D$'s loss. That is we expect $E(G(z))=z$  and $G(E(x))=x$ to hold.
+In the original GAN, we do the mapping from $p(z)$ to $p(x)$.  After training, $p(z)$ can be thought as a distribution of latent factors of $p(x)$. However, given a sample $x^{(k)}$ we cannot determine its latent factors $z^{(k)}$ because the reverse direction, that is from $p(x)$ to $p(z)$ is not available. Bidirectional GAN (BiGAN) \cite{donahue2016adversarial,dumoulin2016adversarially} is proposed to remedy this issue. In BiGAN, there are networks: a generator $G$ and an encoder $E$. $G$ is as usual generates a sample $G(z)$ given a noise vector $z$. On the other hand, $E$ generates a latent code $E(x)$ given a real sample $x$. Both $G$ and $E$ concatenates their input with their output producing pairs $(z, G(z))$ and $(E(x), x)$ respectively. The discriminator $D$ tries to discriminate between these two pairs. To maximize the loss of the discriminator, $G$ must produce vectors that look like $x$, likewise $E$ must produce vectors that look like $z$. When the training converges, these pairs $(z, G(z))$ and $(E(x), x)$ must be coherent with each other in order to maximize $D$'s loss. That is we expect $E(G(z))=z$  and $G(E(x))=x$ to hold.
 
 There are yet many ideas that are tried with GANs. The gimmick is the same: we train a DNN for a specific problem, which helps us to train another DNN for another problem, which in turn helps to train  the first DNN. Because they are trained in an iterative fashion, one can think that each DNN creates a curriculum for the other. For the case of GANs, $G$ first creates random noise. $D$ learns to discriminate the random noise and the training data, which is quite easy for high-dimensional data. With the help of $D$, $G$ starts to create better samples but not the best ones. The task gets harder for $D$ each turn and likewise when $D$ gets proficient, $G$ must learn finer details which can be considered as a harder task. The problem emerges when the curriculum becomes unfair and the gradients vanish (or become unstable). In the next section, we review an approach to this problem which we also use in our experiments.
 
@@ -261,7 +288,7 @@ Though there are multiple generators, we do not mix them in a co-operative manne
 \section{Mixture GAN}
 \label{sec:mgan}
 
-MGAN \cite{hoang2018mgan} is similar to MAD-GAN except that the classifer and the discriminator are separate. The discriminator is two-class as usual discriminating between true and fake examples, and there is a separate $K$-class classifier only for the fake examples.
+Mixture GAN (MGAN) \cite{hoang2018mgan} is similar to MAD-GAN except that the classifer and the discriminator are separate. The discriminator is two-class as usual discriminating between true and fake examples, and there is a separate $K$-class classifier only for the fake examples.
 
 \begin{figure}[htbp]
 \begin{center}
@@ -346,19 +373,23 @@ where $Pred(i)$ is the predecessors of the $i$th leaf. This model is differentia
 
 This structure can be though as a soft decision tree as opposed to a hard decision tree. In hard decision trees we only choose one path from root to leaves whereas in soft decision trees we consider all paths from root to leaves. There are extension of soft decision tree where we can grow the tree adaptively based on some error metric \cite{irsoy2012soft,irsoy2014budding}.
 
+\section{A Toy Example}
+\label{sec:toy}
+For a visual understanding of the model, let us look at Figure \ref{fig:toy}. We are given a spiral-like shaped two-dimensional data set. We trained an HME-GAN model with a depth of 3, therefore 8 linear generators. In Figure \ref{fig:toy:samples}, we see the trained model's response. To see which generator is responsible for which part, we pick a color for each generator and visualize its response with the respective color. The responsibility of each generator is calculated by softly counting the gating function's output for each point. This soft count decides the transparency level (alpha level) of the visualized point. This is shown in Figure \ref{fig:toy:coop}. The horizontal line in Figure \ref{fig:toy:coop} shows the color of each generator. As we expect, we see that the color changes when we change the region. Responses of each generator alone is also shown in Figure \ref{fig:toy:experts}. We understand that some generators are not used at all.
+
 \begin{figure}[htbp]
 \begin{center}
-\subfloat[Generated samples ]{
-	\includegraphics[width=0.5\linewidth]{hme_out.pdf}
+\subfloat[Blue dots are real samples, red dots are generated samples.]{
+	\includegraphics[width=0.45\linewidth]{hme_out.pdf}
 	\label{fig:toy:samples}
 }
-\subfloat[Cooperation]{
-	\includegraphics[width=0.5\linewidth]{hme_coop.pdf}
+\subfloat[Cooperation of experts]{
+	\includegraphics[width=0.45\linewidth]{hme_coop.pdf}
 	\label{fig:toy:coop}
 }
 
-\subfloat[Experts]{
-	\includegraphics[width=\linewidth]{hme_experts.pdf}
+\subfloat[Local experts]{
+	\includegraphics[width=0.98\linewidth]{hme_experts.pdf}
 	\label{fig:toy:experts}
 }
 \end{center}
@@ -367,13 +398,15 @@ This structure can be though as a soft decision tree as opposed to a hard decisi
 \label{fig:toy}
 \end{figure}
 %
-For a visual understanding of the model, let us look at Figure \ref{fig:toy}. We are given a spiral-like shaped two-dimensional data set. We trained an HME-GAN model with a depth of 3, therefore 8 linear generators. In Figure \ref{fig:toy:samples}, we see the trained model's response. To see which generator is responsible for which part, we pick a color for each generator and visualize its response with the respective color. The responsibility of each generator is calculated by softly counting the gating function's output for each point. This soft count decides the transparency level (alpha level) of the visualized point. This is shown in Figure \ref{fig:toy:coop}. The horizontal line in Figure \ref{fig:toy:coop} shows the color of each generator. As we expect, we see that the color changes when we change the region. Responses of each generator alone is also shown in Figure \ref{fig:toy:experts}. We understand that some generators are not used at all.
 
-Our experiments are done in the image domain. It is known that using a convolutional architecture for tasks that involve images increases performance dramatically. For example, although the set of human face images contain many modes, textures are quite the same. For this reason, we incorporate transposed convolutional (also known as deconvolutional) layers in both of our models. Instead of generating samples directly in the data domain $x$, our mixture models first generates an intermediate hidden representation $h$, that is given to a transposed convolutional architecture $G_s$. This architecture then produces the output $x$. For the human face example, local generators create an intermediate representation which may hold information about the location and the color of eyes,  and $G_s$ produces eyes given these features. For other domains where data points share common features, another domain specific architecture can be used to increase the performance given that the architecture is differentiable. The pipeline is depicted in Figure \ref{fig:models:hmegan}. Note that it is only $G$ that is modeled with ME or HME, $D$ remains the usual deep neural network.
+\section{The Convolutional Pipeline}
+\label{sec:conv}
+
+Our experiments are done in the image domain. It is known that using a convolutional architecture for tasks that involve images increases performance dramatically. For example, although the set of human face images contain many modes, textures are quite the same. For this reason, we incorporate transposed convolutional (also known as deconvolutional) layers in both of our models. Instead of generating samples directly in the data domain $x$, our mixture models first generates an intermediate hidden representation $h$, that is given to a transposed convolutional architecture $G_s$. This architecture then produces the output $x$. For the human face example, local generators create an intermediate representation which may hold information about the location and the color of eyes,  and $G_s$ produces eyes given these features. For other domains where data points share common features, another domain specific architecture can be used to increase the performance given that the architecture is differentiable. The pipelines for ME-GAN and HME-GAN are depicted in Figure \ref{fig:models:me-gan} and \ref{fig:models:hmegan} respectively. Note that it is only $G$ that is modeled with ME or HME, $D$ remains the usual deep convolutional neural network.
 
 \begin{figure}[htbp]
 \begin{center}
-\includegraphics[width=0.75\columnwidth]{me-gan.pdf}
+\includegraphics[width=0.98\columnwidth]{me-gan.pdf}
 \end{center}
 \caption{ME-GAN}
 \vskip\baselineskip
@@ -382,7 +415,7 @@ Our experiments are done in the image domain. It is known that using a convoluti
 
 \begin{figure}[htbp]
 \begin{center}
-\includegraphics[width=0.75\columnwidth]{hmegan.pdf}
+\includegraphics[width=0.98\columnwidth]{hmegan.pdf}
 \end{center}
 \caption{HME-GAN}
 \vskip\baselineskip
@@ -413,25 +446,25 @@ Oxford flowers is a colored flower data set with 102 different categories with a
 \begin{figure}[htbp]
 \begin{center}
 \subfloat[MNIST]{
-	\includegraphics[width=0.5\linewidth]{mnist_dataset.png}
+	\includegraphics[width=0.45\linewidth]{mnist_dataset.png}
 	\label{fig:dataset:mnist}
 }
 \subfloat[FashionMNIST]{
-	\includegraphics[width=0.5\linewidth]{fashion_dataset.png}
+	\includegraphics[width=0.45\linewidth]{fashion_dataset.png}
 	\label{fig:dataset:fashion}
 }
 
 \subfloat[CelebA]{
-	\includegraphics[width=0.5\linewidth]{celeba_dataset.png}
+	\includegraphics[width=0.45\linewidth]{celeba_dataset.png}
 	\label{fig:dataset:celeba}
 }
 \subfloat[UTZap50K]{
-	\includegraphics[width=0.5\linewidth]{utzap50k_dataset.png}
+	\includegraphics[width=0.45\linewidth]{utzap50k_dataset.png}
 	\label{fig:dataset:utzap50k}
 }
 
 \subfloat[Oxford Flowers]{
-	\includegraphics[width=0.5\linewidth]{flowers_dataset.png}
+	\includegraphics[width=0.45\linewidth]{flowers_dataset.png}
 	\label{fig:dataset:flowers}
 }
 \end{center}
@@ -447,7 +480,7 @@ Examples from each data set is shown in Figure \ref{fig:datasets}. All images co
 
 \subsection{Architecture Details}
 \label{subsec:architecture}
-These settings are applied to all experiments unless otherwise stated. The convolutional architecture that we use is the DCGAN \cite{radford2015unsupervised}. Since MNIST and FashionMNIST are $32\times 32$ pixels and other data sets are $64\times 64$ pixels, we used different networks with different sizes. The network architectures used for the former and latter data sets are given in Table \ref{tab:models} that shows the number of units in each layer and the convolutional structure. Layers 2 to 5 are transposed convolutional layers and layer 1 is fully connected for FC, or is where we have the HME or ME structure embedded. The dimensionality of the input $z$ is set to 100. We did not use normalization in $G$ but used layer normalization \cite{lei2016layer} in $D$.
+These settings are applied to all experiments unless otherwise stated. The convolutional architecture that we use is the deep convolutional GAN (DCGAN) \cite{radford2015unsupervised}. Since MNIST and FashionMNIST are $32\times 32$ pixels and other data sets are $64\times 64$ pixels, we used different networks with different sizes. The network architectures used for the former and latter data sets are given in Table \ref{tab:models} that shows the number of units in each layer and the convolutional structure. Layers 2 to 5 are transposed convolutional layers and layer 1 is fully connected for FC, or is where we have the HME or ME structure embedded. The dimensionality of the input $z$ is set to 100. We did not use normalization in $G$ but used layer normalization \cite{lei2016layer} in $D$.
 
 \begin{table}[thbp]
 \vskip\baselineskip
@@ -621,11 +654,11 @@ Some samples generated from ME-64 and HME-6 are shown in Figure \ref{fig:samples
 \begin{figure}[htbp]
 \begin{center}
 \subfloat[ME-64 leafs]{
-	\includegraphics[width=0.5\linewidth]{me_leafs_fashion.png}
+	\includegraphics[width=0.45\linewidth]{me_leafs_fashion.png}
 	\label{fig:leafs:me_fashion}
 }
 \subfloat[HME-6 leafs]{
-	\includegraphics[width=0.5\linewidth]{hme_leafs_fashion.png}
+	\includegraphics[width=0.45\linewidth]{hme_leafs_fashion.png}
 	\label{fig:leafs:hme_fashion}
 }
 \end{center}
@@ -637,47 +670,47 @@ Some samples generated from ME-64 and HME-6 are shown in Figure \ref{fig:samples
 \begin{figure}[htbp]
 \begin{center}
 \subfloat{
-	\includegraphics[width=0.5\linewidth]{me_samples_mnist.png}
+	\includegraphics[width=0.45\linewidth]{me_samples_mnist.png}
 	\label{fig:samples:me_mnist}
 }
 \subfloat{
-	\includegraphics[width=0.5\linewidth]{hme_samples_mnist.png}
+	\includegraphics[width=0.45\linewidth]{hme_samples_mnist.png}
 	\label{fig:samples:hme_mnist}
 }
 
 \subfloat{
-	\includegraphics[width=0.5\linewidth]{me_samples_fashion.png}
+	\includegraphics[width=0.45\linewidth]{me_samples_fashion.png}
 	\label{fig:samples:me_fashion}
 }
 \subfloat{
-	\includegraphics[width=0.5\linewidth]{hme_samples_fashion.png}
+	\includegraphics[width=0.45\linewidth]{hme_samples_fashion.png}
 	\label{fig:samples:hme_fashion}
 }
 
 \subfloat{
-	\includegraphics[width=0.5\linewidth]{me_samples_celeb.png}
+	\includegraphics[width=0.45\linewidth]{me_samples_celeb.png}
 	\label{fig:samples:me_celeb}
 }
 \subfloat{
-	\includegraphics[width=0.5\linewidth]{hme_samples_celeb.png}
+	\includegraphics[width=0.45\linewidth]{hme_samples_celeb.png}
 	\label{fig:samples:hme_celeb}
 }
 
 \subfloat{
-	\includegraphics[width=0.5\linewidth]{me_samples_utzap50k.png}
+	\includegraphics[width=0.45\linewidth]{me_samples_utzap50k.png}
 	\label{fig:samples:me_utzap50k}
 }
 \subfloat{
-	\includegraphics[width=0.5\linewidth]{hme_samples_utzap50k.png}
+	\includegraphics[width=0.45\linewidth]{hme_samples_utzap50k.png}
 	\label{fig:samples:hme_utzap50k}
 }
 
 \subfloat{
-	\includegraphics[width=0.5\linewidth]{me_samples_flowers.png}
+	\includegraphics[width=0.45\linewidth]{me_samples_flowers.png}
 	\label{fig:samples:me_flowers}
 }
 \subfloat{
-	\includegraphics[width=0.5\linewidth]{hme_samples_flowers.png}
+	\includegraphics[width=0.45\linewidth]{hme_samples_flowers.png}
 	\label{fig:samples:hme_flowers}
 }
 \end{center}
@@ -691,11 +724,11 @@ We also tried to visualize the learned experts representations for ME and HME. T
 \begin{figure}[htbp]
 \begin{center}
 \subfloat[ME-64]{
-	\includegraphics[width=0.5\linewidth]{cov_me.pdf}
+	\includegraphics[width=0.45\linewidth]{cov_me.pdf}
 	\label{fig:cov:me}
 }
 \subfloat[HME-6]{
-	\includegraphics[width=0.5\linewidth]{cov_hme.pdf}
+	\includegraphics[width=0.45\linewidth]{cov_hme.pdf}
 	\label{fig:cov:hme}
 }
 \end{center}
@@ -721,11 +754,11 @@ We use linear functions as in Equation \ref{eq:linear} at leaves of both ME and 
 \begin{figure}[htbp]
 \begin{center}
 \subfloat[ME-L-16 leafs]{
-	\includegraphics[width=0.5\linewidth]{me_lin_leafs_fashion.png}
+	\includegraphics[width=0.45\linewidth]{me_lin_leafs_fashion.png}
 	\label{fig:leafs_lin:me_fashion}
 }
 \subfloat[HME-L-4 leafs]{
-	\includegraphics[width=0.5\linewidth]{hme_lin_leafs_fashion.png}
+	\includegraphics[width=0.45\linewidth]{hme_lin_leafs_fashion.png}
 	\label{fig:leafs_lin:hme_fashion}
 }
 \end{center}
@@ -737,47 +770,47 @@ We use linear functions as in Equation \ref{eq:linear} at leaves of both ME and 
 \begin{figure}[htbp]
 \begin{center}
 \subfloat{
-	\includegraphics[width=0.5\linewidth]{me_lin_samples_mnist.png}
+	\includegraphics[width=0.45\linewidth]{me_lin_samples_mnist.png}
 	\label{fig:samples_lin:me_mnist}
 }
 \subfloat{
-	\includegraphics[width=0.5\linewidth]{hme_lin_samples_mnist.png}
+	\includegraphics[width=0.45\linewidth]{hme_lin_samples_mnist.png}
 	\label{fig:samples_lin:hme_mnist}
 }
 
 \subfloat{
-	\includegraphics[width=0.5\linewidth]{me_lin_samples_fashion.png}
+	\includegraphics[width=0.45\linewidth]{me_lin_samples_fashion.png}
 	\label{fig:samples_lin:me_fashion}
 }
 \subfloat{
-	\includegraphics[width=0.5\linewidth]{hme_lin_samples_fashion.png}
+	\includegraphics[width=0.45\linewidth]{hme_lin_samples_fashion.png}
 	\label{fig:samples_lin:hme_fashion}
 }
 
 \subfloat{
-	\includegraphics[width=0.5\linewidth]{me_lin_samples_celeb.png}
+	\includegraphics[width=0.45\linewidth]{me_lin_samples_celeb.png}
 	\label{fig:samples_lin:me_celeb}
 }
 \subfloat{
-	\includegraphics[width=0.5\linewidth]{hme_lin_samples_celeb.png}
+	\includegraphics[width=0.45\linewidth]{hme_lin_samples_celeb.png}
 	\label{fig:samples_lin:hme_celeb}
 }
 
 \subfloat{
-	\includegraphics[width=0.5\linewidth]{me_lin_samples_utzap50k.png}
+	\includegraphics[width=0.45\linewidth]{me_lin_samples_utzap50k.png}
 	\label{fig:samples_lin:me_utzap50k}
 }
 \subfloat{
-	\includegraphics[width=0.5\linewidth]{hme_lin_samples_utzap50k.png}
+	\includegraphics[width=0.45\linewidth]{hme_lin_samples_utzap50k.png}
 	\label{fig:samples_lin:hme_utzap50k}
 }
 
 \subfloat{
-	\includegraphics[width=0.5\linewidth]{me_lin_samples_flowers.png}
+	\includegraphics[width=0.45\linewidth]{me_lin_samples_flowers.png}
 	\label{fig:samples_lin:me_flowers}
 }
 \subfloat{
-	\includegraphics[width=0.5\linewidth]{hme_lin_samples_flowers.png}
+	\includegraphics[width=0.45\linewidth]{hme_lin_samples_flowers.png}
 	\label{fig:samples_lin:hme_flowers}
 }
 \end{center}
@@ -794,11 +827,11 @@ When we compare ME-L and HME-L models, we see that ME slightly enjoys more from 
 \begin{figure}[htbp]
 \begin{center}
 \subfloat[ME-64]{
-	\includegraphics[width=0.5\linewidth]{cov_me_lin.pdf}
+	\includegraphics[width=0.45\linewidth]{cov_me_lin.pdf}
 	\label{fig:cov_lin:me}
 }
 \subfloat[HME-6]{
-	\includegraphics[width=0.5\linewidth]{cov_hme_lin.pdf}
+	\includegraphics[width=0.45\linewidth]{cov_hme_lin.pdf}
 	\label{fig:cov_lin:hme}
 }
 \end{center}
@@ -929,45 +962,45 @@ The main advantage HME model is its interpretability. To investigate the learned
 
 \begin{figure}[htbp]
 \begin{center}
-\includegraphics[width=\columnwidth]{polar_mnist.pdf}
+\includegraphics[width=0.9\columnwidth]{polar_mnist.pdf}
 \end{center}
-\caption{Mean responses of each node. At the center, there is the root. As we go outer, the depth increases and therefore granularity level increases.}
+\caption{MNIST.}
 \vskip\baselineskip
 \label{fig:polar:mnist}
 \end{figure}
 
 \begin{figure}[htbp]
 \begin{center}
-\includegraphics[width=\columnwidth]{polar_fashion.pdf}
+\includegraphics[width=0.9\columnwidth]{polar_fashion.pdf}
 \end{center}
-\caption{Mean responses of each node. At the center, there is the root. As we go outer, the depth increases and therefore granularity level increases.}
+\caption{FashionMNIST.}
 \vskip\baselineskip
 \label{fig:polar:fashion}
 \end{figure}
 
 \begin{figure}[htbp]
 \begin{center}
-\includegraphics[width=\columnwidth]{polar_celeb.pdf}
+\includegraphics[width=0.9\columnwidth]{polar_celeb.pdf}
 \end{center}
-\caption{Mean responses of each node. At the center, there is the root. As we go outer, the depth increases and therefore granularity level increases.}
+\caption{CelebA.}
 \vskip\baselineskip
 \label{fig:polar:celeb}
 \end{figure}
 
 \begin{figure}[htbp]
 \begin{center}
-\includegraphics[width=\columnwidth]{polar_utzap50k.pdf}
+\includegraphics[width=0.9\columnwidth]{polar_utzap50k.pdf}
 \end{center}
-\caption{Mean responses of each node. At the center, there is the root. As we go outer, the depth increases and therefore granularity level increases.}
+\caption{UTZap50K.}
 \vskip\baselineskip
 \label{fig:polar:utzap50k}
 \end{figure}
 
 \begin{figure}[htbp]
 \begin{center}
-\includegraphics[width=\columnwidth]{polar_flowers.pdf}
+\includegraphics[width=0.9\columnwidth]{polar_flowers.pdf}
 \end{center}
-\caption{Mean responses of each node. At the center, there is the root. As we go outer, the depth increases and therefore granularity level increases.}
+\caption{Oxford Flowers.}
 \vskip\baselineskip
 \label{fig:polar:flowers}
 \end{figure}
