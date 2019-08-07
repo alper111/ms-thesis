@@ -8,6 +8,7 @@
 \usepackage{graphicx}
 \usepackage{longtable}
 \graphicspath{{figures/}}
+\usepackage{rotating}
 
 \usepackage{multirow}
 \usepackage{subfig}
@@ -29,8 +30,8 @@
 
 % APPROVED BY PAGE
 \supervisor{Prof. Dr. Tunga Güngör}
-\examineri{Prof. Dr. Ethem Alpaydın}
-\examinerii{Prof. Dr. X}
+\examineri{X}
+\examinerii{Dr. Reyhan Aydoğan}
 \dateofapproval{DD.MM.YYYY}
 
 \begin{document}
@@ -39,10 +40,14 @@
 \makemstitle % M.S. thesis
 \makeapprovalpage
 \begin{acknowledgements}
-Empty for now.
+I want to thank Ethem Alpayd{\i}n for his guidance through my undergraduate and graduate studies.
+
+I am grateful to my family for their unconditional support. My first introduction to science would not be possible without them.
+
+I thank \c{C}a\u{g}la Aksoy for her help, her patience, and her presence.
 \end{acknowledgements}
 \begin{abstract}
-Recently proposed generative adversarial networks (GANs) are deep neural networks that are designed to model complex data distributions. The idea is to create a discriminator network that learns the borders of the data distribution; and a generator network which is trained to maximize the discriminator's loss to learn generating samples from the data distribution. Because there usually exists multiple modes in a data distribution, GANs often suffer to model all modes of the data. Instead of learning a global generator, one variant trains multiple generators each one responsible from one local mode of the data distribution. In this thesis, we review such approaches and propose a hierarchical mixture of generators, learning a hierarchical division in the tree structure as well as the local generators in the leaves. Since these generators are combined softly, the whole model is continuous and can be trained using gradient-based optimization. Our experiments on five image data sets, namely, MNIST, FashionMNIST, CelebA, UTZap50K and Oxford Flowers, show that our proposed model is as successful as the fully connected neural network; the learned hierarchical structure also allows for knowledge extraction.
+Recently proposed generative adversarial networks (GANs) are deep neural networks that are designed to model complex data distributions. The idea is to create a discriminator network that learns the borders of the data distribution; and a generator network which is trained to maximize the discriminator's loss to learn generating samples from the data distribution. Instead of learning a global generator, one variant trains multiple generators, each responsible from one local mode of the data distribution. In this thesis, we review such approaches and propose the hierarchical mixture of generators, that learns a hierarchical division in a tree structure as well as the local generators in the leaves. Since these generators are combined softly, the whole model is continuous, and can be trained using gradient-based optimization. Our experiments on five image data sets, namely, MNIST, FashionMNIST, CelebA, UTZap50K and Oxford Flowers, show that our proposed model is as successful as the fully connected neural network. The learned hierarchical structure also allows for knowledge extraction.
 \end{abstract}
 \begin{ozet}
 Çekişmeli üretici ağlar (ÇÜA), karmaşık veri dağılımlarını modellemek için öne sürülmüş derin sinir ağlarıdır. Ana düşünce, veri dağılımının sınırlarını öğrenen bir ayırıcı ağ üretip, bu ayırıcı ağ yardımı ile bir başka üretici ağı eğitmektir. Üretici ağ ayırıcı ağın hatasını yükseltmeye çalışarak örnekleme yapmayı öğrenir. Veri dağılımla-rında genelde birden fazla tepe bulunduğu için, ÇÜA'lar veri dağılımının hepsini öğren-mekte zorlanırlar. Evrensel tek bir üretici öğrenmek yerine, her biri dağılımın yerel bir kısmından sorumlu olan birden fazla üretici öğrenen varyantlar da bulunmaktadır. Bu tezde bu varyantları inceleyerek yeni bir mimari öne sürdük: hiyerarşik üretici karışımları. Bu mimaride ağaç, dağılımı hiyerarşik bir şekilde bölmeyi öğrenir; ağacın yapraklarında ise yerel üreticiler bulunmaktadır. Bu üreticiler esnek bir biçimde birleş-tirildiklerinden dolayı bütün model sürekli bir fonksiyondur ve türev bilgisine dayanan en iyileme metotları ile eğitilebilir. 5 farklı veri kümesinde (MNIST, FashionMNIST, CelebA, UTZap50K ve Oxford Flowers) yaptığımız deneyler göstermektedir ki öne sürdüğümüz mimari yoğun katmanlı sinir ağları kadar başarılıdır. Bunun dışında öğrenilen hiyerarşik yapı, veri dağılımı hakkında damıtılmış bir bilgi vermektedir.
@@ -58,6 +63,7 @@ Recently proposed generative adversarial networks (GANs) are deep neural network
 \sym{$I$}{Indicator function}
 \sym{$\theta$}{Parameter set of the generator network}
 \sym{$K$}{Kernel}
+\sym{$\mathcal{N}(0, 1)$}{Normal distribution with mean 0 and variance 1.}
 \sym{$\nabla_x f$}{Gradient of $f$ with respect to $x$}
 \sym{$p(x)$}{Probability density function of random variable $x$}
 \sym{$\mathbb{R}^d$}{Set of d-dimensional real numbers}
@@ -107,27 +113,21 @@ Recently proposed generative adversarial networks (GANs) are deep neural network
 \label{chapter:intro}
 \pagenumbering{arabic}
 
-We are interested in the problem of density estimation. That is, we are given a set of data points $X = \{x^{(i)} \in \mathbb{R}^d\}_{i=1}^N$ and assume that these are random events generated from some probability density function (PDF) $p(x)$. Our aim is to approximate $p(x)$ with a proposal PDF $\hat{p}(x)$, based on a finite number of observations $X$. If we successfully approximate $p(x)$ with $\hat{p}(x)$, then we can use $\hat{p}(x)$ for later downstream tasks such as detecting the probability of an event, classification and generating new samples.
+We are interested in the unsupervised problem of density estimation. That is, we are given a set of data points $X = \{x^{(i)} \in \mathbb{R}^d\}_{i=1}^N$ and assume that these are random events generated from some unknown probability density function (PDF) $p(x)$. Our aim is to approximate $p(x)$ with a proposal PDF $\hat{p}(x)$, using $X$. If we successfully approximate $p(x)$ with $\hat{p}(x)$, then we can use $\hat{p}(x)$ for later downstream tasks such as detecting the probability of an event, classification and generating new instances by sampling from $\hat{p}(x)$.
 
-If we treat the problem more concretely, we are in a search of a function $f(x)$ that mimics $p(x)$. Though we do not have $p(x)$ at hand but only a set of observations $X$, that we think generated from this distribution. How do we find $f(x)$? First of all, we know that $f(x) \neq 0$ for points in $X$ since these events are already happened. This narrows down our space of plausible functions but it is still quite large. From this point on, we must start to make some assumptions to be able to continue. One such example is that we assume the function to be in the form $f(x)=e^{g(x)}$, where $g(x)$ is a 2nd order polynomial function. Now, we restrict the space of plausible functions into $\mathbb{R}^3$ because a 2nd order polynomial is uniquely defined by 3 parameters. If we further say that the true $f(x)$ should give the highest total probability for points in $X$ out of all functions. This is sometimes interpreted as ``the model that best explains the data'' and known as the \emph{maximum likelihood estimation}:
+To be more concrete, we are in a search of a function $f(x)$ that mimics $p(x)$ using $X$. We further say that the true $f(x)$ should give the highest total probability for points in $X$. This is sometimes interpreted as ``the model that best explains the data'' and known as the \emph{maximum likelihood estimation}:
 \begin{equation}
-\underset{f \in \mathcal{F}}{\text{argmax}} \prod_{x^{(i)} \in X} f(x^{(i)}) 
+\underset{f \in \mathcal{F}}{\text{argmax}} \prod_{x^{(i)} \in X} f(x^{(i)})
 \label{eq:mle}
 \end{equation}
-where $\mathcal{F}$ is the space of functions. We converted the problem into that of optimization. There are many optimization methods that can help us solve \ref{eq:mle} analytically and/or approximately. Our solution is a \emph{parametric} one because the function we are searching is defined by a finite set of parameters.
+where $\mathcal{F}$ is the space of functions. We converted the problem into that of optimization. There are many optimization methods that can help us solve Equation \ref{eq:mle} analytically and/or approximately.
 
-There are also \emph{non-parametric} estimation methods. Here, we do not require ourselves to find the global form of the function $f$. We define \emph{kernels} that measures the distance of the queried point with its neighbors. For example, kernel density estimators can be written as:
+In the parametric case, we assume that $f(x)$ is a parametric model, for example, Gaussian distribution with mean $\mu$ and  covariance $\Sigma$. The problem then reduces to estimating $\mu$ and $\Sigma$, for example, maximum likelihood estimation. The other possibility is to assume that $f(x)$ can be modeled by a mixture of parametric distributions, for example, a mixture of Gaussians. Again, maximum likelihood estimation allows us to estimate the parameters of the component densities as well as their proportions. The third alternative is non-parametric estimation where we use the data points directly, and do not estimate parameters explicitly. We define \emph{kernels} that measures the distance of the queried point with its neighbors. For example, the kernel density estimator can be written as:
 \begin{equation}
 \hat{f}(x) = \frac{1}{nh} \sum_{i=1}^N K\left(\frac{x^{(i)}-x}{h}\right)
 \label{eq:kde}
 \end{equation}
-where $K$ is the kernel function, and $h$ is called \emph{bandwidth}. $K$ and $h$ changes the function family of the model. These are not parameters of the model as in parametric methods. The degree of the polynomial $g(x)$ in the previous example can be analogous to $K$ and $h$; they are hyperparameters of the model. $K$ can be any function that satisfies $\int K(u) du = 1$. A simple example, also known as the rectangular kernel:
-\begin{equation}
-K(u) = \frac{1}{2} I (|u| \leq 1)
-\label{eq:rectangular_kernel}
-\end{equation}
-where $I$ is the indicator function. In parametric methods, we can quickly answer $p(x_k)$ for an arbitrary point $x_k$ after we find the approximate function $\hat{f}$. On the other hand in non-parametric methods, we do not spend time to find $\hat{f}$ but must calculate distances between $x_k$ to $x \in X$.
-
+where $K$ is the kernel function, and $h$ is called \emph{bandwidth}. $K$ and $h$ are the hyperparameters that define the shape of the fit. Each approach has its own advantages and disadvantages.
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[width=0.5\columnwidth]{euc.pdf}
@@ -137,16 +137,18 @@ where $I$ is the indicator function. In parametric methods, we can quickly answe
 \label{fig:spiral}
 \end{figure}
 
-Each approach has its own advantages and disadvantages. Yet, for both approaches, it is important to first transform the data into appropriate representation. For example in Figure \ref{fig:spiral}, if we use Cartesian coordinates, we probably fail, or rather find poor estimates for $p(x)$. If we know the transformation to polar coordinates, then we can model the distribution better by first transforming Cartesian coordinates to polar coordinates. Both parametric models and non-parametric models will likely to yield better results in polar coordinates for this specific problem. Therefore, the transformation is the golden nugget.
+Another important point is the way  the input is represented. For example in Figure \ref{fig:spiral}, if we use Cartesian coordinates, we probably fail, or find poor estimates for $p(x)$. If we know the transformation to polar coordinates, then we get a simpler problem. Both parametric models and non-parametric models will likely to yield better results in polar coordinates for this specific problem. Therefore, the transformation is the golden nugget.
 
-We focus on a method known as \emph{generative adversarial networks} (GANs) \cite{goodfellow2014generative} for approximating densities with \emph{deep neural networks} (DNNs). Advantage of DNNs is that they learn to hierarchically transform the data. Here, the transformation means that we map $X$ to $f_1(X)$, where $f_1$ denotes the computation that is done in the first layer of a DNN. In DNN, layers are aligned consequently therefore we compute the following:
+One of the advantages \emph{deep neural networks} (DNNs) that they can learn appropriate transformations in their hidden layers. Here, the transformation means that we map $X$ to $f_1(X; w_1)$, where $f_1$ denotes the computation that is done in the first layer of a DNN using weights $w_1$. In DNN, layers are organized serially:
 \begin{equation}
-\text{DNN}(X) = f_L (f_{L-1} (f_{L-2} ( \dots f_2( f_1(X) ) ) ) )
+\text{DNN}(X) = f_L (f_{L-1} ( \dots f_2( f_1(X; w_1); w_2); w_{L-1}); w_L)
 \label{eq:dnn}
 \end{equation}
-where $f_i$ denotes the $i$th layer of the DNN. Due to its inherent structure, earlier layers of DNN learns basic primitives about $X$. Subsequent layers built more abstract transformations using primitive transformations. When we learn abstract transformations from the data, we end up with models that have better \emph{generalization}, that is the performance on unseen data \cite{bengio2009learning}. DNNs achieved great success on real-world problems that requires generalization such as object recognition \cite{krizhevsky2012imagenet}, speech recognition \cite{hinton2012deep} and statistical machine translation \cite{sutskever2014sequence}. Recent developments in GAN literature also show that GAN is a promising way to approximate highly complex probability distributions.
+where $f_i$ denotes the $i$th layer of the DNN with weights $w_i$. Earlier layers of a DNN learn basic primitives about $X$, and subsequent layers built more abstract transformations using primitive transformations. Such abstract representations lead to better \emph{generalization}, that is, they improve performance on unseen data \cite{bengio2009learning}. DNNs have achieved great success on a variety of real-world problems such as object recognition \cite{krizhevsky2012imagenet}, speech recognition \cite{hinton2012deep} and statistical machine translation \cite{sutskever2014sequence}.
 
-In this thesis, we propose to use hierarchical mixture of generators as the generative part of GAN. This lets us interpret the learned representation. The rest of this work is organized as follows. Chapter \ref{chapter:gan} reviews the prerequisite knowledge about GANs. In Chapter \ref{chapter:multiple_gan}, we discuss works that also use multiple generators. We explain our proposed model in detail in Chapter \ref{chapter:mixture_gan}. Our experimental results are given in \ref{chapter:exps}. We make a conclusion and discuss future work in Chapter \ref{chapter:conc}.
+In this thesis, we focus on a method known as \emph{generative adversarial networks} (GANs) \cite{goodfellow2014generative} for approximating densities with DNNs. We propose to use hierarchical mixture of generators as the generative part of GAN. This helps alleviate the problem of mode collapse together with an increased sample quality. Due to our hierarchical formulation, the learned representation can also be interpreted in a post-hoc way to see clusters in the data.
+
+The rest of this work is organized as follows. Chapter \ref{chapter:gan} reviews the prerequisite knowledge about GANs. In Chapter \ref{chapter:multiple_gan}, we discuss previous works in literature that also use multiple generators. We explain our proposed model in detail in Chapter \ref{chapter:mixture_gan}. Our experimental results are given in Chapter \ref{chapter:exps}. We conclude and discuss future work in Chapter \ref{chapter:conc}.
 
 \chapter{GENERATIVE ADVERSARIAL NETWORKS}
 \label{chapter:gan}
@@ -154,90 +156,127 @@ In this thesis, we propose to use hierarchical mixture of generators as the gene
 \section{Introduction}
 \label{sec:gan:intro}
 
-GAN has been proposed to learn a generative model to model a data distribution, $p(x)$ \cite{goodfellow2014generative}. GAN is composed of two learners, a generator network $G$ and a discriminator network $D$. $G(z;\theta)$ learns to map $z$ sampled from an arbitrary distribution $p(z)$ to the target distribution $p(x)$. It is a trained model, generally a deep neural network, parameterized by $\theta$. The discriminator $D(x;\phi)$, another neural network with weights $\phi$, is trained to assign low scores to ``fake'' samples generated by $G(z;\theta)$ and high scores to samples from true $p(x)$ given in the training set. We do not show any true samples to $G$, instead train it to generate samples that will get high score from $D$. This is achieved with the following objective:
+The generative adversarial network (GAN) has been proposed to learn a generative model to model a data distribution, $p(x)$ \cite{goodfellow2014generative}. GAN is composed of two learners, a generator network $G$ and a discriminator network $D$. $G(z;\theta)$ learns to map $z$ sampled from an arbitrary distribution $p(z)$ to the target distribution $p(x)$. It is a trained model, generally a deep neural network, parameterized by $\theta$. The discriminator $D(x;\phi)$, another neural network with weights $\phi$, is trained to assign low scores to ``fake'' samples generated by $G(z;\theta)$ and high scores to samples from true $p(x)$ given in the training set. We do not show any true samples to $G$, instead train it to generate samples that will get high score from $D$ (see Figure \ref{fig:gan}). This is achieved with the following objective:
 \begin{equation}
 \label{eq:gan}
 \underset{G}{\text{min}} \quad \underset{D}{\text{max}} \quad \mathbb{E}_{x \sim p(x)} [ \log{D(x;\phi)} ] + 
 \mathbb{E}_{z \sim p(z)} [ \log{(1-D(G(z;\theta);\phi))} ]
 \end{equation}
-We optimize Equation \ref{eq:gan} by alternating between optimizing $D$ and $G$ with stochastic gradient descent (SGD) (Figure \ref{fig:gan}). In the original paper  \cite{goodfellow2014generative}, it is shown that if $D$ and $G$ have enough capacity, this optimization minimizes the Jensen-Shannon divergence (JSD) between $p_{\text{true}}$ and $p_{\text{fake}}$, and therefore will converge to a point where $G$ exactly generates the target distribution $p(x)$. Though it should be noted that we use a parametric family of functions defined by neural networks. This might limit our functions' capacity and break the convergence guarantee. 
+We optimize Equation \ref{eq:gan} by alternating between optimizing $D$ and $G$ with stochastic gradient descent (SGD) (pseudo-code is given in Figure \ref{alg:gan}). In the original paper  \cite{goodfellow2014generative}, it is shown that if $D$ and $G$ have enough capacity, this optimization minimizes the Jensen-Shannon divergence (JSD) between $p_{\text{true}}$ and $p_{\text{fake}}$, and therefore will converge to a point where $G$ exactly generates the target distribution $p(x)$. Note that we use a parametric family of functions defined by neural networks, and this might limit our functions' capacity and break the convergence guarantee. 
 %
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[width=0.75\textwidth]{gan.pdf}
 \end{center}
-\caption{GAN framework.}
+\caption{GAN framework. Given an input $z$ that is drawn from $p(z)$, the generator $G$ produces a \emph{fake} sample, $x_{fake}$. A \emph{real} sample $x_{real}$ that is drawn from the data set $X$ is given to the discriminator $D$ together with $x_{fake}$. $D$ is trained to classify $x_{fake}$ as 0 and $x_{real}$ as 1.}
 \vskip\baselineskip
 \label{fig:gan}
 \end{figure}
+%
+\begin{figure}[htbp]
+\begin{center}
+\framebox[6.0in]{\begin{minipage}[t]{5.9in}
+\begin{algorithmic}
+\STATE
+\STATE \textbf{Require:} Data set $X = \{x^{(i)}\}_{i=1}^N$, learning rate $\eta$.
+\STATE Randomly initialize parameter sets $\theta$ of $G$ and $\phi$ of $D$;
+\WHILE{stopping criterion satisfied}
+\STATE Draw a batch of $m$ real samples $x_r \sim X$;
+\STATE Draw a batch of $m$ noise vectors $z \sim \mathcal{N}(0, 1)$;
+\STATE $x_f \Leftarrow G(z;\theta)$; \COMMENT{generated fake samples}
+\STATE $\mathcal{L}_D \Leftarrow -\log D(x_r;\phi) - \log (1-D(x_f;\phi))$;
+\STATE $\mathcal{L}_G \Leftarrow \log(1-D(x_f;\phi))$;
+\STATE $\phi \Leftarrow \phi - \eta \nabla_{\phi} \mathcal{L}_D$; \COMMENT{update discriminator}
+\STATE $\theta \Leftarrow \theta - \eta \nabla_{\theta} \mathcal{L}_G$; \COMMENT{update generator}
+\ENDWHILE
+\STATE
+\end{algorithmic}
+\end{minipage}}
+\end{center}
+\caption{The pseudo-code for training generative adversarial networks.}
+\label{alg:gan}
+\end{figure}
 
-If training converges, $G$ can generate new data simply by sampling an input point $z$, and outputting $G(z)$. On the other hand, $D$ can be used as a feature extractor for downstream tasks since it learns a good representation of $p(x)$ due to adversarial training.
+Once we learn a good $\theta$, $G$ can generate new data simply by sampling an input point $z$, and outputting $G(z;\theta)$. We can think of $G$ as a counterfeiter, who tries to produce \emph{fake} coins. On the other hand, $D$ is an inspector who tries to detect fake coins. When $D$ gets better at detecting fake coins, $G$ must produce coins which are of better quality in order to fool the inspector. This game will continue until $G$ finds a way to produce coins which exactly look like real ones. At that moment, $D$ is helpless, and can only make random guesses.
 
 \section{Problems Related with GANs}
 \label{sec:problems}
 
-GANs are used successfully especially in image generation. A well-trained GAN can generate images that are almost indistinguishable by humans \cite{karras2017progressive,brock2018large,karras2019style}. Yet, there remain two main difficulties regarding the training: The first problem of mode collapse means that $G$ learns to generate some parts of $p(x)$ but not all; there are ways of being $x$ that cannot be generated for any $G(z)$. This is depicted in Figure \ref{fig:modecollapse}. The second problem is of vanishing gradients. In order to optimize Equation \ref{eq:gan} for $G$, we should find gradients with respect to $\theta$. However $\nabla_{\theta} \log(1-D(G(z)))$ becomes zero in regions where $D$ is perfectly able to discriminate $p_{\text{true}}$ and $p_{\text{fake}}$. To remedy this, it is suggested to use a proxy loss, also known as non-saturating loss \cite{fedus2017many}: $-\log D(G(z))$. This loss provides better gradients even when $D$ is optimal. However, Arjovsky and Bottou \cite{arjovsky2017towards} showed that this loss no longer minimizes the JSD, but rather $KL(p_{\text{fake}} || p_{\text{true}}) - 2 JSD(p_{\text{fake}} || p_{\text{true}})$, where $KL$ is the Kullback-Leibler divergence. Moreover, they show that when $D$ gets better, gradients of $G$ increases with an increasing variance. They concluded that this increasing variance might be the cause of the notorious instability of GANs.
+GANs are used successfully especially in image generation. A well-trained GAN can generate images that are almost indistinguishable by humans \cite{karras2017progressive,brock2018large,karras2019style}. Yet, there remain two main difficulties regarding the training: The first problem of mode collapse means that $G$ learns to generate some parts of $p(x)$ but not all; there are ways of being $x$ that cannot be generated for any $G(z)$. This is depicted in Figure \ref{fig:modecollapse}.
+
+The second problem is of vanishing gradients. In order to optimize Equation \ref{eq:gan} for $G$, we should find gradients with respect to $\theta$. However $\nabla_{\theta} \log(1-D(G(z)))$ becomes zero in regions where $D$ is perfectly able to discriminate $p_{\text{true}}$ and $p_{\text{fake}}$. To remedy this, it is suggested to use a proxy loss, also known as non-saturating loss: $-\log D(G(z))$ \cite{fedus2017many}. This loss provides better gradients even when $D$ is optimal. However, it is shown that this loss no longer minimizes the JSD, but rather $KL(p_{\text{fake}} || p_{\text{true}}) - 2 JSD(p_{\text{fake}} || p_{\text{true}})$, where $KL$ is the Kullback-Leibler divergence \cite{arjovsky2017towards}. Moreover, they show that when $D$ gets better, the gradients of $G$ increase with an increasing variance. They conclude that this increasing variance might be the cause of the notorious instability of training GANs.
 
 \begin{figure}[htbp]
 \begin{center}
-\includegraphics[width=0.5\textwidth]{modecollapse.pdf}
+\includegraphics[width=0.9\textwidth]{modecollapse.pdf}
 \end{center}
-\caption{An example of a mode collapse.}
+\caption{An example of a mode collapse. The data set consists of samples from two Gaussian distributions, one on the top left with low variance and the other on the bottom right with high variance. The generator model fails to model the one on the top left.}
 \vskip\baselineskip
 \label{fig:modecollapse}
 \end{figure}
 
-Recent works mainly focus on these two problems. To solve problems related to training people proposed different GAN objectives \cite{arjovsky2017wasserstein,chen2016infogan,mao2017least,qi2017loss}, regularization methods \cite{gulrajani2017improved,miyato2018spectral,radford2015unsupervised}, architectures \cite{brock2018large,donahue2016adversarial,dumoulin2016adversarially,karras2017progressive,karras2019style,radford2015unsupervised,zhang2018self} and several other tricks mentioned in these papers. A good review of these works can be found in \cite{creswell2018generative,hong2019generative,kurach2018gan}.
+Recent work in the literature mainly focuses on these two problems. To solve problems related to training, researchers proposed either different GAN objectives \cite{arjovsky2017wasserstein,chen2016infogan,mao2017least,qi2017loss}, or regularization methods \cite{gulrajani2017improved,miyato2018spectral,radford2015unsupervised}, or architectures \cite{brock2018large,donahue2016adversarial,dumoulin2016adversarially,karras2017progressive,karras2019style,radford2015unsupervised,zhang2018self}. A good review can be found in \cite{creswell2018generative,hong2019generative,kurach2018gan}.
 
 \section{Variants of GAN}
 \label{sec:variants}
 
-Before reviewing variants of GAN, we should first mention variational auto-encoders (VAEs) \cite{kingma2013auto} which is a close idea to GAN but quite different. VAEs also approximate probability distributions using DNNs. A regular auto-encoder (AE) consists of an encoder network $E$, and a decoder network $D$. Given a data set $X=\{x^{(i)}\}_{i=1}^N$, AE tries to minimize the following:
+Before reviewing variants of GAN, we should first mention the variational auto-encoder (VAE) \cite{kingma2013auto} which also trains a generator but has a different network structure. A regular auto-encoder (AE) consists of an encoder network $E$ and a decoder network $D$. Given a data set $X=\{x^{(i)}\}_{i=1}^N$, AE minimizes the following:
 \begin{equation}
-\mathcal{L}_{rec} = \sum_{i=1}^N \frac{1}{2} \| x^{(i)} - D(E(x^{(i)})) \|_2^2
+\mathcal{L}_{rec} = \sum_{i=1}^N \frac{1}{2} \| x^{(i)} - D(E(x^{(i)};\phi);\theta) \|_2^2
 \label{eq:recons}
 \end{equation}
 which is also known as the $\ell_2$ reconstruction loss. VAEs transform the idea to graphical models. They define the generative model as $p(z; \theta) p( x | z; \theta)$ and approximate the true posterior distribution $p(z|x)$ with a variational distribution $q(z|x;\phi)$. Here, $p(x | z; \theta)$ is the decoder and $q(z|x;\phi)$ is the encoder. A spherical Gaussian prior is assumed for $p(z)$. Two make computations easier, the variational distribution $q(z|x;\phi)$ is also chosen to be a multivariate Gaussian with diagonal covariance. Therefore, $q(z|x;\phi)$ outputs a mean and a standard deviation for each latent factor. To train the model, we simply minimize the reconstruction loss as in regular AE, and also minimize the KL divergence between $p(z)$ and $q(z|x;\phi)$ to approximate posterior. The reparameterization trick which they proposed \cite{kingma2013auto} should also be noted because it yields a gradient estimator which have lower variance then the na\"{i}ve Monte Carlo gradient estimator, which then helps us to train the variational model, $q(z|x;\phi)$. After training, we can simply draw $z$ from $p(z)$ and use the decoder network to produce $x$.
 
-Conditional GAN (CGAN) \cite{mirza2014conditional} incorporates a label information $y$ to approximate class conditional distribution $p(x|y)$. The extension is simple: we concatenate the one-hot label information $y$ to the noise vector $z$ and give it to $G$ as input. To get a conditioned gradient, we give $y$ together with $x$ as input to the $D$. Since $D$ learns the true class conditional distribution $p(x|y)$, it pushes $G$ to approximate $p(x|y)$. After training, we can use $G$ to generate a sample from a specific class. Here, $y$ is a one-hot vector that contains the class information. However we can embed more information in $y$. Image-to-image translation is such an example where instead of a class information we give a sketch of an image and try to fill the image realistically \cite{isola2017image}. Given a real image (corresponds to $x$) and its sketch (corresponds to $y$), we ask $D$ whether this is a real example or not. Consequently, $G$ learns to create an image from its sketch. This is extended as translating winter scenes into summer scenes, satellite views to map views and so on. The same idea is also applied to super-resolution \cite{ledig2017photo} and image inpainting \cite{yeh2017semantic} where we only change the $(x, y)$ pairs. For example in super-resolution, $x$ is the high-resolution image and $y$ is its low-resolution version. Cycle GAN \cite{zhu2017unpaired} further extends the idea to also work with unpaired images by introducing a cycle-consistency loss. Apart from the extensions of CGAN, people also proposed methods that incorporate the information $y$ in a better way than concatenating it with the input \cite{miyato2018cgans}.
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=0.8\textwidth]{vae.pdf}
+\end{center}
+\caption{Variational auto-encoder. Given an input $x$, the encoder network $E$ outputs $\mu$ and $\sigma$ which defines a multivariate Gaussian. We sample a latent code $z$ from this Gaussian with reparameterization trick; $z = \sigma \odot \epsilon + \mu$ where $\epsilon$ is drawn from the $\mathcal{N}(0, 1)$. The decoder network $D$ produces the final output $x'$ given the latent code.}
+\vskip\baselineskip
+\label{fig:vae}
+\end{figure}
 
-In the original GAN, we do the mapping from $p(z)$ to $p(x)$.  After training, $p(z)$ can be thought as a distribution of latent factors of $p(x)$. However, given a sample $x^{(k)}$ we cannot determine its latent factors $z^{(k)}$ because the reverse direction, that is from $p(x)$ to $p(z)$ is not available. Bidirectional GAN (BiGAN) \cite{donahue2016adversarial,dumoulin2016adversarially} is proposed to remedy this issue. In BiGAN, there are networks: a generator $G$ and an encoder $E$. $G$ is as usual generates a sample $G(z)$ given a noise vector $z$. On the other hand, $E$ generates a latent code $E(x)$ given a real sample $x$. Both $G$ and $E$ concatenates their input with their output producing pairs $(z, G(z))$ and $(E(x), x)$ respectively. The discriminator $D$ tries to discriminate between these two pairs. To maximize the loss of the discriminator, $G$ must produce vectors that look like $x$, likewise $E$ must produce vectors that look like $z$. When the training converges, these pairs $(z, G(z))$ and $(E(x), x)$ must be coherent with each other in order to maximize $D$'s loss. That is we expect $E(G(z))=z$  and $G(E(x))=x$ to hold.
+The conditional GAN (CGAN) \cite{mirza2014conditional} incorporates a label information $y$ to approximate class-conditional distribution $p(x|y)$. The extension is simple: We concatenate the one-hot label information $y$ to the noise vector $z$ and give it to $G$ as input. To get a conditioned gradient, we give $y$ together with $x$ as input to the $D$. Since $D$ learns the true class-conditional distribution $p(x|y)$, it pushes $G$ to approximate $p(x|y)$. After training, we can use $G$ to generate a sample from a specific class. We can embed more information in $y$, for example, in image-to-image translation, instead of a class information we give a sketch of an image as $y$ and try to fill the image realistically \cite{isola2017image}. Given a real image (corresponds to $x$) and its sketch (corresponds to $y$), we ask $D$ whether this is a real example or not. Consequently, $G$ learns to create an image from its sketch. This is extended to translating from winter scenes to summer scenes, satellite views to map views, and so on. The same idea is also applied to super-resolution \cite{ledig2017photo} and image inpainting \cite{yeh2017semantic} where we choose the $(x, y)$ pairs accordingly. For example in super-resolution, $x$ is the high-resolution image and $y$ is its low-resolution version. The cycle GAN \cite{zhu2017unpaired} further extends the idea to also work with unpaired images by introducing a cycle-consistency loss. Apart from these extensions of CGAN, there are also methods that incorporate the $y$ information in a better way than concatenating it with the input \cite{miyato2018cgans}.
 
-There are yet many ideas that are tried with GANs. The gimmick is the same: we train a DNN for a specific problem, which helps us to train another DNN for another problem, which in turn helps to train  the first DNN. Because they are trained in an iterative fashion, one can think that each DNN creates a curriculum for the other. For the case of GANs, $G$ first creates random noise. $D$ learns to discriminate the random noise and the training data, which is quite easy for high-dimensional data. With the help of $D$, $G$ starts to create better samples but not the best ones. The task gets harder for $D$ each turn and likewise when $D$ gets proficient, $G$ must learn finer details which can be considered as a harder task. The problem emerges when the curriculum becomes unfair and the gradients vanish (or become unstable). In the next section, we review an approach to this problem which we also use in our experiments.
+In the original GAN, we learn a mapping from $p(z)$ to $p(x)$, but the reverse direction from $p(x)$ to $p(z)$ is not available. In the bidirectional GAN (BiGAN) \cite{donahue2016adversarial,dumoulin2016adversarially} there is an additional encoder $E$. $G$, as usual, generates a sample $G(z)$ given a noise vector $z$. $E$ generates a latent code $E(x)$ given a real sample $x$. Both $G$ and $E$ concatenate their input with their output producing pairs $(z, G(z))$ and $(E(x), x)$ respectively. The discriminator $D$ learns to discriminate between these two pairs. To maximize the loss of the discriminator, $G$ must produce vectors that look like $x$, likewise $E$ must produce vectors that look like $z$. When the training converges, these pairs $(z, G(z))$ and $(E(x), x)$ must be coherent with each other in order to maximize the loss of $D$. That is we expect $E(G(z))=z$  and $G(E(x))=x$ to hold.
+
+There are many other ideas that are tried with GANs. The basic idea is the same: We train a DNN for problem $A$, which helps us to train another DNN for problem $B$, which in turn helps to learn $A$. Because they are trained in an iterative fashion, one can think that each DNN creates a curriculum for the other. For the case of GANs, $G$ first creates random noise. $D$ learns to discriminate the random noise and the training data, which is quite easy for high-dimensional data. With the help of $D$, $G$ starts to create better samples but not very good initially. The task gets iteratively harder for $D$ and likewise when $D$ gets proficient, $G$ must learn finer details which is a harder task. There is a problem when the curriculum becomes unfair and the gradients vanish (or become unstable). In the next section, we review an approach to this problem, which we also use in our experiments.
 
 \section{Wasserstein GAN}
 \label{sec:wgan}
-In \cite{arjovsky2017towards}, authors show the shortcomings of the original GAN loss (Fedus \textit{et al.} \cite{fedus2017many} call this minimax loss and we will use this notation), including the non-saturating version. If $D$ becomes optimal discriminator, then the gradients of $G$ vanish for the minimax loss. On the other hand, the non-saturating loss makes gradients unstable. One can think of training $D$ less, not until optimality, however there is no such principled way to control the optimality in GAN framework. In a follow-up work \cite{arjovsky2017wasserstein}, their motivation is to build a new distance measure that has good convergence properties even when the discriminator is optimal. They propose minimizing Earth-Mover (EM) distance, also known as 1st Wasserstein distance. The advantage is that Wasserstein distance is a convex function even when two distributions' supports do not intersect. It is defined as follows:
+There are some shortcomings of the original GAN loss and its modified version, the non-saturating GAN loss. If $D$ becomes the optimal discriminator, then the gradients of $G$ vanish for the original loss. On the other hand, the non-saturating loss makes gradients unstable. One can think of training $D$ less, before we reach optimality, however there is no such principled way to control this optimality in the GAN framework \cite{arjovsky2017towards}.
+
+Based on these observations, the Wasserstein GAN \cite{arjovsky2017wasserstein} is proposed. The motivation is to build a new distance measure that has good convergence properties even when the discriminator is optimal. They propose minimizing Earth-Mover (EM) distance, also known as 1st Wasserstein distance. The advantage is that Wasserstein distance is a convex function even when the supports of the two distributions do not intersect. It is defined as follows:
 \begin{equation}
 W_1(p_t, p_f) = \inf \quad \mathbb{E}_{(x,y) \sim (p_t, p_f)} [ \| x-y \| ]
 \label{eq:emd}
 \end{equation}
-However, this formulation is known to be intractable. From the optimal transport view, this formulation tells us the distance is the minimum one out of all transportation plans. Instead, we use the Kantorovich-Rubinstein duality as in \cite{arjovsky2017wasserstein}:
+However, this formulation is known to be intractable. From the optimal transport view, this formulation tells us that the distance is the minimum one out of all transportation plans. Instead, we use the Kantorovich-Rubinstein duality, as in \cite{arjovsky2017wasserstein}:
 \begin{equation}
 W_1(p_t, p_f) = \underset{\|f\|_L \leq 1}{\sup} \mathbb{E}_{x\sim p_t} [f(x)] - \mathbb{E}_{x \sim p_f} [f(x)]
 \label{eq:wd}
 \end{equation}
-where $\|f\|_L \leq 1$ implies 1-Lipschitz functions. Equation \ref{eq:wd} tells us that in order to find $W_1$ distance, we should find such $f$ that will maximize the difference. If there is no Lipschitz constraint, then we can find functions that will maximize the difference indefinitely. Lipschitz constraint ensures that we are searching the function in a bounded region.
+where $\|f\|_L \leq 1$ implies 1-Lipschitz functions. Equation \ref{eq:wd} tells us that in order to find $W_1$ distance, we should find such $f$ that will maximize the difference. If there is no Lipschitz constraint, then we can find functions that will maximize the difference indefinitely. The Lipschitz constraint ensures that we are searching the function in a bounded region.
 
-Now, to find Wasserstein distance between two distributions, we can simply create a random neural network $f$ and maximize Equation \ref{eq:wd} with SGD. The function $f$ can be thought as a ``critic'' instead of discriminator since the output of the critic tells the generator how far it is from the true distribution. Then, for the generator, we minimize the Wasserstein distance since we know that doing so will bring two distributions closer. This formulation is called Wasserstein GAN (WGAN) \cite{arjovsky2017wasserstein}.  Differences between WGAN and GAN are:
+Now, to find the Wasserstein distance between two distributions, we can simply create a random neural network $f$ and maximize Equation \ref{eq:wd} with SGD. The function $f$ can be thought as a ``critic'' (instead of discriminator) since the output of the critic tells the generator how far it is from the true distribution. Then, for the generator, we minimize Equation \ref{eq:wd} since we know that doing so will bring two distributions closer. This formulation is called the Wasserstein GAN (WGAN) \cite{arjovsky2017wasserstein}.  The differences between WGAN and GAN are:
 \begin{itemize}
 	\item The discriminator outputs a real value, instead of a probability.
 	\item The discriminator is constrained to be 1-Lipschitz.
-	\item The discriminator should be trained till optimality as opposed to GANs since better discriminator implies better $W_1$ distance, and therefore better gradients to $G$.
+	\item The discriminator should be trained till optimality (unlike GANs) since a better discriminator implies a better $W_1$ distance, and therefore better gradients to $G$.
 \end{itemize}
 
-To enforce Lipschitz constrained, Arjovsky \textit{et al.} \cite{arjovsky2017wasserstein} suggested clipping weights of the critic function. They also warned that this is not a good way enforcing Lipschitz. A follow-up work \cite{gulrajani2017improved} introduced a more principled way by applying gradient penalty to the critic.
+To enforce, the Lipschitz constraint, Arjovsky \textit{et al.} \cite{arjovsky2017wasserstein} suggested clipping weights of the critic function, though they also warn that this is not a good way of enforcing the Lipschitz constraint. A follow-up work \cite{gulrajani2017improved} introduced a more principled way by applying gradient penalty to the critic.
 
-WGANs show better convergence properties both in theory and in practice when compared with the original GANs. For this reason, we use WGAN formulation with the gradient penalty \cite{gulrajani2017improved} in our experiments.
+The WGAN shows better convergence properties both in theory and in practice when compared with the original GAN. For this reason, we use the WGAN formulation with the gradient penalty \cite{gulrajani2017improved} in our experiments.
 
 \section{Evaluation Metrics}
 \label{sec:evaluation}
 
-Another problem is of evaluating GANs. Unlike Bayesian generative models where we can evaluate the quality of a model with marginal likelihood (or with evidence lower bounds), there is no proper way of evaluating GAN models. At the moment, people seem to agree on Inception score (IS) \cite{salimans2016improved} and Fr\'echet Inception distance (FID) \cite{heusel2017gans} since most of papers include these scores. These two scores use Inception v3 network \cite{szegedy2016rethinking} that is pre-trained on ImageNet \cite{deng2009imagenet}.
+Another problem is of evaluating GANs. Unlike the Bayesian generative models where we can evaluate the quality of a model using the marginal likelihood (or with evidence lower bounds), there is no proper way of evaluating the GAN. The most frequently used measures are the Inception score (IS) \cite{salimans2016improved} and the Fr\'echet Inception distance (FID) \cite{heusel2017gans} since most of papers include these scores. These two scores use Inception v3 network \cite{szegedy2016rethinking} that is pre-trained on ImageNet \cite{deng2009imagenet}.
 
 \subsection{Inception Score}
 \label{subsec:is}
-In IS, the conditional class distribution $p(y|x)$ is compared with the marginal class distribution $\int_x p(y|x) p(x)$. Here, probabilities are provided from Inception network. The idea is the entropy of $p(y|x)$ should be low if $x$ contains real-looking images since we believe Inception v3 is a good image classifier. On the other hand, the entropy of $\int_x p(y | x) p(x)$ should be high if the model outputs different images, therefore different probabilities. The overall formulation is:
+In IS, the class-conditional distribution $p(y|x)$ is compared with the marginal class distribution $\int_x p(y|x) p(x)$. Here, probabilities are provided by the Inception network. The idea is that the entropy of $p(y|x)$ should be low if $x$ contains real-looking images since we believe Inception v3 is a good image classifier. On the other hand, the entropy of $\int_x p(y | x) p(x)$ should be high if the model outputs images that are not natural looking since no class will have high probability. The overall formulation is:
 \begin{equation}
 \label{eq:is}
 \text{IS}=\exp (\mathbb{E}_{x \sim p_f} KL (p(y|x) || p(y))) 
@@ -245,61 +284,67 @@ In IS, the conditional class distribution $p(y|x)$ is compared with the marginal
 
 \subsection{Fr\'echet Inception Distance}
 \label{subsec:fid}
-There are known shortcomings of IS \cite{heusel2017gans,barratt2018note}. One issue is we never look at the class distribution of target images. FID is proposed to remedy this problem. Here, we take Inception network's activations in the layer before the last layer for both true samples and fake samples. These activations are then modeled with multivariate Gaussian distributions. Let us call mean and covariance of true samples and fake samples $(\mu_t, \Sigma_t)$ and $(\mu_f, \Sigma_f)$ respectively. Then, FID is calculated as follows:
+In IS, we never look at the distribution of real images which is a problem. In FID, we take Inception network's activations in the layer before the last layer for both true samples and fake samples. These activations are then modeled with multivariate Gaussian distributions. Let us denote the mean and the covariance of true samples and fake samples as $(\mu_t, \Sigma_t)$ and $(\mu_f, \Sigma_f)$ respectively. Then, FID is calculated as follows:
 \begin{equation}
 \label{eq:fid}
 \text{FID} = \| \mu_t - \mu_f \|_2^2 + \text{Tr}(\Sigma_t + \Sigma_f - 2(\Sigma_t \Sigma_f)^{1/2})
 \end{equation}
 
-\subsection{Nearest Neighbor Accuracy}
+\subsection{Nearest-Neighbor Accuracy}
 \label{subsec:nn}
-Other than these two methods, classifier two-sample test (C2ST) \cite{lopez2016revisiting} is a simple and effective way of evaluating GAN models. In short, we train a classifier for two-class classification where classes are true samples and fake samples, then use this classifier to assess whether the two distributions are close to each other. If these two distributions are very close to each other, the classifier cannot perform better than chance. In \cite{xu2018empirical}, they show that 1-nearest neighbor (1-NN) leave-one-out (LOO) classifier can detect mode collapse, mode drop and sample diversity. The procedure is as follows. We take a set of real samples and fake samples. For each sample, we look at its nearest neighbor's label. This counts as the prediction of the model for the current sample. If the overall accuracy is around 50\%, we say these two distributions are very close to each other. We can (and should) also evaluate the accuracy only on one class. Let us make the test only for real images and call this prediction accuracy metric 1-NN real. A higher 1-NN real accuracy implies samples that are near real samples are also real, therefore a mode drop. If this is very low (let's say 3\%), we can suspect that the generator may overfit to the target distribution. On the other hand, 1-NN fake accuracy assesses the sample diversity. If 1-NN fake accuracy is high, then samples are not diverse. 
+In the classifier two-sample test (C2ST) \cite{lopez2016revisiting}, we train a classifier for two-class classification where classes are the true samples and the fake samples, then we use this classifier to assess whether the two distributions are close to each other. If these two distributions are very close to each other, the classifier cannot perform better than chance. In \cite{xu2018empirical}, they show that 1-nearest neighbor (1-NN) leave-one-out (LOO) classifier can detect mode collapse, mode drop, and sample diversity. The procedure is as follows. We take a set of real samples and fake samples. For each sample, we look at its nearest neighbor's label. This counts as the prediction of the model for the current sample. If the overall accuracy is around 50\%, we say these two distributions are very close to each other. Let us make the test only for real images and call this prediction accuracy metric 1-NN real. A higher 1-NN real accuracy implies samples that are near real samples are also real, therefore a mode drop. If this is very low, we can suspect that the generator overfits the target distribution. On the other hand, 1-NN fake accuracy assesses the sample diversity. If 1-NN fake accuracy is high, then the samples are not diverse. 
+Apart from this, human judgment is generally used by visualizing samples that are generated by the model to assess quality. Although this is not a good approach and only works for the image domain, we have no choice until we find a rigorous metric that can be trusted. An extensive review of evaluation methods can be found in \cite{borji2019pros}. In this study, we use FID and 5-NN accuracy as evaluation metrics where 5-NN accuracy is calculated with the same activations we calculate the FID score with. We also show a set of generated samples to let the reader decide the quality.
 
-Apart from this, people heavily use human judgment by printing samples that are generated from the model to asses quality. Although this is not a good approach and only works for the image domain, we have no choice until we find a rigorous metric that can be trusted. An extensive review of evaluation methods can be found in \cite{borji2019pros}. We used FID and 5-NN accuracy as evaluation metrics. 5-NN accuracy is calculated with the same activations we calculate FID score with. Also, we show a set of generated samples to let the reader decide the quality.
 
-\chapter{COMBINING MULTIPLE GENERATORS OF GAN}
+\chapter{COMBINING MULTIPLE GENERATORS IN GAN}
 \label{chapter:multiple_gan}
 
-The direction we pursue is to use multiple generators each one responsible from a local region of the $p(z)$, and hence $p(x)$. Different local generators will learn to cover different modes and this will help alleviate the mode collapse problem. We review three previously proposed approaches that also uses a set of generators but in a quite different way.
+The direction we pursue is to use multiple generators, each one responsible from a local region of the $p(z)$, and hence $p(x)$. Different local generators will learn to cover different modes and this will help alleviate the mode collapse problem. We review three previously proposed approaches that use a set of generators but in different ways.
 
 \section{Multi-Agent Diverse GAN}
 \label{sec:madgan}
 
-In multi-agent diverse GAN (MAD-GAN) \cite{ghosh2018multi} there are multiple generators and each generator labels the fake data with its index. The discriminator not only separates true examples from fakes, but also learns the index of the generator for a fake. This additional classification problem forces generators to be local.
+In the multi-agent diverse GAN (MAD-GAN) \cite{ghosh2018multi}, there are multiple generators and each generator labels the fake data with its index. The discriminator not only separates true examples from fakes, but also learns the index of the generator for a fake. This additional classification problem forces generators to be local.
 
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[width=0.75\columnwidth]{madgan.pdf}
 \end{center}
-\caption{Multi-agent diverse GAN}
+\caption[Multi-agent diverse GAN]{Multi-agent diverse GAN \cite{ghosh2018multi}. Given an input noise vector $z$, the network which is shared among all generators produces an intermediate representation. From this representation, each generator outputs a sample. The discriminator is a }
 \vskip\baselineskip
 \label{fig:models:madgan}
 \end{figure}
 
-The model is shown in Figure \ref{fig:models:madgan}. Given $z$, a shared neural network block produces $z'$, an intermediate representation that is higher dimensional than $z$, which is used by a set of generators $\{G_i(z')\}_{i=1}^K$. The discriminator is a $K+1$-class classifier with 0 for true, and $1$ to $K$ for the fake instances. The discriminator should push the different generators to different modes to be able to solve the classification problem. More formally, the discriminator tries to minimize the following:
+The model is shown in Figure \ref{fig:models:madgan}. Given $z$, a shared neural network block produces $z'$, an intermediate representation that is higher dimensional than $z$, which is used by a set of generators $\{G_i(z')\}_{i=1}^K$. The discriminator is a $K+1$-class classifier with 0 for true, and $1$ to $K$ as the index of the generator for the fake instances. The discriminator should push the different generators to different modes to be able to solve the classification problem. More formally, the discriminator tries to minimize the following:
 \begin{equation}
 \min_{\phi} \quad -\mathbb{E}_{x \sim (p_t \cup p_f)} \left[ \sum_{j=0}^K r_j(x) \log D_j(x;\phi)\right]
+\label{eq:madgan1}
 \end{equation}
-where $p_t$  and $p_f$ are the target and the fake distribution respectively, $r$ is a one-hot vector with $K+1$ length. This is the regular cross-entropy error function. The cost function for generators remains the same with a little twist that we try to minimize $\log (1 - D_0(x;\phi))$ instead of $\log (1 - D(x;\phi))$ since now $D_0$ represents the probability of $x$ coming from the true distribution.
+where $p_t$  and $p_f$ are the target and the fake distribution respectively, and $r$ is a one-hot vector with $K+1$ length. This is the regular cross-entropy error function. The cost function for generators:
+\begin{equation}
+\min_{\theta} \quad \mathbb{E}_{z \sim p(z)} \log (1-D_0(G_i(z;\theta)))
+\label{eq:madgan2}
+\end{equation}
+where $G_i$ is the $i$th generator, and $D_0$ represents the discriminator's probability output for real class.
 
-Though there are multiple generators, we do not mix them in a co-operative manner. We also do not partition $p(z)$ and use each partition for different generators. This should rather be thought as each generator produces their own interpretation of $p(z)$. Therefore, instead of partitioning $p(z)$ we introduce alternative $p(z)$'s.
+Though there are multiple generators, we do not mix them in a cooperative manner. We also do not partition $p(z)$ and use each partition for different generators. This should rather be thought as each generator produces their own interpretation of $p(z)$. Therefore, instead of partitioning $p(z)$ we introduce alternative $p(z)$'s.
 %
 %
 \section{Mixture GAN}
 \label{sec:mgan}
 
-Mixture GAN (MGAN) \cite{hoang2018mgan} is similar to MAD-GAN except that the classifer and the discriminator are separate. The discriminator is two-class as usual discriminating between true and fake examples, and there is a separate $K$-class classifier only for the fake examples.
+The mixture GAN (MGAN) \cite{hoang2018mgan} is similar to MAD-GAN except that the classifer and the discriminator are separate. The discriminator is two-class as usual discriminating between true and fake examples, and there is a separate $K$-class classifier only for the fake examples.
 
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[width=0.75\columnwidth]{mgan.pdf}
 \end{center}
-\caption{Mixture GAN}
+\caption[Mixture GAN]{Mixture GAN \cite{hoang2018mgan}.}
 \vskip\baselineskip
 \label{fig:models:mgan}
 \end{figure}
 
-The model is shown in Figure \ref{fig:models:mgan}. There is also the difference is that the split of the generators is earlier. A set of generators $\{G_i(z)\}_{i=1}^K$, transform $z$ and for all, the shared network $G_s$ produces the final output. A multinomial distribution is sampled to randomly select one of the generators. Parameters of the multinomial distribution are fixed. While the discriminator tries to discriminate between fake and real data as usual, the classifier tries to predict the index of the generator that produced the fake sample. These two networks share parameters treating discriminator/classifier as a multi-task learning problem. This approach also treats $p(z)$ as in MAD-GAN, creating alternative $p(z)$'s.
+The model is shown in Figure \ref{fig:models:mgan}. There is also the difference that the split of the generators is earlier. A set of generators $\{G_i(z)\}_{i=1}^K$, transform $z$ and for all, the shared network $G_s$ produces the final output. A multinomial distribution is sampled to randomly select one of the generators. The parameters of the multinomial distribution are fixed. While the discriminator tries to discriminate between the fake and the real data as usual, the classifier tries to predict the index of the generator that produced the fake sample. These two networks share parameters treating the training of the discriminator/classifier as a multi-task learning problem. This approach also treats $p(z)$ as in MAD-GAN, creating alternative $p(z)$'s.
 
 \section{Mixtures of Experts GAN}
 \label{sec:megan}
@@ -322,46 +367,46 @@ Different from MAD-GAN and MGAN, in this approach $p(z)$ is partitioned into loc
 %
 \chapter{MIXTURES OF GENERATORS}
 \label{chapter:mixture_gan}
-All previous approaches use multiple generators yet these generators do not work in a cooperative manner. We use a mixture of generators that work cooperatively while also specialize on different regions of $p(z)$. We propose two different models: a flat mixture of generators and a hierarchical mixture of generators that are based on mixtures of experts (ME) \cite{jacobs1991adaptive} and hierarchical mixtures of experts (HME) \cite{jordan1994hierarchical} formulations respectively. Unlike MEGAN which also uses ME idea, we combine generators softly and only use the noise vector $z$ as the input. Now, we explain our models in detail in the following sections.
+All previous approaches use multiple generators yet these generators do not work in a cooperative manner. We propose to use a mixture of generators that work cooperatively while also specializing in different regions of $p(z)$. We propose two different models: a flat mixture of generators and a hierarchical mixture of generators that are based on mixtures of experts (ME) \cite{jacobs1991adaptive} and hierarchical mixtures of experts (HME) \cite{jordan1994hierarchical} formulations, respectively. Unlike MEGAN which also uses the ME idea, we combine generators softly and use only the noise vector $z$ as the input.
 
 \section{Flat Mixture of Generators}
-\label{sec:fmgan}
-Flat mixture of generators model, which we call ME-GAN (although the name is similar to MEGAN, we fully use the ME model unlike MEGAN, therefore keep the name with a dash), consists of local generators $\{g_i(z)\}_{i=1}^{K}$, a gating function $\alpha(z)$. The idea is that instead of learning a global generator, we divide the input space into regions and learn a set of local generators.
+\label{sec:me-gan}
+The flat mixture of generators model, which we call ME-GAN (although the name is similar to MEGAN, we fully use the ME model unlike MEGAN, therefore keep the name with a dash), consists of local generators $\{G_i(z)\}_{i=1}^{K}$, and a gating function $\alpha(z)$. The idea is that instead of learning a global generator, we divide the input space into regions and learn a set of local generators.
 \begin{gather}
-\alpha_i(z) = \frac{e^{w_{\alpha}^{(i)}z+b_{\alpha}^{(i)}}}{\sum_{j=1}^K e^{w_{\alpha}^{(j)}z+b_{\alpha}^{(j)}}} \label{eq:fmgan1}\\
-x = \sum_{i=1}^K \alpha_i(z) g_i(z) \label{eq:fmgan2}
+a_i(z) = \frac{\exp{(v_i z+v_{i_0})}}{\sum_{j=1}^K \exp{(v_j z+v_{j_0})}} \label{eq:me-gan1}\\
+x = \sum_{i=1}^K a_i(z) g_i(z) \label{eq:me-gan2}
 \end{gather}
-For a given input $z$, the gating function outputs probabilities that decide which generators to use (Equation \ref{eq:fmgan1}). Because the gating function outputs a probability, we do not select just one generator but a convex combination of them (Equation \ref{eq:fmgan2}). For generators, we consider two options:
+For a given input $z$, the gating function outputs probabilities to decide how much to use each generator (Equation \ref{eq:me-gan1}). Because the gating function outputs a probability, we do not select just one generator but a convex combination of them (Equation \ref{eq:me-gan2}). For generators, we consider two options:
 \begin{align}
-g_i(z) &= \rho_i  & (\textbf{Constant model}) \label{eq:constant}\\
-g_i(z) &= W_i z + b_i  & (\textbf{Linear model}) \label{eq:linear}
+\text{Constant model:} \quad & g_i(z) = c_i \label{eq:constant}\\
+\text{Linear model:} \quad & g_i(z) = W_i z + w_{i_0} \label{eq:linear}
 \end{align}
-In the constant model (Equation \ref{eq:constant}), generators do not look at inputs and only generate a constant vector response $\rho_i$. Although the generator response is constant, their combination weights $\alpha$ are still dependent on the gating function and therefore dependent on $z$. Because the combination of generators is convex, the set of possible outputs are constrained on the convex hull that is defined by $\{\rho_i\}_{i=1}^K$. Then, it is the region that is learned inside this convex hull. Therefore the most of the information about the generative model is encapsulated in the gating function. The linear model (Equation \ref{eq:linear}) relaxes the job of the gating function since the output is not confined in a convex hull any longer. The error that is propagated through the discriminator, $\partial E / \partial x$, is distributed along generators with respect to their contribution (due to the chain rule). In this way, each generator is responsible for modeling input-output mapping in the region they operate. In both formulations, we can learn parameters of the gating function $\{w_{\alpha}^{(i)}, b_{\alpha}^{(i)}\}_{i=1}^K$ and parameters of generators $\{W_i, b_i \}_{i=1}^K$ (or $\{ \rho_i \}_{i=1}^K$ for constant model) with SGD.
+In the constant model (Equation \ref{eq:constant}), generators do not use the input but generate a constant vector response $c_i$. Although the generator response is constant, their combination weights $a$ are still dependent on the gating function and therefore depend on $z$. Because the combination of generators is convex, the set of possible outputs are constrained by the convex hull defined by $\{c_i\}_{i=1}^K$. The linear model (Equation \ref{eq:linear}) relaxes the job of the gating function by using a more general model. The error that is propagated through the discriminator, $\partial E / \partial x$, is distributed among generators with respect to their contribution (due to the chain rule), and each generator becomes responsible for modeling the input-output mapping in its region of expertise. In both formulations, the parameters of the gating function $\{v_i, v_{i_0}\}_{i=1}^K$ and the parameters of the generators $\{W_i, w_{i_0} \}_{i=1}^K$ (or $\{ c_i \}_{i=1}^K$ for constant model) are trained using SGD.
 
 \section{Hierarchical Mixture of Generators}
 \label{sec:hmgan}
-Just like the hierarchical mixture of experts \cite{jordan1994hierarchical} go from the flat organization of mixture of experts  \cite{jacobs1991adaptive} to a tree, our proposed hierarchical mixture of generators (HME-GAN) go from a flat mixture of generators to a tree. HME-GAN and ME-GAN are the same except the formulation of the gating function. Let us think of a binary decision tree. Generators are located on the leaves of this tree. At each internal node $m$ of the tree, there is a logistic function $\alpha_m$ with parameters $\{w_{\alpha}^{(m)}, b_{\alpha}^{(m)}\}$:
+Just like the hierarchical mixture of experts \cite{jordan1994hierarchical} go from the flat organization of mixture of experts  \cite{jacobs1991adaptive} to a tree, our proposed hierarchical mixture of generators (HME-GAN) go from a flat mixture of generators to a tree. HME-GAN and ME-GAN are the same except for the formulation of the gating functions. Let us think of a binary decision tree. The generators at the leaves of this tree. At each internal node $m$ of the tree, there is a logistic function $a_m$ with parameters $\{v_m, v_{m_0}\}$:
 \begin{equation}
-\alpha_m(z) = \frac{1}{1+e^{-(w_{\alpha}^{(m)} z + b_{\alpha}^{(m)})}}
+a_m(z) = \frac{1}{1+\exp{[-(v_m z + v_{m_0})]}}
 \label{eq:sigmoid}
 \end{equation}
 Given an input $z$, this logistic function outputs a probability which serves as the mixture weights of the left and the right child. The response of an internal node $m$ can be written as:
 \begin{equation}
 x_m(z)=
 	\begin{cases}
-		\hfil g_m(z) &\text{if $m$ is a leaf} \\
-		\hfil x_m^{L}(z)\alpha_m(x) + x_m^{R}(z)(1 - \alpha_m(x)) &\text{otherwise}
+		\hfil G_m(z) &\text{if $m$ is a leaf} \\
+		\hfil x_m^{L}(z) a_m(x) + x_m^{R}(z)(1 - a_m(x)) &\text{otherwise}
 	\end{cases}
 \label{eq:hmgan2}
 \end{equation}
-where $x_m^L$ and $x_m^R$ are the responses of the left and the right child respectively. At each internal node $m$, we make a soft split and use $\alpha_m(z)$ of the response of the left tree and $1-\alpha_m(z)$ of the response of the right tree. This is carried recursively until we arrive at leaves, where we have the generator responses, $g_i(z)$. Again, we are taking a convex combination of generator responses. While in FM-GAN, the $i$th generator is mixed with the weight:
+where $x_m^L$ and $x_m^R$ are the responses of the left and the right children, respectively. At each internal node $m$, we make a soft split and use $a_m(z)$ of the response of the left tree and $1-a_m(z)$ of the response of the right tree. This is carried out recursively until we arrive at the leaves where we have the generator responses, $G_i(z)$. Again, we are taking a convex combination of the generator responses. In ME-GAN, the $i$th generator is mixed with the weight:
 \begin{equation}
-\frac{e^{w_{\alpha}^{(i)} z + b_{\alpha}^{(i)}}}{\sum_{j=1}^K e^{w_{\alpha}^{(j)} z + b_{\alpha}^{(j)}}}
+\frac{\exp{(v_i z + v_{i_0})}}{\sum_{j=1}^K \exp{(v_j z + v_{j_0})}}
 \label{eq:fm_mix}
 \end{equation}
-in HM-GAN this is:
+whereas in HME-GAN, this is:
 \begin{gather}
-\prod_{j \in Pred(i)} \alpha_j^{\delta_1^{(j)}}(z) (1-\alpha_j(z))^{\delta_2^{(j)}} g_i(z)\\
+\prod_{j \in Pred(i)} a_j^{\delta_1^{(j)}}(z) (1-a_j(z))^{\delta_2^{(j)}} G_i(z)\\
 (\delta_1^{(j)}, \delta_2^{(j)}) =
 	\begin{cases}
 		(1, 0) & \text{if $i$ lies in the left subtree of $j$} \\
@@ -369,40 +414,66 @@ in HM-GAN this is:
 	\end{cases}
 \label{eq:hm_mix}
 \end{gather}
-where $Pred(i)$ is the predecessors of the $i$th leaf. This model is differentiable, too, which lets us to learn parameters with SGD.
+where $Pred(i)$ is the predecessors of the leaf $i$. This model is differentiable, too, which lets us learn the set of parameters (in the gating nodes and the generators at the leaves) with SGD.
+%
+% Let $z \in \mathbb{R}^{d}$. In the original DCGAN architecture, the data lies in $\mathbb{R}^{d}$ after the first transformation even though the resulting vector is high-dimensional. When we use constant leaf vectors, HME can only output values in the \emph{convex hull} that is defined by its leaves since it takes a convex combination of its leaf vectors. Therefore, the data lies in $\mathbb{R}^m$ after the HME transformation where $m$ is the number of leaves. As a result, we separate the relation between the dimensionality of the input vector and the latent distribution. For example, we can set the dimensionality of the noise vector as $2$ but have a $128$-dimensional latent distribution that is defined by the output of the HME by using 128 leaves. The parameters of the gating functions and the leaves are learned throughout the training. The leaf values decide the vertices of the convex hull and the gating functions decide the distribution between the leaf values.
 
-This structure can be though as a soft decision tree as opposed to a hard decision tree. In hard decision trees we only choose one path from root to leaves whereas in soft decision trees we consider all paths from root to leaves. There are extension of soft decision tree where we can grow the tree adaptively based on some error metric \cite{irsoy2012soft,irsoy2014budding}.
+\chapter{EXPERIMENTS}
+\label{chapter:exps}
 
-\section{A Toy Example}
-\label{sec:toy}
-For a visual understanding of the model, let us look at Figure \ref{fig:toy}. We are given a spiral-like shaped two-dimensional data set. We trained an HME-GAN model with a depth of 3, therefore 8 linear generators. In Figure \ref{fig:toy:samples}, we see the trained model's response. To see which generator is responsible for which part, we pick a color for each generator and visualize its response with the respective color. The responsibility of each generator is calculated by softly counting the gating function's output for each point. This soft count decides the transparency level (alpha level) of the visualized point. This is shown in Figure \ref{fig:toy:coop}. The horizontal line in Figure \ref{fig:toy:coop} shows the color of each generator. As we expect, we see that the color changes when we change the region. Responses of each generator alone is also shown in Figure \ref{fig:toy:experts}. We understand that some generators are not used at all.
+\section{Data Sets}
+\label{sec:datasets}
+We test and compare our proposed mixture models ME-GAN and HME-GAN with related models, namely, MADGAN, MGAN, and MEGAN, on five image data sets that are widely used in GAN literature: MNIST \cite{lecun1998mnist}, FashionMNIST \cite{xiao2017fashion}, CelebA \cite{liu2015deep},  UTZap50K \cite{yu2014fine}, and Oxford Flowers (which we shorten as ``Flowers'') \cite{nilsback2008automated}.
+
+MNIST is a data set that contains gray-scale handwritten digits of size $28 \times 28$ pixels. There are 60,000 training samples and 10,000 test samples. FashionMNIST is a data set of fashion products such as t-shirts, trousers, sneakers. It is inspired from MNIST and has the same image size with the same number of examples. It is designed to be a drop-in replacement from MNIST and known to be a harder baseline. For these two data sets, we resize the images to $32 \times 32$ pixels, to be able to use the same kind of deconvolutional architecture repeatedly. We use all the 10,000 examples in the test set for evaluation.
+
+CelebA contains celebrity faces with 40 different annotated labels. There are 10,177 distinct people with a total of 202,599 images in color. We use the aligned-and-cropped version of the data set. There is no separate test set. We randomly select 10,000 test images and use them only for evaluation. These images contain very different backgrounds so we center-crop an area of $148 \times 148$ and then resize it to $64 \times 64$ pixels.
+
+UTZap50K is a shoe data set of 50,000 catalog images in color. There are 4 major categories with many subcategories as brand names. We resize all images to $64 \times 64$. We randomly select 5,000 test images and use them only for evaluation.
+
+Oxford flowers is a flower data set with 102 different categories with a total of 8198 images in color. There are around 80 images per class. We resize all images to $64 \times 64$. We use 1,000 test images for evaluation.
 
 \begin{figure}[htbp]
 \begin{center}
-\subfloat[Blue dots are real samples, red dots are generated samples.]{
-	\includegraphics[width=0.45\linewidth]{hme_out.pdf}
-	\label{fig:toy:samples}
-}
-\subfloat[Cooperation of experts]{
-	\includegraphics[width=0.45\linewidth]{hme_coop.pdf}
-	\label{fig:toy:coop}
+\subfloat[MNIST]{
+	\includegraphics[width=0.9\linewidth]{mnist_dataset.png}
+	\label{fig:dataset:mnist}
 }
 
-\subfloat[Local experts]{
-	\includegraphics[width=0.98\linewidth]{hme_experts.pdf}
-	\label{fig:toy:experts}
+\subfloat[FashionMNIST]{
+	\includegraphics[width=0.9\linewidth]{fashion_dataset.png}
+	\label{fig:dataset:fashion}
+}
+
+\subfloat[CelebA]{
+	\includegraphics[width=0.9\linewidth]{celeba_dataset.png}
+	\label{fig:dataset:celeba}
+}
+
+\subfloat[UTZap50K]{
+	\includegraphics[width=0.9\linewidth]{utzap50k_dataset.png}
+	\label{fig:dataset:utzap50k}
+}
+
+\subfloat[Oxford Flowers]{
+	\includegraphics[width=0.9\linewidth]{flowers_dataset.png}
+	\label{fig:dataset:flowers}
 }
 \end{center}
-\caption{Results of training a HME-GAN on a spiral data set.}
+\caption{Random examples from the five data sets used in this work.}
 \vskip\baselineskip
-\label{fig:toy}
+\label{fig:datasets}
 \end{figure}
-%
 
-\section{The Convolutional Pipeline}
-\label{sec:conv}
+Some examples from each data set are shown in Figure \ref{fig:datasets}. All images contain pixel intensities in the range $[0, 255]$, which we normalized to range $[-1, 1]$. For MNIST and FashionMNIST, there are $32 \times 32=1024$ input features. Other three data sets are in color have three channels for red, green, blue pixel intensities; they hence have 64 $\times$ 64 $\times$ 3 $=$ 12,288 input features. 
 
-Our experiments are done in the image domain. It is known that using a convolutional architecture for tasks that involve images increases performance dramatically. For example, although the set of human face images contain many modes, textures are quite the same. For this reason, we incorporate transposed convolutional (also known as deconvolutional) layers in both of our models. Instead of generating samples directly in the data domain $x$, our mixture models first generates an intermediate hidden representation $h$, that is given to a transposed convolutional architecture $G_s$. This architecture then produces the output $x$. For the human face example, local generators create an intermediate representation which may hold information about the location and the color of eyes,  and $G_s$ produces eyes given these features. For other domains where data points share common features, another domain specific architecture can be used to increase the performance given that the architecture is differentiable. The pipelines for ME-GAN and HME-GAN are depicted in Figure \ref{fig:models:me-gan} and \ref{fig:models:hmegan} respectively. Note that it is only $G$ that is modeled with ME or HME, $D$ remains the usual deep convolutional neural network.
+\section{Experimental Setup}
+\label{sec:setup}
+
+\subsection{The Convolutional Pipeline}
+\label{subsec:conv}
+
+Our experiments are done in the image domain. It is known that using a convolutional architecture for tasks that involve images increases performance dramatically. For example, although the set of human face images contain many modes, textures are quite the same. For this reason, we incorporate transposed convolutional (also known as deconvolutional) layers in both of our models. Instead of generating samples directly in the data domain $x$, our mixture models first generates an abstract representation $h$, that is given to a transposed convolutional architecture $G_s$. This architecture then produces the output $x$. For the human face example, local generators create an abstract representation and $G_s$ produces the actual image given this abstract representation. For other domains where data points share common features, another domain specific architecture can be used to increase the performance given that the architecture is differentiable. The pipelines for ME-GAN and HME-GAN are depicted in Figure \ref{fig:models:me-gan} and \ref{fig:models:hmegan} respectively. Note that it is only $G$ that is modeled with ME or HME, $D$ remains the usual deep convolutional neural network.
 
 \begin{figure}[htbp]
 \begin{center}
@@ -422,620 +493,803 @@ Our experiments are done in the image domain. It is known that using a convoluti
 \label{fig:models:hmegan}
 \end{figure}
 
-% Let $z \in \mathbb{R}^{d}$. In the original DCGAN architecture, the data lies in $\mathbb{R}^{d}$ after the first transformation even though the resulting vector is high-dimensional. When we use constant leaf vectors, HME can only output values in the \emph{convex hull} that is defined by its leaves since it takes a convex combination of its leaf vectors. Therefore, the data lies in $\mathbb{R}^m$ after the HME transformation where $m$ is the number of leaves. As a result, we separate the relation between the dimensionality of the input vector and the latent distribution. For example, we can set the dimensionality of the noise vector as $2$ but have a $128$-dimensional latent distribution that is defined by the output of the HME by using 128 leaves. The parameters of the gating functions and the leaves are learned throughout the training. The leaf values decide the vertices of the convex hull and the gating functions decide the distribution between the leaf values.
 
-\chapter{EXPERIMENTS}
-\label{chapter:exps}
-
-\section{Data Sets}
-\label{sec:datasets}
-We test our proposed mixture model on five image data sets that are widely used in GAN literature: MNIST \cite{lecun1998mnist}, FashionMNIST \cite{xiao2017fashion}, CelebA \cite{liu2015deep},  UTZap50K \cite{yu2014fine} and Oxford Flowers (which we call ``Flowers'' in some tables to save for space) \cite{nilsback2008automated}.
-
-MNIST is a data set that contains gray-scale handwritten digits of size $28 \times 28$ pixels. There are 60,000 training samples and 10,000 test samples.
-
-FashionMNIST is a data set of fashion products such as t-shirts, trousers, sneakers. It is inspired from MNIST and has the same data structure with the same number of examples. It is designed to be a drop-in replacement from MNIST and known to be a harder baseline.
-
-For these two data sets, we resize the images to $32 \times 32$ pixels, to be able to use the same kind of deconvolutional architecture repeatedly. We use all 10,000 examples in the test set for evaluation metrics.
-
-CelebA contains colored celebrity faces with 40 different annotated features. There are 10,177 distinct people with a total of 202,599 images. We use the aligned-and-cropped version of the data set. There is no separate test set. We randomly select 10,000 test images and use it only in the evaluation. These images contain very different backgrounds therefore we further center-crop $148 \times 148$ pixels, and resize it to $64 \times 64$ pixels.
-
-UTZap50K is a colored shoe data set of 50,000 catalog images. There are 4 major categories with many subcategories as brand names. We resize all images to $64 \times 64$. We randomly select 5,000 test images and use it only in the evaluation.
-
-Oxford flowers is a colored flower data set with 102 different categories with a total of 8198 images. There are around 80 images per class. We resize all images to $64 \times 64$. We use 1,000 test images and use it only in the evaluation.
-
-\begin{figure}[htbp]
-\begin{center}
-\subfloat[MNIST]{
-	\includegraphics[width=0.45\linewidth]{mnist_dataset.png}
-	\label{fig:dataset:mnist}
-}
-\subfloat[FashionMNIST]{
-	\includegraphics[width=0.45\linewidth]{fashion_dataset.png}
-	\label{fig:dataset:fashion}
-}
-
-\subfloat[CelebA]{
-	\includegraphics[width=0.45\linewidth]{celeba_dataset.png}
-	\label{fig:dataset:celeba}
-}
-\subfloat[UTZap50K]{
-	\includegraphics[width=0.45\linewidth]{utzap50k_dataset.png}
-	\label{fig:dataset:utzap50k}
-}
-
-\subfloat[Oxford Flowers]{
-	\includegraphics[width=0.45\linewidth]{flowers_dataset.png}
-	\label{fig:dataset:flowers}
-}
-\end{center}
-\caption{Samples from data sets.}
-\vskip\baselineskip
-\label{fig:datasets}
-\end{figure}
-
-Examples from each data set is shown in Figure \ref{fig:datasets}. All images contain pixel intensities in the range $[0, 255]$ as features. To improve training speed, we normalized all pixel intensities to range $[-1, 1]$. For MNIST and FashionMNIST, there are $32 \times 32=1024$ features. Other data sets are colored therefore there are three channels that describe red, green, blue pixel intensities. These have $64 \times 64 \times 3=12288$ features. 
-
-\section{Experimental Setup}
-\label{sec:setup}
-
-\subsection{Architecture Details}
+\subsection{Network Architectures}
 \label{subsec:architecture}
-These settings are applied to all experiments unless otherwise stated. The convolutional architecture that we use is the deep convolutional GAN (DCGAN) \cite{radford2015unsupervised}. Since MNIST and FashionMNIST are $32\times 32$ pixels and other data sets are $64\times 64$ pixels, we used different networks with different sizes. The network architectures used for the former and latter data sets are given in Table \ref{tab:models} that shows the number of units in each layer and the convolutional structure. Layers 2 to 5 are transposed convolutional layers and layer 1 is fully connected for FC, or is where we have the HME or ME structure embedded. The dimensionality of the input $z$ is set to 100. We did not use normalization in $G$ but used layer normalization \cite{lei2016layer} in $D$.
+The following settings are used in all experiments unless otherwise stated. We introduce multiple generators at the earlier levels of the model, and use a parameter-shared convolutional network on top of multiple generators as shown in Figures \ref{fig:models:me-gan} and \ref{fig:models:hmegan}. The discriminator part is the same for all models except MADGAN and MGAN. In MADGAN, the last layer of the discriminator contains $K+1$ units, instead of one. In MGAN, the last layer contains two parallel fully-connected layers, one of which outputs $K$ units for predicting the index of the generator and the other one outputs a probability for real \emph{vs.} fake classification. The convolutional architecture that we use for both the discriminator and the generator is the deep convolutional GAN (DCGAN) \cite{radford2015unsupervised}. MNIST and FashionMNIST are $32\times 32$ pixels and other data sets are $64\times 64$ pixels, the architectures used for two cases are given in Tables \ref{tab:smallmodel} and \ref{tab:largemodel}. The layers two to five are convolutional (or transposed convolutional) layers. Layer 1 is a fully-connected (FC) layer for the baseline model, an ME layer for MEGAN and ME-GAN, and an HME layer for HME-GAN. For MADGAN and MGAN, this layer contains multiple fully-connected layers. The dimensionality of the input $z$ is set to 100. For the non-linearity, we used the rectified linear unit (ReLU) in the hidden layers. We did not use any normalization in $G$ but used layer normalization \cite{lei2016layer} in $D$ for ME-GAN and HME-GAN. We employed batch normalization both in $G$ and in $D$ for MADGAN, MGAN and MEGAN.
 
 \begin{table}[thbp]
 \vskip\baselineskip
-\caption{Deconvolution network architectures that are used. The small network is used on MNIST and FashionMNIST which are $32\times 32$ and the large is used on CelebA , UTZap50K and Oxford Flowers which are $64\times 64$.}
+\caption{The generator and the discriminator network architectures that are used with MNIST and FashionMNIST, which have $32\times 32$ gray-scale images. For convolutional layers, kernel size is set to $4 \times 4$ with a stride of $2 \times 2$ and with a padding of 1.}
 \begin{center}
-\begin{tabular}{|l|c|c|}
+\begin{tabular}{|l|c|c|c|c|}
 \hline
-\textbf{Layer} & \textbf{Small Network} & \textbf{Large Network}\\
- \hline
-1 & 100                    & 100 \\
- \hline
-2 &  $256 \times 4 \times 4$ & $512 \times 4 \times 4$\\
+\multicolumn{5}{|c|}{Generator Network}\\
 \hline
-3 & $128 \times 8 \times 8$ & $256 \times 8 \times 8$\\
+Layer & In Channels & In Resolution & Out Channels & Out Resolution \\
 \hline
-4 & $64 \times 16 \times 16$& $128 \times 16 \times 16$\\
- \hline
-5 & $ 1 \times 32 \times 32$& $64 \times 32 \times 32$\\
- \hline
-6 & - & $3 \times 64 \times 64$\\
- \hline
+Fully-Conn. & 100 & $1 \times 1$ & 256 & $4 \times 4$\\
+\hline
+Transp. Conv. & 256 & $4 \times 4$ & 128 & $8 \times 8$\\
+\hline
+Transp. Conv. & 128 & $8 \times 8$ & 64 & $16 \times 16$\\
+\hline
+Transp. Conv. & 64 & $16 \times 16$ & 1 & $32 \times 32$\\
+\hline
+\multicolumn{5}{|c|}{Discriminator Network}\\
+\hline
+Layer & In Channels & In Resolution & Out Channels & Out Resolution \\
+\hline
+Conv. & 1 & $32 \times 32$ & 64 & $16 \times 16$\\
+\hline
+Conv. & 64 & $16 \times 16$ & 128 & $8 \times 8$\\
+\hline
+Conv. & 128 & $8 \times 8$ & 256 & $4 \times 4$\\
+\hline
+Fully-Conn. & 256 & $4 \times 4$ & 1 & $1 \times 1$\\
+\hline
 \end{tabular}
-\label{tab:models}
+\label{tab:smallmodel}
+\end{center}
+\end{table}
+
+\begin{table}[thbp]
+\vskip\baselineskip
+\caption{The generator and the discriminator network architectures that are used with CelebA , UTZap50K and Oxford Flowers which are $64\times 64$ images in color. For convolutional layers, kernel size is set to $4 \times 4$ with a stride of $2 \times 2$ and with a padding of 1.}
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\multicolumn{5}{|c|}{Generator Network}\\
+\hline
+Layer & In Channels & In Resolution & Out Channels & Out Resolution \\
+\hline
+Fully-Conn. & 100 & $1 \times 1$ & 512 & $4 \times 4$\\
+\hline
+Transp. Conv. & 512 & $4 \times 4$ & 256 & $8 \times 8$\\
+\hline
+Transp. Conv. & 256 & $8 \times 8$ & 128 & $16 \times 16$\\
+\hline
+Transp. Conv. & 128 & $16 \times 16$ & 64 & $32 \times 32$\\
+\hline
+Transp. Conv. & 64 & $32 \times 32$ & 1 & $64 \times 64$\\
+\hline
+\multicolumn{5}{|c|}{Discriminator Network}\\
+\hline
+Layer & In Channels & In Resolution & Out Channels & Out Resolution \\
+\hline
+Conv. & 1 & $64 \times 64$ & 64 & $32 \times 32$\\
+\hline
+Conv. & 64 & $32 \times 32$ & 128 & $16 \times 16$\\
+\hline
+Conv. & 128 & $16 \times 16$ & 256 & $8 \times 8$\\
+\hline
+Conv. & 256 & $8 \times 8$ & 512 & $4 \times 4$\\
+\hline
+Fully-Conn. & 512 & $4 \times 4$ & 1 & $1 \times 1$\\
+\hline
+\end{tabular}
+\label{tab:largemodel}
 \end{center}
 \end{table}
 
 \subsection{Hyperparameters}
 \label{subsec:hyperparameter}
-Wasserstein loss \cite{arjovsky2017wasserstein} with gradient penalty \cite{gulrajani2017improved} is used. We adopted the suggested hyperparameter setting of Wasserstein loss recommended in \cite{gulrajani2017improved}, namely two-sided gradient penalty with a constant of $10.0$. The discriminator is trained 5 times per optimization step of the generator. We used Adam optimizer \cite{kingma2014adam} with amsgrad option \cite{reddi2019convergence}. Learning rate is set to $0.0001$ with beta values of Adam set to $(0.5, 0.999)$. We do not apply learning rate decay. Batch size is set to 128.
+For ME-GAN and HME-GAN, the Wasserstein loss \cite{arjovsky2017wasserstein} with gradient penalty \cite{gulrajani2017improved} is used. We adopted the suggested hyperparameter setting for Wasserstein loss recommended in \cite{gulrajani2017improved}, namely two-sided gradient penalty with a constant of $10.0$. The discriminator is trained 5 times per optimization step of the generator. We cannot find a trivial way of using Wasserstein loss for MADGAN and MGAN since these methods make multi-class classification. We experimented Wasserstein loss on MEGAN but it did not give good results in our setting. Therefore, we use the vanilla log-likelihood GAN loss (the non-saturating version) for MADGAN, MGAN, and MEGAN. We used Adam optimizer \cite{kingma2014adam} with amsgrad option \cite{reddi2019convergence}. The learning rate is set to $0.0001$ with beta values of Adam set to $(0.5, 0.999)$. The batch size is set to 128.
 
 \subsection{Evaluation}
 \label{subsec:eval}
 For the evaluation of GAN methods, we used the most popular evaluation criteria that are the Fr\'echet Inception distance (FID) \cite{heusel2017gans} and the two-sample test (C2ST) \cite{lopez2016revisiting}, here, 5-nearest neighbor (5-NN) leave-one-out accuracy. Both FID and 5-NN accuracy are calculated with the activations before the softmax layer (2048-dim) of InceptionV3 \cite{szegedy2016rethinking}. Lower FID scores are better and 5-NN accuracies that are close to 50\% are better. All models are run five times with different random seeds, and we report the mean and standard deviations.
 
-We use these statistics to compare models with Welch's $t$-test. Welch's $t$-test is a method to test whether two populations have the same mean or not, when we do not know whether these two populations have the same variance. Basically, we calculate the $t$ statistic:
-\begin{equation}
-t = \frac{\bar{X}_1-\bar{X}_2}{\sqrt{\frac{s_1^2}{N_1} + \frac{s_2^2}{N_2}}}
-\label{eq:tstat}
-\end{equation}
-where $\bar{X}_1$, $\bar{X}_2$ are sample means, $s_1^2$, $s_2^2$ are sample variances and $N_1$, $N_2$ are the number of observations for the first and the second distribution respectively. We use the $t$-distribution with $\nu$ degree of freedoms where $\nu$ is estimated as follows:
-\begin{equation}
-\nu \approx \frac{\left(\frac{s_1^2}{N_1} + \frac{s_2^2}{N_2}\right)^2}{\frac{s_1^4}{N_1^2(N_1-1)}+\frac{s_2^4}{N_2^2(N_2-1)}}
-\label{eq:dof}
-\end{equation}
+The seed numbers are set to {2019, 2020, 2021, 2022, 2023} for five different runs. Except CuDNN \cite{chetlur2014cudnn} operations which are not deterministic but do not effect experiment results, all experiments are reproducible with given seeds. PyTorch auto-differentiation library \cite{paszke2017automatic} is used to automatically calculate gradients by exploiting the chain rule of Calculus.
 
-Seed numbers are set to {2019, 2020, 2021, 2022, 2023} for five different runs.. Except CuDNN \cite{chetlur2014cudnn} operations which are not deterministic but do not effect experiment results, all experiments are reproducible with given seeds. PyTorch auto-differentiation library \cite{paszke2017automatic} is used to automatically calculate gradients by exploiting the chain rule of Calculus. 
+\section{A Toy Example}
+\label{sec:toy}
+First, for the sake of the understanding of the model we made a toy experiment (Figure \ref{fig:toy}). We are given a spiral-like shaped two-dimensional data set. We trained an HME-GAN model with a depth of 3, so there are 8 generators at the leaves. At the top level, we see the trained model's response. The input noise vector is one-dimensional Gaussian distribution with zero mean and unit variance. The possible input range is shown with colors on the top box in Figure \ref{fig:toy}. The output of the model is also colored, indicating which part of the input maps to which part of the output. We visualized each node's responsibility by softly counting the gating values. On the first level of the tree, we see that the overall output of the model is divided into two, the left responsible for the inner region, and the right responsible for the outer region. When we go down in the tree, the responsibility is distributed among children. At the final level, where the leaves are located, there are generator functions. Notice that each generator is used in a local region. We also see that some generators are not used at all.
 
-\section{Tree Structure vs. Flat Structure}
-\label{sec:hme-vs-me}
-
-First, we want to see whether there is a qualitative difference between the tree structure and the flat structure. We use trees of different depths, and we also test a flat mixture of generators of equal number of leaves. For example, we have a tree of depth five with 32 leaves and a flat mixture of 32 leaves. In the former case, for each leaf, we have five binary gatings; in the latter case, there is one gating that chooses one of 32. For the hierarchical model, we tested trees with depth 5, 6, 7 and 8. To get the same number of leaves, we used 32, 64, 128 and 256 generator experts in the flat mixture. These models are denoted as HME-$k$ and ME-$k$ respectively. We also report the parameter count of each model; these do not include the convolution parameters shared across all models.
-
-\begin{table}[thbp]
-\vskip\baselineskip
-\caption[Results of FC and HME models]{Results of FC and HME models. $dim(\boldsymbol{z})$ is fixed to 100.}
-\begin{center}
-\begin{tabular}{|p{0.2cm}|p{0.2cm}|c|c|c|c|c|}
-\cline{3-7}
-\multicolumn{2}{c|}{} & FC		& HME-5		& HME-6		& HME-7		& HME-8		\\
-\hline
-\multirow{3}{*}{\rotatebox{90}{MNIST}}
-& \rotatebox{90}{Real} & $74.90 \pm 0.59$ & $73.62 \pm 0.91^-$ & $73.70 \pm 0.54^-$ &  {$73.27 \pm 0.48^-$} &  {$73.39 \pm 0.47^-$} \\
-\cline{2-7}
-& \rotatebox{90}{Fake} & $67.89 \pm 0.30$ & $73.24 \pm 1.03^+$ & $72.00 \pm 1.10^+$ &  {$70.97 \pm 0.35^+$} &  {$71.20 \pm 0.48^+$} \\
-\cline{2-7}
-& \rotatebox{90}{FID} & $11.13 \pm 0.44$ & $13.57 \pm 0.31^+$ & $12.61 \pm 0.84^+$ & $11.93 \pm 0.44^+$ & {$11.84 \pm 0.48^+$} \\
-\hline
-\multicolumn{2}{|c|}{\#} & 413K & 134K & 268K & 537K & 1.07M \\
-\hline
-\multirow{3}{*}{\rotatebox{90}{Fashion}}
-& \rotatebox{90}{Real} & $75.01 \pm 0.20$ & $73.46 \pm 0.68^-$ & $73.22 \pm 0.86^-$ & $73.14 \pm 1.47^-$ & $72.45 \pm 2.08$ \\
-\cline{2-7}
-& \rotatebox{90}{Fake} & $84.89 \pm 0.39$ & $89.32 \pm 0.72^+$ & {$88.36 \pm 0.95^+$} & {$87.47 \pm 1.14^+$} & {$86.95 \pm 1.27^+$} \\
-\cline{2-7}
-& \rotatebox{90}{FID} & $26.50 \pm 0.63$ & $27.92 \pm 0.91^+$ & $26.85 \pm 1.35$ & $25.93 \pm 1.48$ & {$25.51 \pm 2.41$} \\
-\hline
-\multicolumn{2}{|c|}{\#} & 413K & 134K & 268K & 537K & 1.07M \\
-\hline
-\multirow{3}{*}{\rotatebox{90}{CelebA}}
-& \rotatebox{90}{Real} & $66.14 \pm 1.17$ & $72.16 \pm 0.51^+$ & $70.35 \pm 0.63^+$ & $68.61 \pm 0.81^+$ & $68.96 \pm 1.39^+$ \\
-\cline{2-7}
-& \rotatebox{90}{Fake} & $80.96 \pm 1.56$ & $91.14 \pm 0.40^+$ & $89.93 \pm 0.15^+$ & $87.71 \pm 0.95^+$ & $88.12 \pm 0.62^+$ \\
-\cline{2-7}
-& \rotatebox{90}{FID} & $14.93 \pm 0.48$ & $21.40 \pm 0.61^+$ & $19.97 \pm 0.27^+$ & $18.21 \pm 0.52^+$ & $18.20 \pm 0.47^+$ \\
-\hline
-\multicolumn{2}{|c|}{\#} & 827K & 265K & 530K & 1.06M & 2.12M \\
-\hline
-\multirow{3}{*}{\rotatebox{90}{UTZap50K}}
-& \rotatebox{90}{Real} & $89.59 \pm 1.40$ & $91.64 \pm 0.83^+$ & $90.62 \pm 0.59$ & $90.47 \pm 0.70$ & $90.30 \pm 0.73$ \\
-\cline{2-7}
-& \rotatebox{90}{Fake} & $81.51 \pm 1.16$ & $86.02 \pm 0.67^+$ & $85.13 \pm 0.46^+$ & {$84.02 \pm 0.43^+$} & {$83.71 \pm 0.61^+$} \\
-\cline{2-7}
-& \rotatebox{90}{FID} & $54.48 \pm 5.36$ & $63.67 \pm 3.40^+$ & $58.96 \pm 1.28$ & $57.43 \pm 3.06$ & {$56.48 \pm 2.39$} \\
-\hline
-\multicolumn{2}{|c|}{\#} & 827K & 265K & 530K & 1.06M & 2.12M \\
-\hline
-\multirow{3}{*}{\rotatebox{90}{Flowers}}
-& \rotatebox{90}{Real} & $93.80 \pm 1.02$ & $93.83 \pm 0.95$ & $93.41 \pm 0.96$ & $93.14 \pm 0.83$ & $93.38 \pm 0.96$ \\
-\cline{2-7}
-& \rotatebox{90}{Fake} & $97.60 \pm 0.71$ & $97.48 \pm 0.48$ & {$97.42 \pm 0.35$} & $97.46 \pm 0.58$ & $97.24 \pm 0.74$ \\
-\cline{2-7}
-& \rotatebox{90}{FID} & $135.28 \pm 7.28$ & $133.47 \pm 6.22$ & $131.05 \pm 4.61$ & $128.95 \pm 3.49$ & $128.62 \pm 5.94$ \\
-\hline
-\multicolumn{2}{|c|}{\#} & 827K & 265K & 530K & 1.06M & 2.12M \\
-\hline
-\end{tabular}
-\label{tab:fc-hme}
-\end{center}
-\end{table}
-
-\begin{table}[thbp]
-\vskip\baselineskip
-\caption[Results for ME models]{Results for ME models. $dim(\boldsymbol{z})$ is fixed to 100.}
-\begin{center}
-\begin{tabular}{|c|c|c|c|c|c|}
-\cline{3-6}
-\multicolumn{2}{c|}{} & ME-32		& ME-64		& ME-128		& ME-256 \\
-\hline
-\multirow{3}{*}{\rotatebox{90}{MNIST}}
-& \rotatebox{90}{Real} & $74.23 \pm 0.58$ & $74.00 \pm 0.31^-$ & $74.57 \pm 0.86$ & $76.31 \pm 0.79^+$ \\
-\cline{2-6}
-& \rotatebox{90}{Fake} & $74.11 \pm 0.77^+$ & $72.12 \pm 0.74^+$ & $72.65 \pm 1.30^+$ & $72.97 \pm 0.52^+$ \\
-\cline{2-6}
-& \rotatebox{90}{FID} & $13.71 \pm 1.19^+$ & $12.08 \pm 0.23^+$ & $12.75 \pm 0.77^+$ & $14.58 \pm 1.10^+$ \\
-\hline
-\multicolumn{2}{|c|}{params.} & 134K & 268K & 537K & 1.07M \\
-\hline
-\multirow{3}{*}{\rotatebox{90}{Fashion}}
-& \rotatebox{90}{Real} & $74.05 \pm 0.81$ & $73.54 \pm 1.10^-$ & $75.84 \pm 2.43$ & $75.63 \pm 2.48$ \\
-\cline{2-6}
-& \rotatebox{90}{Fake} & $90.23 \pm 0.47^+$ & $90.31 \pm 0.59^+$ & $90.50 \pm 1.47^+$ & $90.46 \pm 1.65^+$ \\
-\cline{2-6}
-& \rotatebox{90}{FID} & $27.68 \pm 0.83^+$ & $27.86 \pm 1.34$ & $28.47 \pm 2.90$ & $29.49 \pm 2.86$ \\
-\hline
-\multicolumn{2}{|c|}{params.} & 134K & 268K & 537K & 1.07M \\
-\hline
-\multirow{3}{*}{\rotatebox{90}{CelebA}}
-& \rotatebox{90}{Real} & $72.22 \pm 1.60^+$ & $71.23 \pm 1.07^+$ & $69.66 \pm 0.84^+$ & $69.23 \pm 1.29^+$ \\
-\cline{2-6}
-& \rotatebox{90}{Fake} & $91.04 \pm 1.86^+$ & $90.56 \pm 1.87^+$ & $87.92 \pm 0.48^+$ & $87.83 \pm 0.66^+$ \\
-\cline{2-6}
-& \rotatebox{90}{FID} & $20.96 \pm 0.78^+$ & $20.27 \pm 0.70^+$ & $18.78 \pm 0.35^+$ & $18.39 \pm 0.76^+$ \\
-\hline
-\multicolumn{2}{|c|}{params.} & 265K & 530K & 1.06M & 2.12M \\
-\hline
-\multirow{3}{*}{\rotatebox{90}{UTZap50K}}
-& \rotatebox{90}{Real} & $91.07 \pm 0.62$ & $91.18 \pm 0.34$ & $90.95 \pm 0.82$ & $91.31 \pm 1.18$ \\
-\cline{2-6}
-& \rotatebox{90}{Fake} & $86.69 \pm 1.18^+$ & $85.67 \pm 0.99^+$ & $85.38 \pm 0.42^+$ & $86.06 \pm 1.04^+$ \\
-\cline{2-6}
-& \rotatebox{90}{FID} & $63.72 \pm 4.35^+$ & $61.19 \pm 2.02^+$ & $61.51 \pm 2.52^+$ & $65.19 \pm 3.85^+$ \\
-\hline
-\multicolumn{2}{|c|}{params.} & 265K & 530K & 1.06M & 2.12M \\
-\hline
-\multirow{3}{*}{\rotatebox{90}{Flowers}}
-& \rotatebox{90}{Real} & $93.58 \pm 1.26$ & $93.69 \pm 0.50$ & $93.57 \pm 1.41$ & $94.40 \pm 1.19$ \\
-\cline{2-6}
-& \rotatebox{90}{Fake} & $97.88 \pm 0.58$ & $97.96 \pm 0.30$ & $97.76 \pm 0.41$ & $97.89 \pm 0.48$ \\
-\cline{2-6}
-& \rotatebox{90}{FID} & $133.13 \pm 4.31$ & $131.83 \pm 2.45$ & $132.07 \pm 7.28$ & $137.08 \pm 6.46$ \\
-\hline
-\multicolumn{2}{|c|}{params.} & 265K & 530K & 1.06M & 2.12M \\
-\hline
-\end{tabular}
-\label{tab:me}
-\end{center}
-\end{table}
-
-Some samples generated from ME-64 and HME-6 are shown in Figure \ref{fig:samples} for visual inspection. It can be seen that these are quite realistic and contain diversity for both models. 5-NN and FID scores are given in Table \ref{tab:fc-hme} and \ref{tab:me} for HME and ME respectively. In general, it seems that they perform the same. From Table \ref{tab:fc-hme}, we see that the results for HME generally gets better with the increasing complexity (in terms of number of parameters) as expected. For ME (Table \ref{tab:me}), the results does not get better as in HME. Especially ME-256 model performs worse than other ME models with less parameters. We anticipate that more experts should bring more power. However, the gating function of ME does not get better when we increase the number of experts. Therefore, we conjecture that it is due to the gating function of ME, the results stagnates. However, this is not the case for HME since we distribute the gating function into many binary gating functions.
+This example shows that even when the distribution is very non-linear, we can model it with simple linear models by combining them in a hierarchical manner. The hierarchical combination dissects the problem into two at each level, easing the problem in a divide-and-conquer fashion.
 
 \begin{figure}[htbp]
 \begin{center}
-\subfloat[ME-64 leafs]{
-	\includegraphics[width=0.45\linewidth]{me_leafs_fashion.png}
-	\label{fig:leafs:me_fashion}
+\includegraphics[width=0.9\textwidth]{toy.pdf}
+\end{center}
+\caption{The average responses of tree nodes of HME-GAN on a spiral data set. The data set is represented with black cross. The output of the model is colored dots. These colors represent different regions of the input. As we go down in the tree, each node becomes more specialized.}
+\vskip\baselineskip
+\label{fig:toy}
+\end{figure}
+
+\section{Flat Mixture vs. Hierarchical Mixture}
+We have shown two different ways of combining multiple generators, namely, the flat mixture and the hierarchical mixture. Now, we want to see whether there is a qualitative difference between these two models. We use trees of different depths, and we also test a flat mixture of generators with equal number of leaves. For example, we have a tree of depth five with 32 leaves and a flat mixture of 32 leaves. In the former case, for each leaf, we have five binary gatings; in the latter case, there is one gating that chooses one of 32. For the hierarchical model, we tested trees with depth 5, 6, 7 and 8. To get the same number of leaves, we used 32, 64, 128 and 256 generator experts in the flat mixture.
+
+\begin{figure}[htbp]
+\begin{center}
+\subfloat{
+	\includegraphics[width=0.6\linewidth]{me_samples_mnist.png}
+	\label{fig:samples:me_mnist}
 }
-\subfloat[HME-6 leafs]{
-	\includegraphics[width=0.45\linewidth]{hme_leafs_fashion.png}
-	\label{fig:leafs:hme_fashion}
+
+\subfloat{
+	\includegraphics[width=0.6\linewidth]{me_samples_fashion.png}
+	\label{fig:samples:me_fashion}
+}
+
+\subfloat{
+	\includegraphics[width=0.6\linewidth]{me_samples_celeb.png}
+	\label{fig:samples:me_celeb}
+}
+
+\subfloat{
+	\includegraphics[width=0.6\linewidth]{me_samples_utzap50k.png}
+	\label{fig:samples:me_utzap50k}
+}
+
+\subfloat{
+	\includegraphics[width=0.6\linewidth]{me_samples_flowers.png}
+	\label{fig:samples:me_flowers}
 }
 \end{center}
-\caption{Leaf responsibilities of ME-64 (left) and HME-6 (right).}
+\caption{Samples generated using ME-64.}
 \vskip\baselineskip
-\label{fig:leafs}
+\label{fig:samples_me}
 \end{figure}
 
 \begin{figure}[htbp]
 \begin{center}
 \subfloat{
-	\includegraphics[width=0.45\linewidth]{me_samples_mnist.png}
-	\label{fig:samples:me_mnist}
-}
-\subfloat{
-	\includegraphics[width=0.45\linewidth]{hme_samples_mnist.png}
+	\includegraphics[width=0.6\linewidth]{hme_samples_mnist.png}
 	\label{fig:samples:hme_mnist}
 }
 
 \subfloat{
-	\includegraphics[width=0.45\linewidth]{me_samples_fashion.png}
-	\label{fig:samples:me_fashion}
-}
-\subfloat{
-	\includegraphics[width=0.45\linewidth]{hme_samples_fashion.png}
+	\includegraphics[width=0.6\linewidth]{hme_samples_fashion.png}
 	\label{fig:samples:hme_fashion}
 }
 
 \subfloat{
-	\includegraphics[width=0.45\linewidth]{me_samples_celeb.png}
-	\label{fig:samples:me_celeb}
-}
-\subfloat{
-	\includegraphics[width=0.45\linewidth]{hme_samples_celeb.png}
+	\includegraphics[width=0.6\linewidth]{hme_samples_celeb.png}
 	\label{fig:samples:hme_celeb}
 }
 
 \subfloat{
-	\includegraphics[width=0.45\linewidth]{me_samples_utzap50k.png}
-	\label{fig:samples:me_utzap50k}
-}
-\subfloat{
-	\includegraphics[width=0.45\linewidth]{hme_samples_utzap50k.png}
+	\includegraphics[width=0.6\linewidth]{hme_samples_utzap50k.png}
 	\label{fig:samples:hme_utzap50k}
 }
 
 \subfloat{
-	\includegraphics[width=0.45\linewidth]{me_samples_flowers.png}
-	\label{fig:samples:me_flowers}
-}
-\subfloat{
-	\includegraphics[width=0.45\linewidth]{hme_samples_flowers.png}
+	\includegraphics[width=0.6\linewidth]{hme_samples_flowers.png}
 	\label{fig:samples:hme_flowers}
 }
 \end{center}
-\caption{Samples generated using ME-64 (left) and HME-6 (right).}
+\caption{Samples generated using HME-6.}
 \vskip\baselineskip
-\label{fig:samples}
+\label{fig:samples_hme}
 \end{figure}
 
-We also tried to visualize the learned experts representations for ME and HME. To do this, we count the responsibility values (gating values) of leafs for each generated image. Then, for each leaf, we take a weighted average of generated images where weights are responsibilities of the leaf for each image. This will give us the leaf's expected responsibility, in other words its contribution. The result is shown in Figure \ref{fig:leafs}. We can say from the figure that HME leafs are more diverse and local when compared with ME leafs. Interpretation of this figure is important. This figure is not about sample quality or sample diversity. It is rather about the relation of leafs with each other. In Figure \ref{fig:leafs:me_fashion}, leafs seem more blurry. This says that leafs of ME are not specialized for a region of $p(z)$ but rather used throughout many regions of $p(z)$. To understand this clearly, we show the covariance matrices of leaf gating values in Figure \ref{fig:covariances}. These are $64 \times 64$ matrices where each index corresponds to a leaf. For example, for both matrices we see that the diagonal values are higher than others. This implies leafs are rather used alone, or used with high proportion. For ME in Figure \ref{fig:cov:me}, correlations are randomly scattered. Its counterpart HME (Figure \ref{fig:cov:hme}) has correlations gathered around the diagonal. Furthermore, we can see spectral squares of sizes $4 \times 4$ and $8 \times 8$. This shows that cooperations are done in a hierarchical way.
+Some samples generated from ME-64 and HME-6 are shown in Figures \ref{fig:samples_me} and \ref{fig:samples_hme} respectively for visual inspection. It can be seen that these are quite realistic and contain diversity for both models. We also visualized the average generator responses of ME and HME for FashionMNIST data set in Figure \ref{fig:leaves}. To calculate this, we count the gating values of leaves for each generated image. Then, for each leaf, we take a weighted average of generated images where weights are gating values of a leaf for each image. This will give us a leaf's average response. We can see from the figure that the HME leaves are more diverse and local when compared with ME leaves. However, this figure is not about sample quality or sample diversity. It is rather about the relation of leaves with each other. In Figure \ref{fig:leaves:me_fashion}, leaves seem more blurry. This says that leaves of ME are not specialized in a region of $p(z)$ but rather used throughout in many regions of $p(z)$. To understand this clearly, we also show the covariance matrices of leaf gating values in Figure \ref{fig:covariances}. These are $64 \times 64$ matrices where each index corresponds to a leaf. For example, for both matrices we see that the diagonal values are higher than others. This implies leaves are rather used alone, or used with high proportion. For ME in Figure \ref{fig:cov:me}, correlations are randomly scattered. Its counterpart HME (Figure \ref{fig:cov:hme}) has correlations gathered around the diagonal. Furthermore, we can see spectral squares of sizes $4 \times 4$ and $8 \times 8$. This shows that cooperations are done in a hierarchical way.
 
 \begin{figure}[htbp]
 \begin{center}
 \subfloat[ME-64]{
-	\includegraphics[width=0.45\linewidth]{cov_me.pdf}
+	\includegraphics[width=0.6\linewidth]{me_leaves_fashion.png}
+	\label{fig:leaves:me_fashion}
+}
+
+\subfloat[HME-6]{
+	\includegraphics[width=0.6\linewidth]{hme_leaves_fashion.png}
+	\label{fig:leaves:hme_fashion}
+}
+\end{center}
+\caption{Average responses of generators at the leaves for ME-64 and HME-6. We see that HME-6 responses are more localized compared to ME-64.}
+\vskip\baselineskip
+\label{fig:leaves}
+\end{figure}
+%
+
+\begin{figure}[htbp]
+\begin{center}
+\subfloat[ME-64]{
+	\includegraphics[width=0.5\linewidth]{cov_me.pdf}
 	\label{fig:cov:me}
 }
+
 \subfloat[HME-6]{
-	\includegraphics[width=0.45\linewidth]{cov_hme.pdf}
+	\includegraphics[width=0.5\linewidth]{cov_hme.pdf}
 	\label{fig:cov:hme}
 }
 \end{center}
-\caption{Covariance matrix of leaf densities for ME-64 and HME-6.}
+\caption{Covariance matrix of gating values of generators for ME-64 and HME-6. We see spectral squares near diagonal for HME-6 model, which indicates generators that are closer by index are used together.}
 \vskip\baselineskip
 \label{fig:covariances}
 \end{figure}
 
-\section{Fully-connected vs. Mixture of Constants}
-\label{sec:fc-vs-hme}
-Now that we see the difference between ME and HME, we rather focus on the difference between a mixture of constants layer and a fully-connected (FC) layer. In Figure \ref{fig:models:hmegan}, this corresponds to having one fully connected layer between $z$ and $h$.
-
-% One advantage of HME lies in complexity. Let us say $z$ is 100 dimensional and $z'$ is 1000 dimensional; a fully connected layer has 100,000 weights, but a tree uses gating nodes all of which are 100 dimensional, so unless the tree has more than 100 leaves, the tree is much simpler in terms of memory and computation.
-
-Experiment results are reported in Table \ref{tab:fc-hme} and \ref{tab:me}. We made a Welch's t-test to test whether there is a significant difference between these metrics. We took FC results as the baseline and mark ME and HME results with plus (or minus) where those metrics are significantly higher (or lower) than the one for FCs (Table \ref{tab:fc-hme} and \ref{tab:me}). These results show that though ME and HME are good, are not as good as FC in terms of FID score or 5-NN accuracy. Their performance improves as the structure gets larger; note that trees with depth 5 and 6 are smaller than FC. We conjecture that performance drop might be due to decreased sample diversity. Although 5-NN real accuracies are quite close, there is a gap between 5-NN fake accuracies. High 5-NN fake accuracy implies that fake samples are located near fake samples in $p(x)$.
-
-One possible cause for the decreased diversity is to use constant vectors in the leafs. In FC version, the random vector $z$ is gone through an affine transformation and a rectified linear unit (ReLU) non-linearity. HME, on the other hand, encapsulates the information of $z$ in its gatings. Gating units are sigmoid functions. Sigmoid functions get saturated for values that are too low or too high. Therefore, if gating weights get too high or too low, which also means that it mimics a hard split instead of a soft one, the variety is lost due to sigmoid function. So although we want our experts to specialize, they output constant vectors when they are too specialized. To remedy this problem, we introduce linear experts in the leafs instead of constant vectors.
-
-\section{Linear Experts}
-\label{sec:hme-linear}
-We use linear functions as in Equation \ref{eq:linear} at leaves of both ME and HME models. We experimented with number of generators set to 4, 8, 16 and 32. We call these models as ME-L-$k$ and HME-L-$k$ where $k$ is the number of generators for the flat mixture and the depth level for the hierarchical mixture.
-
-\begin{figure}[htbp]
-\begin{center}
-\subfloat[ME-L-16 leafs]{
-	\includegraphics[width=0.45\linewidth]{me_lin_leafs_fashion.png}
-	\label{fig:leafs_lin:me_fashion}
-}
-\subfloat[HME-L-4 leafs]{
-	\includegraphics[width=0.45\linewidth]{hme_lin_leafs_fashion.png}
-	\label{fig:leafs_lin:hme_fashion}
-}
-\end{center}
-\caption{Leaf responsibilities of ME-L-16 (left) and HME-L-4 (right).}
-\vskip\baselineskip
-\label{fig:leafs_lin}
-\end{figure}
-
-\begin{figure}[htbp]
-\begin{center}
-\subfloat{
-	\includegraphics[width=0.45\linewidth]{me_lin_samples_mnist.png}
-	\label{fig:samples_lin:me_mnist}
-}
-\subfloat{
-	\includegraphics[width=0.45\linewidth]{hme_lin_samples_mnist.png}
-	\label{fig:samples_lin:hme_mnist}
-}
-
-\subfloat{
-	\includegraphics[width=0.45\linewidth]{me_lin_samples_fashion.png}
-	\label{fig:samples_lin:me_fashion}
-}
-\subfloat{
-	\includegraphics[width=0.45\linewidth]{hme_lin_samples_fashion.png}
-	\label{fig:samples_lin:hme_fashion}
-}
-
-\subfloat{
-	\includegraphics[width=0.45\linewidth]{me_lin_samples_celeb.png}
-	\label{fig:samples_lin:me_celeb}
-}
-\subfloat{
-	\includegraphics[width=0.45\linewidth]{hme_lin_samples_celeb.png}
-	\label{fig:samples_lin:hme_celeb}
-}
-
-\subfloat{
-	\includegraphics[width=0.45\linewidth]{me_lin_samples_utzap50k.png}
-	\label{fig:samples_lin:me_utzap50k}
-}
-\subfloat{
-	\includegraphics[width=0.45\linewidth]{hme_lin_samples_utzap50k.png}
-	\label{fig:samples_lin:hme_utzap50k}
-}
-
-\subfloat{
-	\includegraphics[width=0.45\linewidth]{me_lin_samples_flowers.png}
-	\label{fig:samples_lin:me_flowers}
-}
-\subfloat{
-	\includegraphics[width=0.45\linewidth]{hme_lin_samples_flowers.png}
-	\label{fig:samples_lin:hme_flowers}
-}
-\end{center}
-\caption{Samples generated using ME-L-16 (left) and HME-L-4 (right).}
-\vskip\baselineskip
-\label{fig:samples_lin}
-\end{figure}
-
-The experimental results on five data sets are given in Table \ref{tab:hme-depth} and \ref{tab:me-depth}. First, we see that both ME-L and HME-L models outperform FC model. Welch's t-test results say that both ME-L and HME-L have significantly lower 5-NN real, 5-NN fake and FID scores for all data sets. Though one can expect these results since the number of parameters increases. Both 5-NN real and 5-NN fake accuracy drops, which says our mixture models fit better to $p(x)$ with more variety. Some samples are visualized in Figure \ref{fig:samples_lin}.
-
-When we compare ME-L and HME-L models, we see that ME slightly enjoys more from having linear experts. If we look at Figure \ref{fig:leafs_lin}, ME-L leafs are now more local and diverse. Figure \ref{fig:cov_lin:me} also confirms this since the diagonal is now more prominent. On the other hand, in Figure \ref{fig:cov_lin:hme} HME seems to use its leaves in a more cooperative way when compared with its constant counterpart. For both formulations, results stagnates at their largest models. We argue that the training time may increase when the number of generators increase since we distribute the error to multiple generators. More generators imply we update generators with smaller gradients. Also, the bottleneck may be caused by other factors.
-
-
-\begin{figure}[htbp]
-\begin{center}
-\subfloat[ME-64]{
-	\includegraphics[width=0.45\linewidth]{cov_me_lin.pdf}
-	\label{fig:cov_lin:me}
-}
-\subfloat[HME-6]{
-	\includegraphics[width=0.45\linewidth]{cov_hme_lin.pdf}
-	\label{fig:cov_lin:hme}
-}
-\end{center}
-\caption{Covariance matrix of leaf densities for ME-L-16 and HME-L-4.}
-\vskip\baselineskip
-\label{fig:covariances_lin}
-\end{figure}
-
-\begin{table}[thbp]
-\vskip\baselineskip
-\caption[HME with linear experts for different tree depths]{HME with linear experts for different tree depths. $dim(\boldsymbol{z})$ is fixed to 100.}
-\begin{center}
-\begin{tabular}{|c|c|c|c|c|c|}
-\hline
-\multicolumn{2}{|c|}{Depth} & 2 & 3 & 4 & 5 \\
-\hline
-\multirow{3}{*}{\rotatebox{90}{MNIST}}
-& \rotatebox{90}{Real} & $74.03 \pm 0.81$ & $73.48 \pm 0.53$ & $72.10 \pm 0.74$ & $72.14 \pm 0.54$ \\
-\cline{2-6}
-& \rotatebox{90}{Fake} & $66.73 \pm 0.61$ & $66.41 \pm 0.74$ & $66.21 \pm 0.82$ & $65.63 \pm 0.25$ \\
-\cline{2-6}
-& \rotatebox{90}{FID} & $10.27 \pm 0.41$ & $9.86 \pm 0.24$ & $9.15 \pm 0.45$ & $9.07 \pm 0.44$ \\
-\hline
-\multicolumn{2}{|c|}{params.} & 1.65M & 3.31M & 6.62M & 13.24M \\
-\hline
-\multirow{3}{*}{\rotatebox{90}{Fashion}}
-& \rotatebox{90}{Real} & $72.18 \pm 0.38$ & $71.15 \pm 0.88$ & $70.08 \pm 0.84$ & $69.99 \pm 0.70$ \\
-\cline{2-6}
-& \rotatebox{90}{Fake} & $79.96 \pm 0.35$ & $79.14 \pm 0.73$ & $78.67 \pm 0.78$ & $78.10 \pm 0.60$ \\
-\cline{2-6}
-& \rotatebox{90}{FID} & $20.88 \pm 0.17$ & $19.64 \pm 0.89$ & $18.79 \pm 0.77$ & $18.24 \pm 0.91$ \\
-\hline
-\multicolumn{2}{|c|}{params.} & 1.65M & 3.31M & 6.62M & 13.24M \\
-\hline
-\multirow{3}{*}{\rotatebox{90}{CelebA}}
-& \rotatebox{90}{Real} & $62.96 \pm 0.81$ & $63.15 \pm 1.42$ & $62.07 \pm 0.88$ & $62.02 \pm 1.02$ \\
-\cline{2-6}
-& \rotatebox{90}{Fake} & $77.91 \pm 0.83$ & $77.68 \pm 1.91$ & $77.18 \pm 0.82$ & $77.02 \pm 0.98$ \\
-\cline{2-6}
-& \rotatebox{90}{FID} & $12.41 \pm 0.40$ & $12.48 \pm 0.65$ & $12.23 \pm 0.56$ & $12.09 \pm 0.56$ \\
-\hline
-\multicolumn{2}{|c|}{params.} & 3.30M & 6.61M & 13.23M & 26.47M \\
-\hline
-\multirow{3}{*}{\rotatebox{90}{UTZap50K}}
-& \rotatebox{90}{Real} & $87.26 \pm 0.80$ & $87.39 \pm 0.96$ & $87.61 \pm 1.21$ & $87.77 \pm 1.17$ \\
-\cline{2-6}
-& \rotatebox{90}{Fake} & $77.46 \pm 1.09$ & $78.21 \pm 0.32$ & $78.10 \pm 0.43$ & $78.42 \pm 1.36$ \\
-\cline{2-6}
-& \rotatebox{90}{FID} & $42.35 \pm 3.27$ & $42.99 \pm 2.08$ & $44.88 \pm 3.48$ & $45.54 \pm 3.46$ \\
-\hline
-\multicolumn{2}{|c|}{params.} & 3.30M & 6.61M & 13.23M & 26.47M \\
-\hline
-\multirow{3}{*}{\rotatebox{90}{Flowers}}
-& \rotatebox{90}{Real} & $88.96 \pm 0.93$ & $89.30 \pm 1.49$ & $88.89 \pm 1.51$ & $90.15 \pm 1.60$ \\
-\cline{2-6}
-& \rotatebox{90}{Fake} & $96.58 \pm 0.58$ & $96.43 \pm 0.65$ & $96.61 \pm 0.41$ & $96.55 \pm 0.76$ \\
-\cline{2-6}
-& \rotatebox{90}{FID} & $111.06 \pm 4.84$ & $111.85 \pm 3.65$ & $112.78 \pm 3.13$ & $114.79 \pm 4.20$ \\
-\hline
-\multicolumn{2}{|c|}{params.} & 3.30M & 6.61M & 13.23M & 26.47M \\
-\hline
-\end{tabular}
-\label{tab:hme-depth}
-\end{center}
-\end{table}
-
-\begin{table}[thbp]
-\vskip\baselineskip
-\caption[ME with linear experts for different number of experts]{ME with linear experts for different number of experts. $dim(\boldsymbol{z})$ is fixed to 100.}
-\begin{center}
-\begin{tabular}{|c|c|c|c|c|c|}
-\hline
-\multicolumn{2}{|c|}{Depth} & 4 & 8 & 16 & 32 \\
-\hline
-\multirow{3}{*}{\rotatebox{90}{MNIST}}
-& \rotatebox{90}{Real} & $72.91 \pm 0.93$ & $71.46 \pm 1.02$ & $70.91 \pm 0.83$ & $71.68 \pm 0.60$ \\
-\cline{2-6}
-& \rotatebox{90}{Fake} & $66.29 \pm 0.97$ & $66.25 \pm 0.72$ & $65.38 \pm 0.70$ & $65.86 \pm 0.84$ \\
-\cline{2-6}
-& \rotatebox{90}{FID} & $9.74 \pm 0.64$ & $8.95 \pm 0.28$ & $8.56 \pm 0.53$ & $8.90 \pm 0.56$ \\
-\hline
-\multicolumn{2}{|c|}{params.} & 1.65M & 3.31M & 6.62M & 13.24M \\
-\hline
-\multirow{3}{*}{\rotatebox{90}{Fashion}}
-& \rotatebox{90}{Real} & $72.28 \pm 0.60$ & $70.90 \pm 0.96$ & $69.45 \pm 0.71$ & $70.18 \pm 0.94$ \\
-\cline{2-6}
-& \rotatebox{90}{Fake} & $79.81 \pm 0.93$ & $78.64 \pm 0.51$ & $78.09 \pm 0.73$ & $79.10 \pm 0.86$ \\
-\cline{2-6}
-& \rotatebox{90}{FID} & $20.90 \pm 0.87$ & $19.37 \pm 0.90$ & $18.09 \pm 0.89$ & $19.28 \pm 0.67$ \\
-\hline
-\multicolumn{2}{|c|}{params.} & 1.65M & 3.31M & 6.62M & 13.24M \\
-\hline
-\multirow{3}{*}{\rotatebox{90}{CelebA}}
-& \rotatebox{90}{Real} & $62.56 \pm 0.88$ & $61.44 \pm 1.27$ & $62.63 \pm 0.67$ & $63.01 \pm 1.08$ \\
-\cline{2-6}
-& \rotatebox{90}{Fake} & $77.87 \pm 1.33$ & $77.36 \pm 0.50$ & $78.11 \pm 0.96$ & $77.74 \pm 1.31$ \\
-\cline{2-6}
-& \rotatebox{90}{FID} & $12.30 \pm 0.56$ & $11.99 \pm 0.27$ & $12.41 \pm 0.45$ & $12.64 \pm 0.63$ \\
-\hline
-\multicolumn{2}{|c|}{params.} & 3.30M & 6.61M & 13.23M & 26.47M \\
-\hline
-\multirow{3}{*}{\rotatebox{90}{UTZap50K}}
-& \rotatebox{90}{Real} & $87.30 \pm 1.27$ & $86.83 \pm 1.12$ & $86.97 \pm 0.54$ & $87.68 \pm 0.76$ \\
-\cline{2-6}
-& \rotatebox{90}{Fake} & $77.82 \pm 1.40$ & $77.25 \pm 1.53$ & $77.50 \pm 1.13$ & $77.96 \pm 0.68$ \\
-\cline{2-6}
-& \rotatebox{90}{FID} & $43.05 \pm 3.83$ & $41.95 \pm 2.82$ & $41.45 \pm 1.99$ & $44.80 \pm 2.39$ \\
-\hline
-\multicolumn{2}{|c|}{params.} & 3.30M & 6.61M & 13.23M & 26.47M \\
-\hline
-\multirow{3}{*}{\rotatebox{90}{Flowers}}
-& \rotatebox{90}{Real} & $89.25 \pm 2.64$ & $88.59 \pm 1.43$ & $89.33 \pm 1.39$ & $90.12 \pm 1.17$ \\
-\cline{2-6}
-& \rotatebox{90}{Fake} & $96.84 \pm 0.85$ & $96.79 \pm 0.69$ & $96.93 \pm 0.36$ & $97.11 \pm 0.80$ \\
-\cline{2-6}
-& \rotatebox{90}{FID} & $112.05 \pm 6.88$ & $113.37 \pm 3.92$ & $115.45 \pm 3.02$ & $118.00 \pm 4.52$ \\
-\hline
-\multicolumn{2}{|c|}{params.} & 3.30M & 6.61M & 13.23M & 26.47M \\
-\hline
-\end{tabular}
-\label{tab:me-depth}
-\end{center}
-\end{table}
-
-\section{Interpretation of the Learned Model}
-\label{sec:interpret}
-The main advantage HME model is its interpretability. To investigate the learned representation, we generate $100$ samples from the generated model and for each node $m$, we take a weighted average of the generated samples. These weights are counts that correspond to the number of times node $m$ is used. In a hard decision tree where we choose left or right, a hard count corresponds to the path from root to prediction leaf. Here, we instead find the soft count of a node by multiplying the gating values up to that node. As in Figures \ref{fig:leafs} and \ref{fig:leafs_lin}, we calculate responsibilities but for all nodes. Results for different data sets are visualized in Figures \ref{fig:polar:mnist}, \ref{fig:polar:fashion}, \ref{fig:polar:celeb}, \ref{fig:polar:utzap50k}, \ref{fig:polar:flowers}. We see that earlier levels of the tree correspond to the means of larger samples and as we go down to the leaves, there is specialization, an indication that the tree structure divides the input space into regions. We can think of the structure implementing a soft hierarchical clustering. For example in Oxford Flowers data set in Figure \ref{fig:polar:flowers}, at the 2nd level, we see splits that results in yellow and pink colored nodes. Pink colored subtree then further splits into nodes that cover more spectrum around the pink color. Although this is applied to the image domain here, it can be used in other domains as well. After training, we get a soft hierarchical clustering for free. Note that we cannot do such analysis for ME or other methods that use multiple generators mentioned in Chapter \ref{chapter:multiple_gan}, since none of these approaches are hierarchical.
-
-\begin{figure}[htbp]
-\begin{center}
-\includegraphics[width=0.9\columnwidth]{polar_mnist.pdf}
-\end{center}
-\caption{MNIST.}
-\vskip\baselineskip
-\label{fig:polar:mnist}
-\end{figure}
-
-\begin{figure}[htbp]
-\begin{center}
-\includegraphics[width=0.9\columnwidth]{polar_fashion.pdf}
-\end{center}
-\caption{FashionMNIST.}
-\vskip\baselineskip
-\label{fig:polar:fashion}
-\end{figure}
-
-\begin{figure}[htbp]
-\begin{center}
-\includegraphics[width=0.9\columnwidth]{polar_celeb.pdf}
-\end{center}
-\caption{CelebA.}
-\vskip\baselineskip
-\label{fig:polar:celeb}
-\end{figure}
-
-\begin{figure}[htbp]
-\begin{center}
-\includegraphics[width=0.9\columnwidth]{polar_utzap50k.pdf}
-\end{center}
-\caption{UTZap50K.}
-\vskip\baselineskip
-\label{fig:polar:utzap50k}
-\end{figure}
-
-\begin{figure}[htbp]
-\begin{center}
-\includegraphics[width=0.9\columnwidth]{polar_flowers.pdf}
-\end{center}
-\caption{Oxford Flowers.}
-\vskip\baselineskip
-\label{fig:polar:flowers}
-\end{figure}
+The 5-NN and FID scores for five different data sets are visualized in Figure \ref{fig:box_s1} and \ref{fig:box_s2}. All results are also reported in Tables \ref{tab:res:mnist} to \ref{tab:res:flowers}. The summary of qualitative metrics implies that ME and HME perform around the same. We see that the results for HME generally gets better with the increasing complexity (in terms of number of parameters) as expected. For ME, the results do not get better as in HME. Especially the ME-256 model performs worse than other smaller ME models.
 
 \begin{figure}[htbp]
 \begin{center}
 \subfloat[MNIST]{
-	\includegraphics[width=0.8\linewidth]{inter_mnist.png}
-	\label{fig:inter:mnist}
+	\includegraphics[width=0.95\linewidth]{box_mnist_s.pdf}
+	\label{fig:box_s:mnist}
 }
 
 \subfloat[FashionMNIST]{
-	\includegraphics[width=0.8\linewidth]{inter_fashion.png}
-	\label{fig:inter:fashion}
+	\includegraphics[width=0.95\linewidth]{box_fashion_s.pdf}
+	\label{fig:box_s:fashion}
 }
+\end{center}
+\caption{FID scores and 5-NN accuracies of ME-$k$ and HME-$k$ on MNIST and FashionMNIST data sets. Lower FID and 5-NN scores are better. The parameter count does not include the convolutional part.}
+\vskip\baselineskip
+\label{fig:box_s1}
+\end{figure}
 
+\begin{figure}[htbp]
+\begin{center}
 \subfloat[CelebA]{
-	\includegraphics[width=0.8\linewidth]{inter_celeb.png}
-	\label{fig:inter:celeb}
+	\includegraphics[width=0.95\linewidth]{box_celeb_s.pdf}
+	\label{fig:box_s:celeb}
 }
 
 \subfloat[UTZap50K]{
-	\includegraphics[width=0.8\linewidth]{inter_utzap50k.png}
-	\label{fig:inter:utzap50k}
+	\includegraphics[width=0.95\linewidth]{box_utzap50k_s.pdf}
+	\label{fig:box_s:utzap50k}
 }
 
 \subfloat[Oxford Flowers]{
-	\includegraphics[width=0.8\linewidth]{inter_flowers.png}
-	\label{fig:inter:flowers}
+	\includegraphics[width=0.95\linewidth]{box_flowers_s.pdf}
+	\label{fig:box_s:flowers}
 }
 \end{center}
-\caption{Interpolation between random $z$ vectors with HME-6 model.}
+\caption{FID scores and 5-NN accuracies of ME-$k$ and HME-$k$ on CelebA, UTZap50K, and Oxford Flowers data sets. Lower FID and 5-NN scores are better. The parameter count does not include the convolutional part.}
 \vskip\baselineskip
-\label{fig:interpolations}
+\label{fig:box_s2}
 \end{figure}
+
+\begin{table}[thbp]
+\vskip\baselineskip
+\caption{5-NN accuracies and FID scores of ME and HME models on MNIST data set.}
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+Model & 5-NN Real & 5-NN Fake & FID & Param. \\
+\hline
+FC (baseline) & $74.90 \pm 0.59$ & $67.89 \pm 0.30$ & $11.13 \pm 0.44$ & 413K\\
+\hline
+HME-5 & $73.62 \pm 0.91$ & $73.24 \pm 1.03$ & $13.57 \pm 0.31$ & 134K\\
+HME-6 & $73.70 \pm 0.54$ & $72.00 \pm 1.10$ & $12.61 \pm 0.84$ & 268K\\
+HME-7 & $73.27 \pm 0.48$ & $70.97 \pm 0.35$ & $11.93 \pm 0.44$ & 537K\\
+HME-8 & $73.39 \pm 0.47$ & $71.20 \pm 0.48$ & $11.84 \pm 0.48$ & 1.07M\\
+\hline
+ME-32 & $74.23 \pm 0.58$ & $74.11 \pm 0.77$ & $13.71 \pm 1.19$ & 134K\\
+ME-64 & $74.00 \pm 0.31$ & $72.12 \pm 0.74$ & $12.08 \pm 0.23$ & 268K\\
+ME-128 & $74.57 \pm 0.86$ & $72.65 \pm 1.30$ & $12.75 \pm 0.77$ & 537K\\
+ME-256 & $76.31 \pm 0.79$ & $72.97 \pm 0.52$ & $14.58 \pm 1.10$ & 1.07M\\
+\hline
+\end{tabular}
+\label{tab:res:mnist}
+\end{center}
+\end{table}
+
+\begin{table}[thbp]
+\vskip\baselineskip
+\caption{5-NN accuracies and FID scores of ME and HME models on FashionMNIST data set.}
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+Model & 5-NN Real & 5-NN Fake & FID & Param. \\
+\hline
+FC (baseline) & $75.01 \pm 0.20$ & $84.89 \pm 0.39$ & $26.50 \pm 0.63$ & 413K\\
+\hline
+HME-5 & $73.46 \pm 0.68$ & $89.32 \pm 0.72$ & $27.92 \pm 0.91$ & 134K\\
+HME-6 & $73.22 \pm 0.86$ & $88.36 \pm 0.95$ & $26.85 \pm 1.35$ & 268K\\
+HME-7 & $73.14 \pm 1.47$ & $87.47 \pm 1.14$ & $25.93 \pm 1.48$ & 537K\\
+HME-8 & $72.45 \pm 2.08$ & $86.95 \pm 1.27$ & $25.51 \pm 2.41$ & 1.07M\\
+\hline
+ME-32 & $74.05 \pm 0.81$ & $90.23 \pm 0.47$ & $27.68 \pm 0.83$ & 134K\\
+ME-64 & $73.54 \pm 1.10$ & $90.31 \pm 0.59$ & $27.86 \pm 1.34$ & 268K\\
+ME-128 & $75.84 \pm 2.43$ & $90.50 \pm 1.47$ & $28.47 \pm 2.90$ & 537K\\
+ME-256 & $75.63 \pm 2.48$ & $90.46 \pm 1.65$ & $29.49 \pm 2.86$ & 1.07M\\
+\hline
+\end{tabular}
+\label{tab:res:fashion}
+\end{center}
+\end{table}
+
+\begin{table}[thbp]
+\vskip\baselineskip
+\caption{5-NN accuracies and FID scores of ME and HME models on CelebA data set.}
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+Model & 5-NN Real & 5-NN Fake & FID & Param. \\
+\hline
+FC (baseline) & $66.14 \pm 1.17$ & $80.96 \pm 1.56$ & $14.93 \pm 0.48$ & 827K\\
+\hline
+HME-5 & $72.16 \pm 0.51$ & $91.14 \pm 0.40$ & $21.40 \pm 0.61$ & 265K\\
+HME-6 & $70.35 \pm 0.63$ & $89.93 \pm 0.15$ & $19.97 \pm 0.27$ & 530K\\
+HME-7 & $68.61 \pm 0.81$ & $87.71 \pm 0.95$ & $18.21 \pm 0.52$ & 1.06M\\
+HME-8 & $68.96 \pm 1.39$ & $88.12 \pm 0.62$ & $18.20 \pm 0.47$ & 2.12M\\
+\hline
+ME-32 & $72.22 \pm 1.60$ & $91.04 \pm 1.86$ & $20.96 \pm 0.78$ & 265K\\
+ME-64 & $71.23 \pm 1.07$ & $90.56 \pm 0.87$ & $20.27 \pm 0.70$ & 530K\\
+ME-128 & $69.66 \pm 0.84$ & $87.92 \pm 0.48$ & $18.78 \pm 0.35$ & 1.06M\\
+ME-256 & $69.23 \pm 1.29$ & $87.83 \pm 0.66$& $18.39 \pm 0.76$ & 2.12M\\
+\hline
+\end{tabular}
+\label{tab:res:celeb}
+\end{center}
+\end{table}
+
+\begin{table}[thbp]
+\vskip\baselineskip
+\caption{5-NN accuracies and FID scores of ME and HME models on UTZap50K data set.}
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+Model & 5-NN Real & 5-NN Fake & FID & Param. \\
+\hline
+FC (baseline) & $89.59 \pm 1.40$ & $81.51 \pm 1.16$ & $54.48 \pm 5.36$ & 827K\\
+\hline
+HME-5 & $91.64 \pm 0.83$ & $86.02 \pm 0.67$ & $63.67 \pm 3.40$ & 265K\\
+HME-6 & $90.62 \pm 0.59$ & $85.13 \pm 0.46$ & $58.96 \pm 1.28$ & 530K\\
+HME-7 & $90.47 \pm 0.70$ & $84.02 \pm 0.43$ & $57.43 \pm 3.06$ & 1.06M\\
+HME-8 & $90.30 \pm 0.73$ & $83.71 \pm 0.61$ & $56.48 \pm 2.39$ & 2.12M\\
+\hline
+ME-32 & $91.07 \pm 0.62$ & $86.69 \pm 1.18$ & $63.72 \pm 4.35$ & 265K\\
+ME-64 & $91.18 \pm 0.34$ & $85.67 \pm 0.99$ & $61.19 \pm 2.02$ & 530K\\
+ME-128 & $90.95 \pm 0.82$ & $85.38 \pm 0.42$ & $61.51 \pm 2.52$ & 1.06M\\
+ME-256 & $91.31 \pm 1.18$ & $86.06 \pm 1.04$ & $65.19 \pm 3.85$ & 2.12M\\
+\hline
+\end{tabular}
+\label{tab:res:utzap50k}
+\end{center}
+\end{table}
+
+\begin{table}[thbp]
+\vskip\baselineskip
+\caption{5-NN accuracies and FID scores of ME and HME models on Oxford Flowers data set.}
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+Model & 5-NN Real & 5-NN Fake & FID & Param. \\
+\hline
+FC (baseline) & $93.80 \pm 1.02$ & $97.60 \pm 0.71$ & $135.28 \pm 7.28$ & 827K\\
+\hline
+HME-5 & $93.83 \pm 0.95$ & $97.48 \pm 0.48$ & $133.47 \pm 6.22$ & 265K\\
+HME-6 & $93.41 \pm 0.96$ & $97.42 \pm 0.35$ & $131.05 \pm 4.61$ & 530K\\
+HME-7 & $93.14 \pm 0.83$ & $97.46 \pm 0.58$ & $128.95 \pm 3.49$ & 1.06M\\
+HME-8 & $93.38 \pm 0.96$ & $97.24 \pm 0.74$ & $128.62 \pm 5.94$ & 2.12M\\
+\hline
+ME-32 & $93.58 \pm 1.26$ & $97.88 \pm 0.58$ & $133.13 \pm 4.31$ & 265K\\
+ME-64 & $93.69 \pm 0.50$ & $97.96 \pm 0.30$ & $131.83 \pm 2.45$ & 530K\\
+ME-128 & $93.57 \pm 1.41$ & $97.76 \pm 0.41$ & $132.07 \pm 7.28$ & 1.06M\\
+ME-256 & $94.40 \pm 1.19$ & $97.89 \pm 0.48$ & $137.08 \pm 6.46$ & 2.12M\\
+\hline
+\end{tabular}
+\label{tab:res:flowers}
+\end{center}
+\end{table}
+
+When we make a comparison with the baseline, we see that ME and HME are not as good as FC in terms of FID score or 5-NN accuracy (Figure \ref{fig:box_s1} and \ref{fig:box_s2}). Their performance improves as the structure gets larger; note that trees with depth 5 and 6 are smaller than FC. Although 5-NN real accuracies are quite close, there is a gap between 5-NN fake accuracies. High 5-NN fake accuracy implies that fake samples are located near fake samples in $p(x)$. So, the performance drop might be due to decreased sample diversity.
+
+One possible cause for the decreased diversity is to use constant vectors in the leaves. In a FC layer, the random vector $z$ is gone through an affine transformation and a ReLU non-linearity, the \emph{randomness} is propagated linearly. ME and HME, on the other hand, encapsulate the information of $z$ (randomness) in their gating values. Gating values are calculated with a set of sigmoid functions for HME, and with a softmax function for ME. Both the sigmoid function and the softmax function get saturated for values that are too low or too high. Therefore, if gating weights get too high or too low, which also means that it mimics a hard split instead of a soft one, the variety is lost.
+
+To remedy this problem, we use linear functions as in Equation \ref{eq:linear} at leaves of both ME and HME models. We experimented with number of generators set to 4, 8, 16 and 32. We call these models as ME-L-$k$ and HME-L-$k$ where $k$ is the number of generators for the flat mixture and the depth level for the hierarchical mixture.
+
+\begin{figure}[htbp]
+\begin{center}
+\subfloat{
+	\includegraphics[width=0.6\linewidth]{me_lin_samples_mnist.png}
+	\label{fig:samples_lin:me_mnist}
+}
+
+\subfloat{
+	\includegraphics[width=0.6\linewidth]{me_lin_samples_fashion.png}
+	\label{fig:samples_lin:me_fashion}
+}
+
+\subfloat{
+	\includegraphics[width=0.6\linewidth]{me_lin_samples_celeb.png}
+	\label{fig:samples_lin:me_celeb}
+}
+
+\subfloat{
+	\includegraphics[width=0.6\linewidth]{me_lin_samples_utzap50k.png}
+	\label{fig:samples_lin:me_utzap50k}
+}
+
+\subfloat{
+	\includegraphics[width=0.6\linewidth]{me_lin_samples_flowers.png}
+	\label{fig:samples_lin:me_flowers}
+}
+\end{center}
+\caption{Samples generated using ME-L-16.}
+\vskip\baselineskip
+\label{fig:samples_lin_me}
+\end{figure}
+
+\begin{figure}[htbp]
+\begin{center}
+\subfloat{
+	\includegraphics[width=0.6\linewidth]{hme_lin_samples_mnist.png}
+	\label{fig:samples_lin:hme_mnist}
+}
+
+\subfloat{
+	\includegraphics[width=0.6\linewidth]{hme_lin_samples_fashion.png}
+	\label{fig:samples_lin:hme_fashion}
+}
+
+\subfloat{
+	\includegraphics[width=0.6\linewidth]{hme_lin_samples_celeb.png}
+	\label{fig:samples_lin:hme_celeb}
+}
+
+\subfloat{
+	\includegraphics[width=0.6\linewidth]{hme_lin_samples_utzap50k.png}
+	\label{fig:samples_lin:hme_utzap50k}
+}
+
+\subfloat{
+	\includegraphics[width=0.6\linewidth]{hme_lin_samples_flowers.png}
+	\label{fig:samples_lin:hme_flowers}
+}
+\end{center}
+\caption{Samples generated using HME-L-4.}
+\vskip\baselineskip
+\label{fig:samples_lin_hme}
+\end{figure}
+
+\begin{figure}[htbp]
+\begin{center}
+\subfloat[ME-L-16]{
+	\includegraphics[width=0.9\linewidth]{me_lin_leaves_fashion.png}
+	\label{fig:leaves_lin:me_fashion}
+}
+
+\subfloat[HME-L-4]{
+	\includegraphics[width=0.9\linewidth]{hme_lin_leaves_fashion.png}
+	\label{fig:leaves_lin:hme_fashion}
+}
+\end{center}
+\caption{Average responses of generators at the leaves for ME-L-16 and HME-L-4.}
+\vskip\baselineskip
+\label{fig:leaves_lin}
+\end{figure}
+
+The experimental results on five data sets are given in Tables \ref{tab:res:related:mnist} to \ref{tab:res:related:flowers}. First, we see that both ME-L and HME-L models outperform the baseline FC model. Though one can expect these results since the number of parameters increases. Both 5-NN real and 5-NN fake accuracy drops, which says our mixture models fit better to $p(x)$ with more variety. Some samples generated from ME-L-16 and HME-L-4 are visualized in Figures \ref{fig:samples_lin_me} and \ref{fig:samples_lin_hme}.
+
+When we compare ME-L and HME-L models, we see that ME slightly enjoys more from having linear experts. We visualized the average generator responses for FashionMNIST data set in Figure \ref{fig:leaves_lin}. We see that ME-L leaves are now more local and diverse. Figure \ref{fig:cov_lin:me} also confirms this since the diagonal is now more prominent. On the other hand, in Figure \ref{fig:cov_lin:hme} HME seems to use its leaves in a more cooperative way when compared with its constant counterpart. For both formulations, results stagnates at their largest models. We argue that the training time may increase when the number of generators increase since we distribute the error to multiple generators. More generators imply we update generators with smaller gradients. Also, the bottleneck may be caused by other factors.
+
+In Figure \ref{fig:gens}, we show some samples generated from different generators at the leaves of ME-L-16 and HME-L-4. Each generator works in different input region. To find these input regions, we samples 10,000 input noise vectors and select the top five most likely points. Here, the most likely point for a generator is the point which maximizes the gating value of a generator. From the figure, we see that each generator is localized in a different input region.
+
+\begin{figure}[htbp]
+\begin{center}
+\subfloat[ME-L-16]{
+	\includegraphics[width=0.6\linewidth]{cov_me_lin.pdf}
+	\label{fig:cov_lin:me}
+}
+
+\subfloat[HME-L-4]{
+	\includegraphics[width=0.6\linewidth]{cov_hme_lin.pdf}
+	\label{fig:cov_lin:hme}
+}
+\end{center}
+\caption{Covariance matrix of gating values of generators for ME-L-16 and HME-L-4.}
+\vskip\baselineskip
+\label{fig:covariances_lin}
+\end{figure}
+
+\begin{figure}[htbp]
+\begin{center}
+\subfloat[ME-L-16]{
+	\includegraphics[width=0.75\linewidth]{me_mnist_L4_exps.png}
+	\label{fig:gens:mnist:me}
+}
+
+\subfloat[HME-L-4]{
+	\includegraphics[width=0.75\linewidth]{hme_mnist_L4_exps.png}
+	\label{fig:gens:mnist:hme}
+}
+
+\subfloat[ME-L-16]{
+	\includegraphics[width=0.75\linewidth]{me_celeb_L4_exps.png}
+	\label{fig:gens:celeb:me}
+}
+
+\subfloat[HME-L-4]{
+	\includegraphics[width=0.75\linewidth]{hme_celeb_L4_exps.png}
+	\label{fig:gens:celeb:hme}
+}
+\end{center}
+\caption{Some samples generated from generators at the leaves of ME-L-16 and HME-L-4. Each column represents samples from different generators. Each generator produces samples in a different input region. To find appropriate input regions of generators, we sampled 10,000 input noise vectors and select the top five samples gating values of generators are maximized.}
+\vskip\baselineskip
+\label{fig:gens}
+\end{figure}
+
+\section{Comparison with Related Works}
+\label{sec:related_results}
+In this section, we compare our models with related works that we mentioned in Chapter \ref{chapter:multiple_gan}. We test each method for different number of generators. MADGAN-$k$, MGAN-$k$, MEGAN-$k$ and ME-GAN-$k$ denote models with $k$ generators. We also report the parameter count of each model; these do not include the convolution parameters shared across all models. Our experiment results on five different data sets are summarized in Figures \ref{fig:box1} and \ref{fig:box2}. We also report the results in Tables \ref{tab:res:related:mnist} to \ref{tab:res:related:flowers}.
+
+%%
+\begin{table}[thbp]
+\vskip\baselineskip
+\caption{5-NN accuracies and FID scores on MNIST data set.}
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+Model & 5-NN Real & 5-NN Fake & FID & Param. \\
+\hline
+FC (baseline) & $74.90 \pm 0.59$ & $67.89 \pm 0.30$ & $11.13 \pm 0.44$ & 413K\\
+\hline
+HME-L-2 & $74.03 \pm 0.81$ & $66.73 \pm 0.61$ & $10.27 \pm 0.41$ & 1.65M\\
+HME-L-3 & $73.48 \pm 0.53$ & $66.41 \pm 0.74$ & $9.86 \pm 0.24$ & 3.31M\\
+HME-L-4 & $72.10 \pm 0.74$ & $66.21 \pm 0.82$ & $9.15 \pm 0.45$ & 6.62M\\
+HME-L-5 & $72.14 \pm 0.54$ & $65.63 \pm 0.25$ & $9.07 \pm 0.44$ & 13.24M\\
+\hline
+ME-L-4 & $72.91 \pm 0.93$ & $66.29 \pm 0.97$ & $9.74 \pm 0.64$ & 1.65M\\
+ME-L-8 & $71.46 \pm 1.02$ & $66.25 \pm 0.72$ & $8.95 \pm 0.28$ & 3.31M\\
+ME-L-16 & $70.91 \pm 0.83$ & $65.38 \pm 0.70$ & $8.56 \pm 0.53$ & 6.62M\\
+ME-L-32 & $71.68 \pm 0.60$ & $65.86 \pm 0.84$ & $8.90 \pm 0.56$ & 13.24M\\
+\hline
+MADGAN-4 & $75.30 \pm 2.51$ & $73.59 \pm 1.50$ & $10.87 \pm 1.29$ & 1.68M\\
+MADGAN-8 & $74.25 \pm 3.50$ & $74.28 \pm 2.46$ & $10.59 \pm 1.26$ & 3.37M\\
+MADGAN-16 & $70.40 \pm 2.01$ & $73.02 \pm 1.07$ & $8.64 \pm 0.55$ & 6.75M\\
+MADGAN-32 & $67.96 \pm 2.37$ & $75.00 \pm 2.66$ & $7.97 \pm 0.34$ & 13.50M\\
+\hline
+MGAN-4 & $82.26 \pm 2.00$ & $80.95 \pm 2.59$ & $14.87 \pm 1.09$ & 1.68M\\
+MGAN-8 & $82.09 \pm 3.01$ & $82.88 \pm 4.44$ & $14.81 \pm 1.84$ & 3.37M\\
+MGAN-16 & $83.32 \pm 4.32$ & $83.01 \pm 4.05$ & $17.16 \pm 5.82$ & 6.75M\\
+MGAN-32 & $87.60 \pm 2.32$ & $90.82 \pm 2.73$ & $24.60 \pm 3.82$ & 13.50M\\
+\hline
+MEGAN-4 & $80.99 \pm 3.41$ & $85.34 \pm 2.26$ & $14.16 \pm 1.91$ & 2.09M\\
+MEGAN-8 & $77.65 \pm 2.62$ & $85.38 \pm 1.80$ & $12.11 \pm 1.92$ & 3.79M\\
+MEGAN-16 & $73.11 \pm 3.59$ & $82.88 \pm 3.98$ & $9.85 \pm 1.90$ & 7.18M\\
+MEGAN-32 & $73.47 \pm 2.61$ & $86.23 \pm 3.17^+$ & $10.53 \pm 1.69$ & 14.01M\\
+\hline
+\end{tabular}
+\label{tab:res:related:mnist}
+\end{center}
+\end{table}
+%%
+\begin{table}[thbp]
+\vskip\baselineskip
+\caption{5-NN accuracies and FID scores on FashionMNIST data set.}
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+Model & 5-NN Real & 5-NN Fake & FID & Param. \\
+\hline
+FC (baseline) & $75.01 \pm 0.20$ & $84.89 \pm 0.39$ & $26.50 \pm 0.63$ & 413K\\
+\hline
+HME-L-2 & $72.18 \pm 0.38$ & $79.96 \pm 0.35$ & $20.88 \pm 0.17$ & 1.65M\\
+HME-L-3 & $71.15 \pm 0.88$ & $79.14 \pm 0.73$ & $19.64 \pm 0.89$ & 3.31M\\
+HME-L-4 & $70.08 \pm 0.84$ & $78.67 \pm 0.78$ & $18.79 \pm 0.77$ & 6.62M\\
+HME-L-5 & $69.99 \pm 0.70$ & $78.10 \pm 0.60$ & $18.24 \pm 0.91$ & 13.24M\\
+\hline
+ME-L-4 & $72.28 \pm 0.60$ & $79.81 \pm 0.93$ & $20.90 \pm 0.87$ & 1.65M\\
+ME-L-8 & $70.90 \pm 0.96$ & $78.64 \pm 0.51$ & $19.37 \pm 0.90$ & 3.31M\\
+ME-L-16 & $69.45 \pm 0.71$ & $78.09 \pm 0.73$ & $18.09 \pm 0.89$ & 6.62M\\
+ME-L-32 & $70.18 \pm 0.94$ & $79.10 \pm 0.86$ & $19.28 \pm 0.67$ & 13.24M\\
+\hline
+MADGAN-4 & $86.98 \pm 0.91$ & $93.72 \pm 1.07$ & $39.72 \pm 2.95$ & 1.68M\\
+MADGAN-8 & $85.22 \pm 1.82$ & $93.64 \pm 1.13$ & $36.47 \pm 2.40$ & 3.37M\\
+MADGAN-16 & $81.95 \pm 1.95$ & $91.80 \pm 1.27$ & $31.54 \pm 3.48$ & 6.75M\\
+MADGAN-32 & $82.16 \pm 1.28$ & $93.18 \pm 1.18$ & $33.93 \pm 2.75$ & 13.50M\\
+\hline
+MGAN-4 & $88.14 \pm 1.55$ & $94.50 \pm 0.70$ & $42.82 \pm 3.50$ & 1.68M\\
+MGAN-8 & $87.87 \pm 1.24$ & $94.97 \pm 0.87$ & $41.68 \pm 3.34$ & 3.37M\\
+MGAN-16 & $87.10 \pm 1.08$ & $95.32 \pm 0.39$ & $42.72 \pm 1.66$ & 6.75M\\
+MGAN-32 & $89.64 \pm 0.69$ & $97.22 \pm 0.85$ & $51.19 \pm 3.91$ & 13.50M\\
+\hline
+MEGAN-4 & $84.59 \pm 0.47$ & $92.49 \pm 0.30$ & $36.32 \pm 2.10$ & 2.09M\\
+MEGAN-8 & $82.04 \pm 0.40$ & $92.57 \pm 0.60$ & $31.75 \pm 0.61$ & 3.79M\\
+MEGAN-16 & $80.44 \pm 1.98$ & $92.58 \pm 1.10$ & $29.52 \pm 3.19$ & 7.18M\\
+MEGAN-32 & $79.44 \pm 3.32$ & $93.08 \pm 1.09$ & $28.53 \pm 3.31$ & 14.01M\\
+\hline
+\end{tabular}
+\label{tab:res:related:fashion}
+\end{center}
+\end{table}
+%%
+\begin{table}[thbp]
+\vskip\baselineskip
+\caption{5-NN accuracies and FID scores on CelebA data set.}
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+Model & 5-NN Real & 5-NN Fake & FID & Param. \\
+\hline
+FC (baseline) & $66.14 \pm 1.17$ & $80.96 \pm 1.56$ & $14.93 \pm 0.48$ & 827K\\
+\hline
+HME-L-2 & $62.96 \pm 0.81$ & $77.91 \pm 0.83$ & $12.41 \pm 0.40$ & 3.30M\\
+HME-L-3 & $63.15 \pm 1.42$ & $77.68 \pm 1.91$ & $12.48 \pm 0.65$ & 6.61M\\
+HME-L-4 & $62.07 \pm 0.88$ & $77.18 \pm 0.82$ & $12.23 \pm 0.56$ & 13.23M\\
+HME-L-5 & $62.02 \pm 1.02$ & $77.02 \pm 0.98$ & $12.09 \pm 0.56$ & 26.47M\\
+\hline
+ME-L-4 & $62.56 \pm 0.88$ & $77.87 \pm 1.33$ & $12.30 \pm 0.56$ & 3.30M\\
+ME-L-8 & $61.44 \pm 1.27$ & $77.36 \pm 0.50$ & $11.99 \pm 0.27$ & 6.61M\\
+ME-L-16 & $62.63 \pm 0.67$ & $78.11 \pm 0.96$ & $12.41 \pm 0.45$ & 13.23M\\
+ME-L-32 & $63.01 \pm 1.08$ & $77.74 \pm 1.31$ & $12.64 \pm 0.63$ & 26.47M\\
+\hline
+MADGAN-4 & $77.87 \pm 2.38$ & $94.91 \pm 2.15$ & $26.91 \pm 4.03$ & 3.37M\\
+MADGAN-8 & $74.21 \pm 2.68$ & $92.33 \pm 1.78$ & $23.12 \pm 2.80$ & 6.75M\\
+MADGAN-16 & $71.22 \pm 1.55$ & $90.55 \pm 1.18$ & $22.28 \pm 0.55$ & 13.50M\\
+MADGAN-32 & $69.46 \pm 2.09$ & $87.94 \pm 0.86$ & $20.16 \pm 1.42$ & 27.00M\\
+\hline
+MGAN-4 & $76.50 \pm 1.28$ & $96.72 \pm 0.76$ & $33.56 \pm 3.78$ & 3.37M\\
+MGAN-8 & $76.42 \pm 1.87$ & $96.05 \pm 2.13$ & $31.46 \pm 3.55$ & 6.75M\\
+MGAN-16 & $75.37 \pm 3.79$ & $96.94 \pm 1.34$ & $34.62 \pm 6.14$ & 13.50M\\
+MGAN-32 & $94.55 \pm 1.33$ & $99.97 \pm 0.02$ & $73.38 \pm 8.15$ & 27.00M\\
+\hline
+MEGAN-4 & $61.20 \pm 2.04$ & $87.20 \pm 1.11$ & $13.69 \pm 0.67$ & 4.19M\\
+MEGAN-8 & $60.83 \pm 2.06$ & $88.59 \pm 0.42$ & $14.46 \pm 0.73$ & 7.57M\\
+MEGAN-16 & $61.67 \pm 1.96$ & $90.30 \pm 0.48$ & $15.36 \pm 0.58$ & 14.34M\\
+MEGAN-32 & $65.72 \pm 2.25$ & $95.60 \pm 1.20$ & $19.41 \pm 1.24$ & 27.92M\\
+\hline
+\end{tabular}
+\label{tab:res:related:celeb}
+\end{center}
+\end{table} 
+%%
+\begin{table}[thbp]
+\vskip\baselineskip
+\caption{5-NN accuracies and FID scores on UTZap50K data set.}
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+Model & 5-NN Real & 5-NN Fake & FID & Param. \\
+\hline
+FC (baseline) & $89.59 \pm 1.40$ & $81.51 \pm 1.16$ & $54.48 \pm 5.36$ & 827K\\
+\hline
+HME-L-2 & $87.26 \pm 0.80$ & $77.46 \pm 1.09$ & $42.35 \pm 3.27$ & 3.30M\\
+HME-L-3 & $87.39 \pm 0.96$ & $78.21 \pm 0.32$ & $42.99 \pm 2.08$ & 6.61M\\
+HME-L-4 & $87.61 \pm 1.21$ & $78.10 \pm 0.43$ & $44.88 \pm 3.48$ & 13.23M\\
+HME-L-5 & $87.77 \pm 1.17$ & $78.42 \pm 1.36$ & $45.54 \pm 3.46$ & 26.47M\\
+\hline
+ME-L-4 & $87.30 \pm 1.27$ & $77.82 \pm 1.40$ & $43.05 \pm 3.83$ & 3.30M\\
+ME-L-8 & $86.83 \pm 1.12$ & $77.25 \pm 1.53$ & $41.95 \pm 2.82$ & 6.61M\\
+ME-L-16 & $86.97 \pm 0.54$ & $77.50 \pm 1.13$ & $41.45 \pm 1.99$ & 13.23M\\
+ME-L-32 & $87.68 \pm 0.76$ & $77.96 \pm 0.68$ & $44.80 \pm 2.39$ & 26.47M\\
+\hline
+MADGAN-4 & $98.78 \pm 0.28$ & $96.48 \pm 0.81$ & $123.40 \pm 10.00$ & 3.37M\\
+MADGAN-8 & $98.69 \pm 0.39$ & $96.36 \pm 1.84$ & $120.72 \pm 15.21$ & 6.75M\\
+MADGAN-16 & $98.33 \pm 0.39$ & $95.33 \pm 0.98$ & $113.06 \pm 9.51$ & 13.50M\\
+MADGAN-32 & $97.78 \pm 1.00$ & $95.13 \pm 2.80$ & $112.34 \pm 24.69$ & 27.00M\\
+\hline
+MGAN-4 & $98.97 \pm 0.49$ & $97.24 \pm 1.54$ & $136.08 \pm 17.81$ & 3.37M\\
+MGAN-8 & $99.32 \pm 0.26$ & $98.66 \pm 0.81$ & $153.28 \pm 15.75$ & 6.75M\\
+MGAN-16 & $99.59 \pm 0.13$ & $99.38 \pm 0.54$ & $167.76 \pm 17.43$ & 13.50M\\
+MGAN-32 & $99.72 \pm 0.10$ & $99.83 \pm 0.10$ & $184.21 \pm 10.32$ & 27.00M\\
+\hline
+MEGAN-4 & $92.67 \pm 0.85$ & $87.16 \pm 1.50$ & $58.49 \pm 5.52$ & 4.19M\\
+MEGAN-8 & $92.52 \pm 1.04$ & $88.90 \pm 1.63$ & $59.14 \pm 4.22$ & 7.57M\\
+MEGAN-16 & $92.10 \pm 1.09$ & $90.16 \pm 1.82$ & $59.00 \pm 5.40$ & 14.34M\\
+MEGAN-32 & $95.20 \pm 1.03$ & $96.33 \pm 0.39$ & $86.43 \pm 11.55$ & 27.92M\\
+\hline
+\end{tabular}
+\label{tab:res:related:utzap50k}
+\end{center}
+\end{table}
+%%
+\begin{table}[thbp]
+\vskip\baselineskip
+\caption{5-NN accuracies and FID scores on Oxford Flowers data set.}
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+Model & 5-NN Real & 5-NN Fake & FID & Param. \\
+\hline
+FC (baseline) & $93.80 \pm 1.02$ & $97.60 \pm 0.71$ & $135.28 \pm 7.28$ & 827K\\
+\hline
+HME-L-2 & $88.96 \pm 0.93$ & $96.58 \pm 0.58$ & $111.06 \pm 4.84$ & 3.30M\\
+HME-L-3 & $89.30 \pm 1.49$ & $96.43 \pm 0.65$ & $111.85 \pm 3.65$ & 6.61M\\
+HME-L-4 & $88.89 \pm 1.51$ & $96.61 \pm 0.41$ & $112.78 \pm 3.13$ & 13.23M\\
+HME-L-5 & $90.15 \pm 1.60$ & $96.55 \pm 0.76$ & $114.79 \pm 4.20$ & 26.47M\\
+\hline
+ME-L-4 & $89.25 \pm 2.64$ & $96.84 \pm 0.85$ & $112.05 \pm 6.88$ & 3.30M\\
+ME-L-8 & $88.59 \pm 1.43$ & $96.79 \pm 0.69$ & $113.37 \pm 3.92$ & 6.61M\\
+ME-L-16 & $89.33 \pm 1.39$ & $96.93 \pm 0.36$ & $115.45 \pm 3.02$ & 13.23M\\
+ME-L-32 & $90.12 \pm 1.17$ & $97.11 \pm 0.80$ & $118.00 \pm 4.52$ & 26.47M\\
+\hline
+MADGAN-4 & $93.70 \pm 1.52$ & $98.47 \pm 0.66$ & $150.46 \pm 9.03$ & 3.37M\\
+MADGAN-8 & $91.50 \pm 1.50$ & $98.29 \pm 0.32$ & $137.43 \pm 6.85$ & 6.75M\\
+MADGAN-16 & $92.36 \pm 1.09$ & $98.40 \pm 0.20$ & $141.20 \pm 6.56$ & 13.50M\\
+MADGAN-32 & $92.92 \pm 0.93$ & $98.71 \pm 0.23$ & $142.47 \pm 2.85$ & 27.00M\\
+\hline
+MGAN-4 & $94.76 \pm 0.87$ & $99.03 \pm 0.25$ & $154.95 \pm 8.52$ & 3.37M\\
+MGAN-8 & $94.54 \pm 0.98$ & $99.21 \pm 0.16$ & $152.33 \pm 5.20$ & 6.75M\\
+MGAN-16 & $94.10 \pm 2.03$ & $99.26 \pm 0.22$ & $152.38 \pm 10.83$ & 13.50M\\
+MGAN-32 & $95.08 \pm 0.50$ & $99.34 \pm 0.12$ & $157.90 \pm 8.02$ & 27.00M\\
+\hline
+MEGAN-4 & $87.04 \pm 1.70$ & $96.29 \pm 0.50$ & $104.75 \pm 3.00$ & 4.19M\\
+MEGAN-8 & $85.83 \pm 1.34$ & $96.45 \pm 0.70$ & $104.04 \pm 2.75$ & 7.57M\\
+MEGAN-16 & $85.67 \pm 1.50$ & $96.71 \pm 0.68$ & $106.73 \pm 4.21$ & 14.34M\\
+MEGAN-32 & $85.80 \pm 1.27$ & $97.23 \pm 0.26$ & $107.37 \pm 3.72$ & 27.92M\\
+\hline
+\end{tabular}
+\label{tab:res:related:flowers}
+\end{center}
+\end{table}
+%%%%%%%%%%%%%
+\begin{figure}[htbp]
+\begin{center}
+\subfloat[MNIST]{
+	\includegraphics[width=0.95\linewidth]{box_mnist.pdf}
+	\label{fig:box:mnist}
+}
+
+\subfloat[FashionMNIST]{
+	\includegraphics[width=0.95\linewidth]{box_fashion.pdf}
+	\label{fig:box:fashion}
+}
+\end{center}
+\caption{FID scores and 5-NN accuracies on MNIST and FashionMNIST data sets. The parameter count does not include the convolutional part.}
+\vskip\baselineskip
+\label{fig:box1}
+\end{figure}
+
+\begin{figure}[htbp]
+\begin{center}
+\subfloat[CelebA]{
+	\includegraphics[width=0.95\linewidth]{box_celeb.pdf}
+	\label{fig:box:celeb}
+}
+
+\subfloat[UTZap50K]{
+	\includegraphics[width=0.95\linewidth]{box_utzap50k.pdf}
+	\label{fig:box:utzap50k}
+}
+
+\subfloat[Oxford Flowers]{
+	\includegraphics[width=0.95\linewidth]{box_flowers.pdf}
+	\label{fig:box:flowers}
+}
+\end{center}
+\caption{FID scores and 5-NN accuracies on CelebA, UTZap50K, and Oxford Flowers data sets. The parameter count does not include the convolutional part.}
+\vskip\baselineskip
+\label{fig:box2}
+\end{figure}
+%
+From the results, we see that MADGAN and MGAN performs worse than the baseline in terms of FID score. Only on the MNIST data set, MADGAN performs better than the baseline. This might suggest that forcing discriminator to classify generators may not always work, which is the idea behind MADGAN and MGAN. On the other hand, we can say that MEGAN performs on par with the baseline, sometimes even better. Note that unlike MADGAN and MGAN, MEGAN uses a gating function to select among its generators. This also hints the importance of training different generators in different input regions and combining them based on the input, instead of only relying on the discriminator to force multiple generators to different modalities.
+
+When we compare our mixture of experts formulation (ME-L-$k$) with MEGAN at the same complexity, we see that our model get better results in terms of FID scores and 5-NN accuracies. As opposed to MEGAN, our mixture of generators is a soft one and the input to the gating model is only the noise vector $z$. This reduces the number of parameters significantly (890K parameters for the model with four generators).
+
+\section{Interpretation of the Learned Model}
+\label{sec:interpret}
+The main advantage HME model is its interpretability. To investigate the learned representation, we generate $100$ samples from the generated model and for each node $m$, we take a weighted average of the generated samples. These weights are counts that correspond to the number of times node $m$ is used. In a hard decision tree where we choose left or right, a hard count corresponds to the path from root to prediction leaf. Here, we instead find the soft count of a node by multiplying the gating values up to that node. As in Figures \ref{fig:leaves} and \ref{fig:leaves_lin}, we calculate gating values but for all nodes. Results for different data sets are visualized in Figures \ref{fig:tree:mnist} to \ref{fig:tree:flowers}. We see that earlier levels of the tree correspond to the means of larger samples and as we go down to the leaves, there is specialization, an indication that the tree structure divides the input space into regions. We can think of the structure implementing a soft hierarchical clustering. For example in Oxford Flowers data set in Figure \ref{fig:tree:flowers}, at the 2nd level, we see splits that results in yellow and pink colored nodes. Pink colored subtree then further splits into nodes that cover more spectrum around the pink color. Although this is applied to the image domain here, it can be used in other domains as well. After training, we get a soft hierarchical clustering for free. Note that we cannot do such analysis for ME or other methods that use multiple generators mentioned in Chapter \ref{chapter:multiple_gan}, since none of these approaches are hierarchical.
+
+\begin{sidewaysfigure}[htbp]
+\includegraphics[width=1\textwidth]{tree_mnist.pdf}
+\caption{The average node responses of HME-L-5 model on MNIST. This can be seen as a hierarchical clustering of the data. Digits become sharper as we go down in the tree due to specialization of leaves.}
+\vskip\baselineskip
+\label{fig:tree:mnist}
+\end{sidewaysfigure}
+
+\begin{sidewaysfigure}[htbp]
+\includegraphics[width=1\textwidth]{tree_fashion.pdf}
+\caption{The average node responses of HME-L-4 model on FashionMNIST.}
+\vskip\baselineskip
+\label{fig:tree:fashion}
+\end{sidewaysfigure}
+
+\begin{sidewaysfigure}[htbp]
+\includegraphics[width=1\textwidth]{tree_celeb.pdf}
+\caption{The average node responses of HME-L-5 model on CelebA.}
+\vskip\baselineskip
+\label{fig:tree:celeb}
+\end{sidewaysfigure}
+
+\begin{sidewaysfigure}[htbp]
+\includegraphics[width=1\textwidth]{tree_utzap50k.pdf}
+\caption{The average node responses of HME-L-4 model on UTZap50K}
+\vskip\baselineskip
+\label{fig:tree:utzap50k}
+\end{sidewaysfigure}
+
+\begin{sidewaysfigure}[htbp]
+\includegraphics[width=1\textwidth]{tree_flowers.pdf}
+\caption{The average node responses of HME-L-5 model on Oxford Flowers. The color variation increases in the nodes as we go down in the tree.}
+\vskip\baselineskip
+\label{fig:tree:flowers}
+\end{sidewaysfigure}
 
 \chapter{CONCLUSIONS AND FUTURE WORK}
 \label{chapter:conc}
@@ -1060,7 +1314,7 @@ The main advantage HME model is its interpretability. To investigate the learned
 
 \item There is also no related work that uses the \emph{competitive} version of ME formulation. We plan to experiment and compare competitive formulation with the cooperative formulation that we did.
 
-\item To test whether there is indeed a hierarchical soft clustering, we can compare the learned representations of leafs that we show in Figure \ref{fig:leafs:hme_fashion} with $k$-means algorithm and see which one yields lower $\ell_2$ distance error.
+\item To test whether there is indeed a hierarchical soft clustering, we can compare the learned representations of leaves that we show in Figure \ref{fig:leaves:hme_fashion} with $k$-means algorithm and see which one yields lower $\ell_2$ distance error.
 \end{itemize}
 
 \bibliographystyle{styles/fbe_tez_v11}
