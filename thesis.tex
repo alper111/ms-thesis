@@ -265,7 +265,7 @@ Now, to find the Wasserstein distance between two distributions, we can simply c
 	\item The discriminator should be trained till optimality (unlike GANs) since a better discriminator implies a better $W_1$ distance, and therefore better gradients to $G$.
 \end{itemize}
 
-To enforce, the Lipschitz constraint, Arjovsky \textit{et al.} \cite{arjovsky2017wasserstein} suggested clipping weights of the critic function, though they also warn that this is not a good way of enforcing the Lipschitz constraint. A follow-up work \cite{gulrajani2017improved} introduced a more principled way by applying gradient penalty to the critic.
+The Lipschitz constraint is enforced through clipping weights of the critic function \cite{arjovsky2017wasserstein}. A follow-up work introduced a more principled way by applying gradient penalty to the critic \cite{gulrajani2017improved}.
 
 The WGAN shows better convergence properties both in theory and in practice when compared with the original GAN. For this reason, we use the WGAN formulation with the gradient penalty \cite{gulrajani2017improved} in our experiments.
 
@@ -310,7 +310,7 @@ In the multi-agent diverse GAN (MAD-GAN) \cite{ghosh2018multi}, there are multip
 \begin{center}
 \includegraphics[width=0.75\columnwidth]{madgan.pdf}
 \end{center}
-\caption[Multi-agent diverse GAN]{Multi-agent diverse GAN \cite{ghosh2018multi}. Given an input noise vector $z$, the network which is shared among all generators produces an intermediate representation. From this representation, each generator outputs a sample. The discriminator is a }
+\caption[Multi-agent diverse GAN]{Multi-agent diverse GAN \cite{ghosh2018multi}. Given an input noise vector $z$, the shared network produces an intermediate representation. From this representation, each generator outputs a sample. The discriminator makes a $K+1$-class classification, one class for the real sample, and the other $K$ classes for the index of the generator.}
 \vskip\baselineskip
 \label{fig:models:madgan}
 \end{figure}
@@ -327,7 +327,7 @@ where $p_t$  and $p_f$ are the target and the fake distribution respectively, an
 \end{equation}
 where $G_i$ is the $i$th generator, and $D_0$ represents the discriminator's probability output for real class.
 
-Though there are multiple generators, we do not mix them in a cooperative manner. We also do not partition $p(z)$ and use each partition for different generators. This should rather be thought as each generator produces their own interpretation of $p(z)$. Therefore, instead of partitioning $p(z)$ we introduce alternative $p(z)$'s.
+Though there are multiple generators, we do not mix them in a cooperative manner. We also do not partition $p(z)$ and use each partition for different generators. This should rather be thought as each generator produces their own interpretation of $p(z)$. Therefore, instead of partitioning $p(z)$ we introduce alternative generator functions for the same region in $p(z)$.
 %
 %
 \section{Mixture GAN}
@@ -339,12 +339,12 @@ The mixture GAN (MGAN) \cite{hoang2018mgan} is similar to MAD-GAN except that th
 \begin{center}
 \includegraphics[width=0.75\columnwidth]{mgan.pdf}
 \end{center}
-\caption[Mixture GAN]{Mixture GAN \cite{hoang2018mgan}.}
+\caption[Mixture GAN]{Mixture GAN \cite{hoang2018mgan}. This is similar to MAD-GAN architecture except they use multiple generators at the earlier layers. Each generator creates an abstract representation which is fed to the shared network to generate the output. One sample out of $K$ generated samples is selected at random and given to the discriminator. The discriminator network has two heads at the last layer. One head predicts whether the sample is real or fake, and the other predicts the index of the generator.}
 \vskip\baselineskip
 \label{fig:models:mgan}
 \end{figure}
 
-The model is shown in Figure \ref{fig:models:mgan}. There is also the difference that the split of the generators is earlier. A set of generators $\{G_i(z)\}_{i=1}^K$, transform $z$ and for all, the shared network $G_s$ produces the final output. A multinomial distribution is sampled to randomly select one of the generators. The parameters of the multinomial distribution are fixed. While the discriminator tries to discriminate between the fake and the real data as usual, the classifier tries to predict the index of the generator that produced the fake sample. These two networks share parameters treating the training of the discriminator/classifier as a multi-task learning problem. This approach also treats $p(z)$ as in MAD-GAN, creating alternative $p(z)$'s.
+The model is shown in Figure \ref{fig:models:mgan}. There is also the difference that the split of the generators is earlier. A set of generators $\{G_i(z)\}_{i=1}^K$, transform $z$ and for all, the shared network $G_s$ produces the final output. A multinomial distribution is sampled to randomly select one of the generators. The parameters of the multinomial distribution are fixed. While the discriminator tries to discriminate between the fake and the real data as usual, the classifier tries to predict the index of the generator that produced the fake sample. These two networks share parameters treating the training of the discriminator/classifier as a multi-task learning problem.
 
 \section{Mixtures of Experts GAN}
 \label{sec:megan}
@@ -355,7 +355,7 @@ In the MEGAN \cite{park2018megan}, inspired from the mixtures of experts \cite{j
 \begin{center}
 \includegraphics[width=0.75\columnwidth]{megan.pdf}
 \end{center}
-\caption{Mixture of experts GAN}
+\caption[Mixture of experts GAN]{Mixture of experts GAN \cite{park2018megan}.}
 \vskip\baselineskip
 \label{fig:models:megan}
 \end{figure}
