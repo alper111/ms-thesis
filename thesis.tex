@@ -310,7 +310,7 @@ In the multi-agent diverse GAN (MAD-GAN) \cite{ghosh2018multi}, there are multip
 \begin{center}
 \includegraphics[width=0.75\columnwidth]{madgan.pdf}
 \end{center}
-\caption[Multi-agent diverse GAN]{Multi-agent diverse GAN \cite{ghosh2018multi}. Given an input noise vector $z$, the shared network produces an intermediate representation. From this representation, each generator outputs a sample. The discriminator makes a $K+1$-class classification, one class for the real sample, and the other $K$ classes for the index of the generator.}
+\caption[Multi-agent diverse GAN]{Multi-agent diverse GAN \cite{ghosh2018multi}. Given an input noise vector $z$, the shared network produces an intermediate representation $z'$. From this representation, each generator $G_i$ outputs a sample. The discriminator makes a $K+1$-class classification, one class for the real sample, and the other $K$ classes for the index of the generator.}
 \vskip\baselineskip
 \label{fig:models:madgan}
 \end{figure}
@@ -339,7 +339,7 @@ The mixture GAN (MGAN) \cite{hoang2018mgan} is similar to MAD-GAN except that th
 \begin{center}
 \includegraphics[width=0.75\columnwidth]{mgan.pdf}
 \end{center}
-\caption[Mixture GAN]{Mixture GAN \cite{hoang2018mgan}. This is similar to MAD-GAN architecture except they use multiple generators at the earlier layers. Each generator creates an abstract representation which is fed to the shared network to generate the output. One sample out of $K$ generated samples is selected at random and given to the discriminator. The discriminator network has two heads at the last layer. One head predicts whether the sample is real or fake, and the other predicts the index of the generator.}
+\caption[Mixture GAN]{Mixture GAN \cite{hoang2018mgan}. This is similar to MAD-GAN architecture except they use multiple generators at the earlier layers. Each generator $G_i$ creates an abstract representation which is fed to the shared network to generate the output. One sample out of $K$ generated samples is selected at random and given to the discriminator. The discriminator network has two heads at the last layer. One head predicts whether the sample is real or fake, and the other predicts the index of the generator.}
 \vskip\baselineskip
 \label{fig:models:mgan}
 \end{figure}
@@ -355,7 +355,7 @@ In the MEGAN \cite{park2018megan}, inspired from the mixtures of experts \cite{j
 \begin{center}
 \includegraphics[width=0.75\columnwidth]{megan.pdf}
 \end{center}
-\caption[Mixture of experts GAN]{Mixture of experts GAN \cite{park2018megan}.}
+\caption[Mixture of experts GAN]{Mixture of experts GAN \cite{park2018megan}. Given an input vector $z$, each generator $G_i$ outputs a sample.}
 \vskip\baselineskip
 \label{fig:models:megan}
 \end{figure}
@@ -371,7 +371,7 @@ All previous approaches use multiple generators yet these generators do not work
 
 \section{Flat Mixture of Generators}
 \label{sec:me-gan}
-The flat mixture of generators model, which we call ME-GAN (although the name is similar to MEGAN, we fully use the ME model unlike MEGAN, therefore keep the name with a dash), consists of local generators $\{G_i(z)\}_{i=1}^{K}$, and a gating function $\alpha(z)$. The idea is that instead of learning a global generator, we divide the input space into regions and learn a set of local generators.
+The flat mixture of generators model, which we call ME-GAN (although the name is similar to MEGAN, we fully use the ME model unlike MEGAN, therefore keep the name with a dash), consists of local generators $\{G_i(z)\}_{i=1}^{K}$, and a gating function $a(z)$. The idea is that instead of learning a global generator, we divide the input space into regions and learn a set of local generators.
 \begin{gather}
 a_i(z) = \frac{\exp{(v_i z+v_{i_0})}}{\sum_{j=1}^K \exp{(v_j z+v_{j_0})}} \label{eq:me-gan1}\\
 x = \sum_{i=1}^K a_i(z) g_i(z) \label{eq:me-gan2}
@@ -385,9 +385,9 @@ In the constant model (Equation \ref{eq:constant}), generators do not use the in
 
 \section{Hierarchical Mixture of Generators}
 \label{sec:hmgan}
-Just like the hierarchical mixture of experts \cite{jordan1994hierarchical} go from the flat organization of mixture of experts  \cite{jacobs1991adaptive} to a tree, our proposed hierarchical mixture of generators (HME-GAN) go from a flat mixture of generators to a tree. HME-GAN and ME-GAN are the same except for the formulation of the gating functions. Let us think of a binary decision tree. The generators at the leaves of this tree. At each internal node $m$ of the tree, there is a logistic function $a_m$ with parameters $\{v_m, v_{m_0}\}$:
+Just like the hierarchical mixture of experts \cite{jordan1994hierarchical} go from the flat organization of mixture of experts  \cite{jacobs1991adaptive} to a tree, our proposed hierarchical mixture of generators (HME-GAN) go from a flat mixture of generators to a tree. HME-GAN and ME-GAN are the same except for the formulation of the gating functions. Let us think of a binary decision tree. The generators at the leaves of this tree. At each internal node $m$ of the tree, there is a logistic function $\sigma_m(z)$ with parameters $\{v_m, v_{m_0}\}$:
 \begin{equation}
-a_m(z) = \frac{1}{1+\exp{[-(v_m z + v_{m_0})]}}
+\sigma_m(z) = \frac{1}{1+\exp{[-(v_m z + v_{m_0})]}}
 \label{eq:sigmoid}
 \end{equation}
 Given an input $z$, this logistic function outputs a probability which serves as the mixture weights of the left and the right child. The response of an internal node $m$ can be written as:
@@ -395,18 +395,18 @@ Given an input $z$, this logistic function outputs a probability which serves as
 x_m(z)=
 	\begin{cases}
 		\hfil G_m(z) &\text{if $m$ is a leaf} \\
-		\hfil x_m^{L}(z) a_m(x) + x_m^{R}(z)(1 - a_m(x)) &\text{otherwise}
+		\hfil x_m^{L}(z) \sigma_m(z) + x_m^{R}(z)(1 - \sigma_m(z)) &\text{otherwise}
 	\end{cases}
 \label{eq:hmgan2}
 \end{equation}
-where $x_m^L$ and $x_m^R$ are the responses of the left and the right children, respectively. At each internal node $m$, we make a soft split and use $a_m(z)$ of the response of the left tree and $1-a_m(z)$ of the response of the right tree. This is carried out recursively until we arrive at the leaves where we have the generator responses, $G_i(z)$. Again, we are taking a convex combination of the generator responses. In ME-GAN, the $i$th generator is mixed with the weight:
+where $x_m^L$ and $x_m^R$ are the responses of the left and the right children, respectively. At each internal node $m$, we make a soft split and use $\sigma_m(z)$ of the response of the left tree and $1-\sigma_m(z)$ of the response of the right tree. This is carried out recursively until we arrive at the leaves where we have the generator responses, $G_i(z)$. Again, we are taking a convex combination of the generator responses. In ME-GAN, the $i$th generator is mixed with the weight:
 \begin{equation}
-\frac{\exp{(v_i z + v_{i_0})}}{\sum_{j=1}^K \exp{(v_j z + v_{j_0})}}
+a_i(z) = \frac{\exp{(v_i z + v_{i_0})}}{\sum_{j=1}^K \exp{(v_j z + v_{j_0})}}
 \label{eq:fm_mix}
 \end{equation}
 whereas in HME-GAN, this is:
 \begin{gather}
-\prod_{j \in Pred(i)} a_j^{\delta_1^{(j)}}(z) (1-a_j(z))^{\delta_2^{(j)}} G_i(z)\\
+a_i(z) = \prod_{j \in Pred(i)} \sigma_j^{\delta_1^{(j)}}(z) (1-\sigma_j(z))^{\delta_2^{(j)}}\\
 (\delta_1^{(j)}, \delta_2^{(j)}) =
 	\begin{cases}
 		(1, 0) & \text{if $i$ lies in the left subtree of $j$} \\
