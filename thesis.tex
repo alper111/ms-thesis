@@ -40,11 +40,17 @@
 \makemstitle % M.S. thesis
 \makeapprovalpage
 \begin{acknowledgements}
-I want to thank Ethem Alpayd{\i}n for his guidance through my undergraduate and graduate studies.
+I want to thank Ethem Alpaydın for his guidance and his help through my undergraduate and graduate studies. I learned a lot from him in three years. Thanks to him, I very much enjoyed working on interesting problems.
+
+I would like to thank Tunga Güngör, Emre Uğur, and Reyhan Aydoğan for accepting to be on my jury.
 
 I am grateful to my family for their unconditional support. My first introduction to science would not be possible without them.
 
-I thank \c{C}a\u{g}la Aksoy for her help, her patience, and her presence.
+I thank Çağla Aksoy for her help, her patience, her presence, and her wholehearted support.
+
+This thesis is partially supported by Boğaziçi University Research Funds with Grant Number 18A01P7.
+
+The numerical calculations reported in this thesis were partially performed at TUBITAK ULAKBIM, High Performance and Grid Computing Center (TRUBA resources).
 \end{acknowledgements}
 \begin{abstract}
 Recently proposed generative adversarial networks (GANs) are deep neural networks that are designed to model complex data distributions. The idea is to create a discriminator network that learns the borders of the data distribution; and a generator network which is trained to maximize the discriminator's loss to learn to generate samples from the data distribution. Instead of learning a global generator, one variant trains multiple generators, each responsible from one local mode of the data distribution. In this thesis, we review such approaches and propose the hierarchical mixture of generators, that learns a hierarchical division in a tree structure as well as the local generators in the leaves. Since these generators are combined softly, the whole model is continuous and can be trained using gradient-based optimization. Our experiments on five image data sets, namely, MNIST, FashionMNIST, CelebA, UTZap50K, and Oxford Flowers, show that our proposed model is as successful as the fully connected neural network. The learned hierarchical structure also allows for knowledge extraction.
@@ -292,7 +298,7 @@ In IS, we never look at the distribution of real images which is a problem. In F
 
 \subsection{Nearest-Neighbor Accuracy}
 \label{subsec:nn}
-In the classifier two-sample test (C2ST) \cite{lopez2016revisiting}, we train a classifier for two-class classification where classes are the true samples and the fake samples, then we use this classifier to assess whether the two distributions are close to each other. If these two distributions are very close to each other, the classifier cannot perform better than chance. In \cite{xu2018empirical}, they show that 1-nearest neighbor (1-NN) leave-one-out (LOO) classifier can detect mode collapse, mode drop, and sample diversity. The procedure is as follows. We take a set of real samples and fake samples. For each sample, we look at its nearest neighbor's label. This counts as the prediction of the model for the current sample. If the overall accuracy is around 50\%, we say these two distributions are very close to each other. Let us make the test only for real images and call this prediction accuracy metric 1-NN real. A higher 1-NN real accuracy implies samples that are near real samples are also real, therefore a mode drop. If this is very low, we can suspect that the generator overfits the target distribution. On the other hand, 1-NN fake accuracy assesses the sample diversity. If 1-NN fake accuracy is high, then the samples are not diverse. 
+In the classifier two-sample test (C2ST) \cite{lopez2016revisiting}, we train a classifier for two-class classification where classes are the true samples and the fake samples, then we use this classifier to assess whether the two distributions are close to each other. If these two distributions are very close to each other, the classifier cannot perform better than chance. In \cite{xu2018empirical}, they show that 1-nearest neighbor (1-NN) leave-one-out (LOO) classifier can detect mode collapse, mode drop, and sample diversity. The procedure is as follows. We take a set of real samples and fake samples. For each sample, we look at its nearest neighbor's label. This counts as the prediction of the model for the current sample. If the overall accuracy is around 50\%, we say these two distributions are very close to each other. Let us make the test only for real images and call this prediction accuracy metric 1-NN real. A higher 1-NN real accuracy implies samples that are near real samples are also real, therefore a mode drop. If this is very low, we can suspect that the generator overfits the target distribution. On the other hand, 1-NN fake accuracy assesses sample diversity. If 1-NN fake accuracy is high, then the samples are not diverse. 
 Apart from this, human judgment is generally used by visualizing samples that are generated by the model to assess quality. Although this is not a good approach and only works for the image domain, we have no choice until we find a rigorous metric that can be trusted. An extensive review of evaluation methods can be found in \cite{borji2019pros}. In this study, we use FID and 5-NN accuracy as evaluation metrics where 5-NN accuracy is calculated with the same activations we calculate the FID score with. We also show a set of generated samples to let the reader decide the quality.
 
 
