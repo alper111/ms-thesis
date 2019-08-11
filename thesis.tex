@@ -1289,39 +1289,60 @@ When we compare our mixture of experts formulation (ME-L-$k$) with MEGAN at the 
 
 \section{Interpretation of the Learned Model}
 \label{sec:interpret}
-The main advantage HME model is its interpretability. To investigate the learned representation, we generate $100$ samples from the generated model and for each node $m$, we take a weighted average of the generated samples. These weights are counts that correspond to the number of times node $m$ is used. In a hard decision tree where we choose left or right, a hard count corresponds to the path from root to prediction leaf. Here, we instead find the soft count of a node by multiplying the gating values up to that node. As in Figures \ref{fig:leaves} and \ref{fig:leaves_lin}, we calculate gating values but for all nodes. Results for different data sets are visualized in Figures \ref{fig:tree:mnist} to \ref{fig:tree:flowers}. We see that earlier levels of the tree correspond to the means of larger samples and as we go down to the leaves, there is specialization, an indication that the tree structure divides the input space into regions. We can think of the structure implementing a soft hierarchical clustering. For example in Oxford Flowers data set in Figure \ref{fig:tree:flowers}, at the 2nd level, we see splits that results in yellow and pink colored nodes. Pink colored subtree then further splits into nodes that cover more spectrum around the pink color. Although this is applied to the image domain here, it can be used in other domains as well. After training, we get a soft hierarchical clustering for free. Note that we cannot do such analysis for ME or other methods that use multiple generators mentioned in Chapter \ref{chapter:multiple_gan}, since none of these approaches are hierarchical.
+The main advantage HME model is its interpretability. To investigate the learned representation, we generate $500$ samples from the generated model and for each node $m$, we take a weighted average of the generated samples. These weights are counts that correspond to the number of times node $m$ is used. In a hard decision tree where we choose left or right, a hard count corresponds to the path from root to prediction leaf. Here, we instead find the soft count of a node by multiplying the gating values up to that node. As in Figures \ref{fig:leaves} and \ref{fig:leaves_lin}, we show the average responses but for all nodes.
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=0.9\textwidth]{subtree_mnist.pdf}
+\end{center}
+\caption{The average node responses of the right subtree of HME-5 model on MNIST.}
+\vskip\baselineskip
+\label{fig:subtree:mnist}
+\end{figure}
+In Figure \ref{fig:subtree:mnist}, the right subtree of HME-5 model is shown. We see the average response values at each node. At the top node the response is like a mixture of digits. When we look at the leaves, they are diversified, each one is more specialized on a specific digit. We see that the diversification does not happen instantly but progressively at each level.
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=0.9\textwidth]{subtree_flowers.pdf}
+\end{center}
+\caption{The average node responses of the left subtree HME-5 model on Oxford Flowers.}
+\vskip\baselineskip
+\label{fig:subtree:flowers}
+\end{figure}
+
+Another example is shown in Figure \ref{fig:subtree:flowers}. Here, the splits are done by the color feature in general. Each level of the tree can be thought as a color spectrum with the nodes representing different colors. The resolution of the spectrum increases when we go down to the leaves. This can be analogous to the difference between 8-bit and 16-bit music. Although one can create music in both resolutions, 16-bit provides more capacity, and therefore more detail.
+
+Although this is applied to the image domain here, it can be used in other domains as well. Note that we cannot do such analysis for ME or other methods that use multiple generators mentioned in Chapter \ref{chapter:multiple_gan}, since none of these approaches are hierarchical. The whole trees for different data sets are also visualized in Figures \ref{fig:tree:mnist} to \ref{fig:tree:flowers}.
 
 \begin{sidewaysfigure}[htbp]
 \includegraphics[width=1\textwidth]{tree_mnist.pdf}
-\caption{The average node responses of HME-L-5 model on MNIST. This can be seen as a hierarchical clustering of the data. Digits become sharper as we go down in the tree due to specialization of leaves.}
+\caption{The average node responses of HME-5 model on MNIST.}
 \vskip\baselineskip
 \label{fig:tree:mnist}
 \end{sidewaysfigure}
 
 \begin{sidewaysfigure}[htbp]
 \includegraphics[width=1\textwidth]{tree_fashion.pdf}
-\caption{The average node responses of HME-L-4 model on FashionMNIST.}
+\caption{The average node responses of HME-5 model on FashionMNIST.}
 \vskip\baselineskip
 \label{fig:tree:fashion}
 \end{sidewaysfigure}
 
 \begin{sidewaysfigure}[htbp]
 \includegraphics[width=1\textwidth]{tree_celeb.pdf}
-\caption{The average node responses of HME-L-5 model on CelebA.}
+\caption{The average node responses of HME-5 model on CelebA.}
 \vskip\baselineskip
 \label{fig:tree:celeb}
 \end{sidewaysfigure}
 
 \begin{sidewaysfigure}[htbp]
 \includegraphics[width=1\textwidth]{tree_utzap50k.pdf}
-\caption{The average node responses of HME-L-4 model on UTZap50K}
+\caption{The average node responses of HME-5 model on UTZap50K}
 \vskip\baselineskip
 \label{fig:tree:utzap50k}
 \end{sidewaysfigure}
 
 \begin{sidewaysfigure}[htbp]
 \includegraphics[width=1\textwidth]{tree_flowers.pdf}
-\caption{The average node responses of HME-L-5 model on Oxford Flowers. The color variation increases in the nodes as we go down in the tree.}
+\caption{The average node responses of HME-5 model on Oxford Flowers.}
 \vskip\baselineskip
 \label{fig:tree:flowers}
 \end{sidewaysfigure}
