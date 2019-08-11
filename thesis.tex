@@ -132,7 +132,7 @@ where $K$ is the kernel function, and $h$ is called \emph{bandwidth}. $K$ and $h
 \begin{center}
 \includegraphics[width=0.5\columnwidth]{euc.pdf}
 \end{center}
-\caption{A spiral data set. The data is one-dimensional, if we know $x_1=r*cos(r)$, $x_2=r*sin(r)$.}
+\caption[A spiral data set]{A spiral data set. The data is one-dimensional, if we know $x_1=r*cos(r)$, $x_2=r*sin(r)$.}
 \vskip\baselineskip
 \label{fig:spiral}
 \end{figure}
@@ -168,7 +168,7 @@ We optimize Equation \ref{eq:gan} by alternating between optimizing $D$ and $G$ 
 \begin{center}
 \includegraphics[width=0.75\textwidth]{gan.pdf}
 \end{center}
-\caption{GAN framework. Given an input $z$ that is drawn from $p(z)$, the generator $G$ produces a \emph{fake} sample, $x_{fake}$. A \emph{real} sample $x_{real}$ that is drawn from the data set $X$ is given to the discriminator $D$ together with $x_{fake}$. $D$ is trained to classify $x_{fake}$ as 0 and $x_{real}$ as 1.}
+\caption[GAN framework]{GAN framework. Given an input $z$ that is drawn from $p(z)$, the generator $G$ produces a \emph{fake} sample, $x_{fake}$. A \emph{real} sample $x_{real}$ that is drawn from the data set $X$ is given to the discriminator $D$ together with $x_{fake}$. $D$ is trained to classify $x_{fake}$ as 0 and $x_{real}$ as 1.}
 \vskip\baselineskip
 \label{fig:gan}
 \end{figure}
@@ -210,7 +210,7 @@ The second problem is of vanishing gradients. In order to optimize Equation \ref
 \begin{center}
 \includegraphics[width=0.9\textwidth]{modecollapse.pdf}
 \end{center}
-\caption{An example of a mode collapse. The data set consists of samples from two Gaussian distributions, one on the top left with low variance and the other on the bottom right with high variance. The generator model fails to model the one on the top left.}
+\caption[An example of a mode collapse]{An example of a mode collapse. The data set consists of samples from two Gaussian distributions, one on the top left with low variance and the other on the bottom right with high variance. The generator model fails to model the one on the top left.}
 \vskip\baselineskip
 \label{fig:modecollapse}
 \end{figure}
@@ -231,7 +231,7 @@ which is also known as the $\ell_2$ reconstruction loss. VAEs transform the idea
 \begin{center}
 \includegraphics[width=0.8\textwidth]{vae.pdf}
 \end{center}
-\caption{Variational auto-encoder. Given an input $x$, the encoder network $E$ outputs $\mu$ and $\sigma$ which defines a multivariate Gaussian. We sample a latent code $z$ from this Gaussian with reparameterization trick; $z = \sigma \odot \epsilon + \mu$ where $\epsilon$ is drawn from the $\mathcal{N}(0, 1)$. The decoder network $D$ produces the final output $x'$ given the latent code.}
+\caption[Variational auto-encoder]{Variational auto-encoder. Given an input $x$, the encoder network $E$ outputs $\mu$ and $\sigma$ which defines a multivariate Gaussian. We sample a latent code $z$ from this Gaussian with reparameterization trick; $z = \sigma \odot \epsilon + \mu$ where $\epsilon$ is drawn from the $\mathcal{N}(0, 1)$. The decoder network $D$ produces the final output $x'$ given the latent code.}
 \vskip\baselineskip
 \label{fig:vae}
 \end{figure}
@@ -478,7 +478,7 @@ Our experiments are done in the image domain. It is known that using a convoluti
 \begin{center}
 \includegraphics[width=0.98\columnwidth]{me-gan.pdf}
 \end{center}
-\caption[ME-GAN model.]{ME-GAN model. Given $z$, each generator outputs a latent representation. These representations are mixed with weights $a_i$ which are provided through the gating function. The gating function consists of a linear layer with a softmax function. The shared network $G_s$ produces the final output.}
+\caption[ME-GAN model]{ME-GAN model. Given $z$, each generator outputs a latent representation. These representations are mixed with weights $a_i$ which are provided through the gating function. The gating function consists of a linear layer with a softmax function. The shared network $G_s$ produces the final output.}
 \vskip\baselineskip
 \label{fig:models:me-gan}
 \end{figure}
@@ -487,7 +487,7 @@ Our experiments are done in the image domain. It is known that using a convoluti
 \begin{center}
 \includegraphics[width=0.98\columnwidth]{hmegan.pdf}
 \end{center}
-\caption[HME-GAN model.]{HME-GAN model. Each generator creates a latent representation from $z$ as in Figure \ref{fig:models:me-gan}. However the calculation of the gating values is different. Each $a_i$ is calculated by multiplying the $\sigma$ values along the path from the leaf to the root (Equation \ref{eq:hm_mix}). The value on a path is $\sigma$ if the path is a left child, $1-\sigma$ otherwise. As in ME-GAN, $a_i$ values sum up to one.}
+\caption[HME-GAN model]{HME-GAN model. Each generator creates a latent representation from $z$ as in Figure \ref{fig:models:me-gan}. However the calculation of the gating values is different. Each $a_i$ is calculated by multiplying the $\sigma$ values along the path from the leaf to the root (Equation \ref{eq:hm_mix}). The value on a path is $\sigma$ if the path is a left child, $1-\sigma$ otherwise. As in ME-GAN, $a_i$ values sum up to one.}
 \vskip\baselineskip
 \label{fig:models:hmegan}
 \end{figure}
@@ -499,7 +499,7 @@ The following settings are used in all experiments unless otherwise stated. We i
 
 \begin{table}[thbp]
 \vskip\baselineskip
-\caption{The generator and the discriminator network architectures that are used with MNIST and FashionMNIST, which have $32\times 32$ gray-scale images. For convolutional layers, kernel size is set to $4 \times 4$ with a stride of $2 \times 2$ and with a padding of 1.}
+\caption[The generator and the discriminator architectures for $32 \times 32$ sized data sets]{The generator and the discriminator network architectures that are used with MNIST and FashionMNIST, which have $32\times 32$ gray-scale images. For convolutional layers, kernel size is set to $4 \times 4$ with a stride of $2 \times 2$ and with a padding of 1.}
 \begin{center}
 \begin{tabular}{|l|c|c|c|c|}
 \hline
@@ -534,7 +534,7 @@ Fully-Conn. & 256 & $4 \times 4$ & 1 & $1 \times 1$\\
 
 \begin{table}[thbp]
 \vskip\baselineskip
-\caption{The generator and the discriminator network architectures that are used with CelebA , UTZap50K and Oxford Flowers which are $64\times 64$ images in color. For convolutional layers, kernel size is set to $4 \times 4$ with a stride of $2 \times 2$ and with a padding of 1.}
+\caption[The generator and the discriminator architectures for $64 \times 64$ sized data sets]{The generator and the discriminator network architectures that are used with CelebA , UTZap50K and Oxford Flowers which are $64\times 64$ images in color. For convolutional layers, kernel size is set to $4 \times 4$ with a stride of $2 \times 2$ and with a padding of 1.}
 \begin{center}
 \begin{tabular}{|l|c|c|c|c|}
 \hline
@@ -591,7 +591,7 @@ This example shows that even when the distribution is very non-linear, we can mo
 \begin{center}
 \includegraphics[width=0.9\textwidth]{toy.pdf}
 \end{center}
-\caption{The average responses of tree nodes of HME-GAN on a spiral data set. The data set is represented with black cross. The output of the model is colored dots. These colors represent different regions of the input. As we go down in the tree, each node becomes more specialized.}
+\caption[The average responses of tree nodes of HME-GAN on a spiral data set]{The average responses of tree nodes of HME-GAN on a spiral data set. The data set is represented with black cross. The output of the model is colored dots. These colors represent different regions of the input. As we go down in the tree, each node becomes more specialized.}
 \vskip\baselineskip
 \label{fig:toy}
 \end{figure}
@@ -691,7 +691,7 @@ Some samples generated from ME-64 and HME-6 are shown in Figures \ref{fig:sample
 	\label{fig:leaves:hme_fashion}
 }
 \end{center}
-\caption{Average responses of generators at the leaves for ME-64 and HME-6. We see that HME-6 responses are more localized compared to ME-64.}
+\caption[Average responses of generators at the leaves for ME-64 and HME-6]{Average responses of generators at the leaves for ME-64 and HME-6. We see that HME-6 responses are more localized compared to ME-64.}
 \vskip\baselineskip
 \label{fig:leaves}
 \end{figure}
@@ -709,7 +709,7 @@ Some samples generated from ME-64 and HME-6 are shown in Figures \ref{fig:sample
 	\label{fig:cov:hme}
 }
 \end{center}
-\caption{Covariance matrix of gating values of generators for ME-64 and HME-6. We see spectral squares near diagonal for HME-6 model, which indicates generators that are closer by index are used together.}
+\caption[Covariance matrix of gating values of generators for ME-64 and HME-6]{Covariance matrix of gating values of generators for ME-64 and HME-6. We see spectral squares near diagonal for HME-6 model, which indicates generators that are closer by index are used together.}
 \vskip\baselineskip
 \label{fig:covariances}
 \end{figure}
@@ -728,7 +728,7 @@ The 5-NN and FID scores for five different data sets are visualized in Figure \r
 	\label{fig:box_s:fashion}
 }
 \end{center}
-\caption{FID scores and 5-NN accuracies of ME-$k$ and HME-$k$ on MNIST and FashionMNIST data sets. Lower FID and 5-NN scores are better. The parameter count does not include the convolutional part.}
+\caption[FID scores and 5-NN accuracies of ME-$k$ and HME-$k$ on MNIST and FashionMNIST]{FID scores and 5-NN accuracies of ME-$k$ and HME-$k$ on MNIST and FashionMNIST data sets. Lower FID and 5-NN scores are better. The parameter count does not include the convolutional part.}
 \vskip\baselineskip
 \label{fig:box_s1}
 \end{figure}
@@ -750,7 +750,7 @@ The 5-NN and FID scores for five different data sets are visualized in Figure \r
 	\label{fig:box_s:flowers}
 }
 \end{center}
-\caption{FID scores and 5-NN accuracies of ME-$k$ and HME-$k$ on CelebA, UTZap50K, and Oxford Flowers data sets. Lower FID and 5-NN scores are better. The parameter count does not include the convolutional part.}
+\caption[FID scores and 5-NN accuracies of ME-$k$ and HME-$k$ on CelebA, UTZap50K, and Oxford Flowers]{FID scores and 5-NN accuracies of ME-$k$ and HME-$k$ on CelebA, UTZap50K, and Oxford Flowers data sets. Lower FID and 5-NN scores are better. The parameter count does not include the convolutional part.}
 \vskip\baselineskip
 \label{fig:box_s2}
 \end{figure}
@@ -999,7 +999,7 @@ In Figure \ref{fig:gens} and \ref{fig:gens2}, we show some samples generated fro
 	\label{fig:cov_lin:hme}
 }
 \end{center}
-\caption{Covariance matrix of gating values of generators for ME-L-16 and HME-L-4. As in Figure \ref{fig:covariances} (constant model), we see spectral squares near diagonal for HME-L-4 model. The diagonal of the covariance matrix for ME-L-16 is more intense compared to its constant counterpart in Figure \ref{fig:cov:me}.}
+\caption[Covariance matrix of gating values of generators for ME-L-16 and HME-L-4]{Covariance matrix of gating values of generators for ME-L-16 and HME-L-4. As in Figure \ref{fig:covariances} (constant model), we see spectral squares near diagonal for HME-L-4 model. The diagonal of the covariance matrix for ME-L-16 is more intense compared to its constant counterpart in Figure \ref{fig:cov:me}.}
 \vskip\baselineskip
 \label{fig:covariances_lin}
 \end{figure}
@@ -1017,7 +1017,7 @@ In Figure \ref{fig:gens} and \ref{fig:gens2}, we show some samples generated fro
 	\label{fig:gens:mnist:hme}
 }
 \end{center}
-\caption{Some samples generated from generators at the leaves of ME-L-16 and HME-L-4 for MNIST data set. Samples in the $i$th column are generated from $i$th generator. When we look at columns from 5 to 8 in (b), they are all digits that contain a vertical stroke. Since HME-L-4 is a tree with a depth of four, generators from 5 to 8 have the same ancestor at the second level of the tree. We see that digits that contain a vertical stroke are split from others at the second level of the tree. These digits are further split into different leaves when we go down at the bottom of the tree. This further confirms our hypothesis that HME hierarchically splits the data generation task.}
+\caption[Some samples generated from generators at the leaves of ME-L-16 and HME-L-4 for MNIST data set]{Some samples generated from generators at the leaves of ME-L-16 and HME-L-4 for MNIST data set. Samples in the $i$th column are generated from $i$th generator. When we look at columns from 5 to 8 in (b), they are all digits that contain a vertical stroke. Since HME-L-4 is a tree with a depth of four, generators from 5 to 8 have the same ancestor at the second level of the tree. We see that digits that contain a vertical stroke are split from others at the second level of the tree. These digits are further split into different leaves when we go down at the bottom of the tree. This further confirms our hypothesis that HME hierarchically splits the data generation task.}
 \vskip\baselineskip
 \label{fig:gens}
 \end{figure}
@@ -1034,7 +1034,7 @@ In Figure \ref{fig:gens} and \ref{fig:gens2}, we show some samples generated fro
 	\label{fig:gens:celeb:hme}
 }
 \end{center}
-\caption{Some samples generated from generators at the leaves of ME-L-16 and HME-L-4 for CelebA data set. Samples in the $i$th column are generated from $i$th generator. Again, for HME model we see that generators that are neighbors create images that share common features such as background color, hair type, gender. For example, male faces are generally located in the first eight columns which indicates that the tree is softly split by the gender feature at the first level. This is a good split since the split by the gender approximately splits $p(x)$ by half. When we go down in the tree, splits become more detailed. In columns 11 and 12, we see women with different hair colors but with the same orientation and hair type.}
+\caption[Some samples generated from generators at the leaves of ME-L-16 and HME-L-4 for CelebA data set]{Some samples generated from generators at the leaves of ME-L-16 and HME-L-4 for CelebA data set. Samples in the $i$th column are generated from $i$th generator. Again, for HME model we see that generators that are neighbors create images that share common features such as background color, hair type, gender. For example, male faces are generally located in the first eight columns which indicates that the tree is softly split by the gender feature at the first level. This is a good split since the split by the gender approximately splits $p(x)$ by half. When we go down in the tree, splits become more detailed. In columns 11 and 12, we see women with different hair colors but with the same orientation and hair type.}
 \vskip\baselineskip
 \label{fig:gens2}
 \end{figure}
@@ -1256,7 +1256,7 @@ MEGAN-32 & $85.80 \pm 1.27$ & $97.23 \pm 0.26$ & $107.37 \pm 3.72$ & 27.92M\\
 	\label{fig:box:fashion}
 }
 \end{center}
-\caption{FID scores and 5-NN accuracies on MNIST and FashionMNIST data sets. The parameter count does not include the convolutional part.}
+\caption[FID scores and 5-NN accuracies on MNIST and FashionMNIST]{FID scores and 5-NN accuracies on MNIST and FashionMNIST data sets. The parameter count does not include the convolutional part.}
 \vskip\baselineskip
 \label{fig:box1}
 \end{figure}
@@ -1278,7 +1278,7 @@ MEGAN-32 & $85.80 \pm 1.27$ & $97.23 \pm 0.26$ & $107.37 \pm 3.72$ & 27.92M\\
 	\label{fig:box:flowers}
 }
 \end{center}
-\caption{FID scores and 5-NN accuracies on CelebA, UTZap50K, and Oxford Flowers data sets. The parameter count does not include the convolutional part.}
+\caption[FID scores and 5-NN accuracies on CelebA, UTZap50K, and Oxford Flowers]{FID scores and 5-NN accuracies on CelebA, UTZap50K, and Oxford Flowers data sets. The parameter count does not include the convolutional part.}
 \vskip\baselineskip
 \label{fig:box2}
 \end{figure}
