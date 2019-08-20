@@ -14,7 +14,7 @@
 \usepackage{subfig}
 \usepackage{algorithm}
 \usepackage{algorithmic}
-\usepackage{lipsum}
+% \usepackage{subcaption}
 
 \newtheorem{thm}{Theorem}[chapter]
 \newtheorem{prop}[thm]{Proposition}
@@ -32,7 +32,7 @@
 \supervisor{Prof. Tunga Güngör}
 \examineri{Assist. Prof. Emre Uğur}
 \examinerii{Assist. Prof. Reyhan Aydoğan}
-\dateofapproval{DD.MM.YYYY}
+\dateofapproval{DD.MM.YY}
 
 \begin{document}
 
@@ -56,7 +56,7 @@ The numerical calculations reported in this thesis were partially performed at T
 Recently proposed generative adversarial networks (GANs) are deep neural networks that are designed to model complex data distributions. The idea is to create a discriminator network that learns the borders of the data distribution; and a generator network which is trained to maximize the discriminator's loss to learn to generate samples from the data distribution. Instead of learning a global generator, one variant trains multiple generators, each responsible from one local mode of the data distribution. In this thesis, we review such approaches and propose the hierarchical mixture of generators, that learns a hierarchical division in a tree structure as well as the local generators in the leaves. Since these generators are combined softly, the whole model is continuous and can be trained using gradient-based optimization. Our experiments on five image data sets, namely, MNIST, FashionMNIST, CelebA, UTZap50K, and Oxford Flowers, show that our proposed model is as successful as the fully connected neural network. The learned hierarchical structure also allows for knowledge extraction.
 \end{abstract}
 \begin{ozet}
-Çekişmeli üretici ağlar (ÇÜA), karmaşık veri dağılımlarını modellemek için öne sürülmüş derin sinir ağlarıdır. Ana düşünce, veri dağılımının sınırlarını öğrenen bir ayırıcı ağ üretip, bu ayırıcı ağ yardımı ile bir başka üretici ağı eğitmektir. Üretici ağ ayırıcı ağın hatasını yükseltmeye çalışarak örnekleme yapmayı öğrenir. Veri dağılımla-rında genelde birden fazla tepe bulunduğu için, ÇÜA'lar veri dağılımının hepsini öğren-mekte zorlanırlar. Evrensel tek bir üretici öğrenmek yerine, her biri dağılımın yerel bir kısmından sorumlu olan birden fazla üretici öğrenen varyantlar da bulunmaktadır. Bu tezde bu varyantları inceleyerek yeni bir mimari öne sürdük: hiyerarşik üretici karışımları. Bu mimaride ağaç, dağılımı hiyerarşik bir şekilde bölmeyi öğrenir; ağacın yapraklarında ise yerel üreticiler bulunmaktadır. Bu üreticiler esnek bir biçimde birleş-tirildiklerinden dolayı bütün model sürekli bir fonksiyondur ve türev bilgisine dayanan en iyileme metotları ile eğitilebilir. 5 farklı veri kümesinde (MNIST, FashionMNIST, CelebA, UTZap50K ve Oxford Flowers) yaptığımız deneyler göstermektedir ki öne sürdüğümüz mimari yoğun katmanlı sinir ağları kadar başarılıdır. Bunun dışında öğrenilen hiyerarşik yapı, veri dağılımı hakkında damıtılmış bir bilgi vermektedir.
+Çekişmeli üretici ağlar (ÇÜA), karmaşık veri dağılımlarını modellemek için öne sürülmüş derin sinir ağlarıdır. Ana düşünce, veri dağılımının sınırlarını öğrenen bir ayırıcı ağ üretip, bu ayırıcı ağ yardımı ile başka bir üretici ağı eğitmektir. Üretici ağ ayırıcı ağın hatasını yükseltmeye çalışarak örnekleme yapmayı öğrenir. Veri dağılımla-rında genelde birden fazla tepe bulunduğu için, ÇÜA'lar veri dağılımının hepsini öğren-mekte zorlanırlar. Evrensel tek bir üretici öğrenmek yerine, her biri dağılımın yerel bir kısmından sorumlu olan birden fazla üretici öğrenen varyantlar da bulunmaktadır. Bu tezde bu varyantları inceleyerek yeni bir mimari öne sürdük: hiyerarşik üretici karışımları. Bu mimaride ağaç, dağılımı hiyerarşik bir şekilde bölmeyi öğrenir; ağacın yapraklarında ise yerel üreticiler bulunmaktadır. Bu üreticiler esnek bir biçimde birleş-tirildiklerinden dolayı bütün model sürekli bir fonksiyondur ve türev bilgisine dayanan en iyileme metotları ile eğitilebilir. 5 farklı veri kümesinde (MNIST, FashionMNIST, CelebA, UTZap50K ve Oxford Flowers) yaptığımız deneyler göstermektedir ki öne sürdüğümüz mimari yoğun katmanlı sinir ağları kadar başarılıdır. Bunun dışında öğrenilen hiyerarşik yapı, veri dağılımı hakkında damıtılmış bir bilgi vermektedir.
 
 \end{ozet}
 \tableofcontents
@@ -89,12 +89,10 @@ Recently proposed generative adversarial networks (GANs) are deep neural network
 \sym{BiGAN}{Bidirectional Generative Adversarial Network}
 \sym{C2ST}{Classifier Two-Sample Test}
 \sym{CGAN}{Conditional Generative Adversarial Network}
-\sym{D}{Discriminator}
 \sym{DCGAN}{Deep Convolutional Generative Adversarial Network}
 \sym{DNN}{Deep Neural Network}
 \sym{EM}{Earth-Mover}
 \sym{FID}{Fr\'echet Inception Distance}
-\sym{G}{Generator}
 \sym{GAN}{Generative Adversarial Network}
 \sym{HME}{Hierarchical Mixture of Experts}
 \sym{HME-GAN}{Hierarchical Mixture of Experts Generative Adversarial Network}
@@ -145,7 +143,7 @@ where $K$ is the kernel function, and $h$ is called \emph{bandwidth}. $K$ and $h
 
 Another important point is the way the input is represented. For example in Figure \ref{fig:spiral}, if we use Cartesian coordinates, we probably fail, or find poor estimates for $p(x)$. If we know the transformation to polar coordinates, then we get a simpler problem. Both parametric models and non-parametric models will likely yield better results in polar coordinates for this specific problem. Therefore, the transformation is the golden nugget.
 
-One of the advantages \emph{deep neural networks} (DNNs) that they can learn appropriate transformations in their hidden layers. Here, the transformation means that we map $X$ to $f_1(X; w_1)$, where $f_1$ denotes the computation that is done in the first layer of a DNN using weights $w_1$. In DNN, layers are organized serially:
+One of the advantages of \emph{deep neural networks} (DNNs) is that they can learn appropriate transformations in their hidden layers. Here, the transformation means that we map $X$ to $f_1(X; w_1)$, where $f_1$ denotes the computation that is done in the first layer of a DNN using weights $w_1$. In DNN, layers are organized serially:
 \begin{equation}
 \text{DNN}(X) = f_L (f_{L-1} ( \dots f_2( f_1(X; w_1); w_2); w_{L-1}); w_L)
 \label{eq:dnn}
@@ -380,18 +378,18 @@ All previous approaches use multiple generators yet these generators do not work
 The flat mixture of generators model, which we call ME-GAN (although the name is similar to MEGAN, we use the unmodified ME model unlike MEGAN, therefore keep the name with a dash), consists of local generators $\{G_i(z)\}_{i=1}^{K}$, and a gating function $a(z)$. The idea is that instead of learning a global generator, we divide the input space into regions and learn a set of local generators.
 \begin{gather}
 a_i(z) = \frac{\exp{(v_i z+v_{i_0})}}{\sum_{j=1}^K \exp{(v_j z+v_{j_0})}} \label{eq:me-gan1}\\
-x = \sum_{i=1}^K a_i(z) g_i(z) \label{eq:me-gan2}
+x = \sum_{i=1}^K a_i(z) G_i(z) \label{eq:me-gan2}
 \end{gather}
 For a given input $z$, the gating function outputs probabilities to decide how much to use each generator (Equation \ref{eq:me-gan1}). Because the gating function outputs a probability, we do not select just one generator but a convex combination of them (Equation \ref{eq:me-gan2}). For generators, we consider two options:
 \begin{align}
-\text{Constant model:} \quad & g_i(z) = c_i \label{eq:constant}\\
-\text{Linear model:} \quad & g_i(z) = W_i z + w_{i_0} \label{eq:linear}
+\text{Constant model:} \quad & G_i(z) = c_i \label{eq:constant}\\
+\text{Linear model:} \quad & G_i(z) = W_i z + w_{i_0} \label{eq:linear}
 \end{align}
 In the constant model (Equation \ref{eq:constant}), generators do not use the input but generate a constant vector response $c_i$. Although the generator response is constant, their combination weights $a$ are still dependent on the gating function and therefore depend on $z$. Because the combination of generators is convex, the set of possible outputs are constrained by the convex hull defined by $\{c_i\}_{i=1}^K$. The linear model (Equation \ref{eq:linear}) relaxes the job of the gating function by using a more general model. The error that is propagated through the discriminator, $\partial E / \partial x$, is distributed among generators with respect to their contribution (due to the chain rule), and each generator becomes responsible for modeling the input-output mapping in its region of expertise. In both formulations, the parameters of the gating function $\{v_i, v_{i_0}\}_{i=1}^K$ and the parameters of the generators $\{W_i, w_{i_0} \}_{i=1}^K$ (or $\{ c_i \}_{i=1}^K$ for constant model) are trained using SGD.
 
 \section{Hierarchical Mixture of Generators}
 \label{sec:hmgan}
-Just like the hierarchical mixture of experts \cite{jordan1994hierarchical} go from the flat organization of mixture of experts  \cite{jacobs1991adaptive} to a tree, our proposed hierarchical mixture of generators (HME-GAN) go from a flat mixture of generators to a tree. HME-GAN and ME-GAN are the same except for the formulation of the gating functions. Let us think of a binary decision tree. The generators at the leaves of this tree. At each internal node $m$ of the tree, there is a logistic function $\sigma_m(z)$ with parameters $\{v_m, v_{m_0}\}$:
+Just like the hierarchical mixture of experts \cite{jordan1994hierarchical} go from the flat organization of mixture of experts  \cite{jacobs1991adaptive} to a tree, our proposed hierarchical mixture of generators (HME-GAN) go from a flat mixture of generators to a tree. HME-GAN and ME-GAN are the same except for the formulation of the gating functions. Let us think of a binary decision tree. The generators are at the leaves of this tree. At each internal node $m$ of the tree, there is a logistic function $\sigma_m(z)$ with parameters $\{v_m, v_{m_0}\}$:
 \begin{equation}
 \sigma_m(z) = \frac{1}{1+\exp{[-(v_m z + v_{m_0})]}}
 \label{eq:sigmoid}
@@ -838,7 +836,7 @@ ME-256 & $69.23 \pm 1.29$ & $87.83 \pm 0.66$& $18.39 \pm 0.76$ & 2.12M\\
 
 \begin{table}[thbp]
 \vskip\baselineskip
-\caption{5-NN accuracies and FID scores of ME and HME models on UTZap50K data set.}
+\caption[5-NN accuracies and FID scores of ME and HME models on UTZap 50K data set]{5-NN accuracies and FID scores of ME and HME models on UTZap50K data set}
 \begin{center}
 \begin{tabular}{|c|c|c|c|c|}
 \hline
@@ -1318,7 +1316,8 @@ Another example is shown in Figure \ref{fig:subtree:flowers}. Here, the splits a
 
 Although this is applied to the image domain here, it can be used in other domains as well. Note that we cannot do such analysis for ME or other methods that use multiple generators mentioned in Chapter \ref{chapter:multiple_gan} since none of these approaches are hierarchical. The whole trees for different data sets are also visualized in Figures \ref{fig:tree:mnist} to \ref{fig:tree:flowers}.
 
-\begin{sidewaysfigure}[htbp]
+\begin{sidewaysfigure}[p]
+\pagestyle{empty}
 \includegraphics[width=1\textwidth]{tree_mnist.pdf}
 \caption{The average node responses of HME-5 model on MNIST.}
 \vskip\baselineskip
