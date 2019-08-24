@@ -11,10 +11,8 @@
 \usepackage{rotating}
 
 \usepackage{multirow}
-\usepackage{subfig}
 \usepackage{algorithm}
 \usepackage{algorithmic}
-% \usepackage{subcaption}
 
 \newtheorem{thm}{Theorem}[chapter]
 \newtheorem{prop}[thm]{Proposition}
@@ -32,7 +30,7 @@
 \supervisor{Prof. Tunga Güngör}
 \examineri{Assist. Prof. Emre Uğur}
 \examinerii{Assist. Prof. Reyhan Aydoğan}
-\dateofapproval{DD.MM.YY}
+\dateofapproval{26.08.2019}
 
 \begin{document}
 
@@ -418,8 +416,6 @@ a_i(z) = \prod_{j \in Pred(i)} \sigma_j^{\delta_1^{(j)}}(z) (1-\sigma_j(z))^{\de
 	\end{cases}
 \end{gather}
 where $Pred(i)$ is the predecessors of the leaf $i$. This model is differentiable, too, which lets us learn the set of parameters (in the gating nodes and the generators at the leaves) with SGD.
-%
-% Let $z \in \mathbb{R}^{d}$. In the original DCGAN architecture, the data lies in $\mathbb{R}^{d}$ after the first transformation even though the resulting vector is high-dimensional. When we use constant leaf vectors, HME can only output values in the \emph{convex hull} that is defined by its leaves since it takes a convex combination of its leaf vectors. Therefore, the data lies in $\mathbb{R}^m$ after the HME transformation where $m$ is the number of leaves. As a result, we separate the relation between the dimensionality of the input vector and the latent distribution. For example, we can set the dimensionality of the noise vector as $2$ but have a $128$-dimensional latent distribution that is defined by the output of the HME by using 128 leaves. The parameters of the gating functions and the leaves are learned throughout the training. The leaf values decide the vertices of the convex hull and the gating functions decide the distribution between the leaf values.
 
 \chapter{EXPERIMENTS}
 \label{chapter:exps}
@@ -438,30 +434,22 @@ Oxford flowers is a flower data set with 102 different categories with a total o
 
 \begin{figure}[htbp]
 \begin{center}
-\subfloat[MNIST]{
-	\includegraphics[width=0.9\linewidth]{mnist_dataset.png}
-	\label{fig:dataset:mnist}
-}
-
-\subfloat[FashionMNIST]{
-	\includegraphics[width=0.9\linewidth]{fashion_dataset.png}
-	\label{fig:dataset:fashion}
-}
-
-\subfloat[CelebA]{
-	\includegraphics[width=0.9\linewidth]{celeba_dataset.png}
-	\label{fig:dataset:celeba}
-}
-
-\subfloat[UTZap50K]{
-	\includegraphics[width=0.9\linewidth]{utzap50k_dataset.png}
-	\label{fig:dataset:utzap50k}
-}
-
-\subfloat[Oxford Flowers]{
-	\includegraphics[width=0.9\linewidth]{flowers_dataset.png}
-	\label{fig:dataset:flowers}
-}
+	\begin{tabular}{c}
+		\includegraphics[width=0.85\linewidth]{mnist_dataset.png} \\
+		{\footnotesize (a) MNIST} \\
+		\vspace{0cm}\\
+		\includegraphics[width=0.85\linewidth]{fashion_dataset.png} \\
+		{\footnotesize (b) FashionMNIST} \\
+		\vspace{0cm}\\
+		\includegraphics[width=0.85\linewidth]{celeba_dataset.png} \\
+		{\footnotesize (c) CelebA} \\
+		\vspace{0cm}\\
+		\includegraphics[width=0.85\linewidth]{utzap50k_dataset.png} \\
+		{\footnotesize (d) UTZap50K} \\
+		\vspace{0cm}\\
+		\includegraphics[width=0.85\linewidth]{flowers_dataset.png} \\
+		{\footnotesize (e) Oxford Flowers}
+	\end{tabular}
 \end{center}
 \caption{Random examples from the five data sets used in this work.}
 \vskip\baselineskip
@@ -605,15 +593,10 @@ We have shown two different ways of combining multiple generators, namely, the f
 
 \begin{figure}[htbp]
 \begin{center}
-\subfloat{
-	\includegraphics[width=0.75\linewidth]{me_samples_mnist.png}
-	\label{fig:samples:me_mnist}
-}
-
-\subfloat{
+\begin{tabular}{c}
+	\includegraphics[width=0.75\linewidth]{me_samples_mnist.png} \\
 	\includegraphics[width=0.75\linewidth]{me_samples_fashion.png}
-	\label{fig:samples:me_fashion}
-}
+\end{tabular}
 \end{center}
 \caption{Samples generated using ME-64 on $32 \times 32$ sized data sets.}
 \vskip\baselineskip
@@ -621,38 +604,24 @@ We have shown two different ways of combining multiple generators, namely, the f
 \end{figure}
 
 \begin{figure}[htbp]
-	\begin{center}
-	\subfloat{
-		\includegraphics[width=0.75\linewidth]{hme_samples_mnist.png}
-		\label{fig:samples:hme_mnist}
-	}
-	
-	\subfloat{
+\begin{center}
+	\begin{tabular}{c}
+		\includegraphics[width=0.75\linewidth]{hme_samples_mnist.png} \\
 		\includegraphics[width=0.75\linewidth]{hme_samples_fashion.png}
-		\label{fig:samples:hme_fashion}
-	}
-	\end{center}
-	\caption{Samples generated using HME-6 on $32 \times 32$ sized data sets.}
-	\vskip\baselineskip
-	\label{fig:samples_hme}
-	\end{figure}
+	\end{tabular}
+\end{center}
+\caption{Samples generated using HME-6 on $32 \times 32$ sized data sets.}
+\vskip\baselineskip
+\label{fig:samples_hme}
+\end{figure}
 
 \begin{figure}[htbp]
 \begin{center}
-\subfloat{
-	\includegraphics[width=0.9\linewidth]{me_samples_celeb.png}
-	\label{fig:samples:me_celeb}
-}
-
-\subfloat{
-	\includegraphics[width=0.9\linewidth]{me_samples_utzap50k.png}
-	\label{fig:samples:me_utzap50k}
-}
-
-\subfloat{
-	\includegraphics[width=0.9\linewidth]{me_samples_flowers.png}
-	\label{fig:samples:me_flowers}
-}
+	\begin{tabular}{c}
+		\includegraphics[width=0.9\linewidth]{me_samples_celeb.png} \\
+		\includegraphics[width=0.9\linewidth]{me_samples_utzap50k.png} \\
+		\includegraphics[width=0.9\linewidth]{me_samples_flowers.png}
+	\end{tabular}
 \end{center}
 \caption{Samples generated using ME-64 on $64 \times 64$ sized data sets.}
 \vskip\baselineskip
@@ -661,57 +630,43 @@ We have shown two different ways of combining multiple generators, namely, the f
 
 \begin{figure}[htbp]
 \begin{center}
-\subfloat{
-	\includegraphics[width=0.9\linewidth]{hme_samples_celeb.png}
-	\label{fig:samples:hme_celeb}
-}
-
-\subfloat{
-	\includegraphics[width=0.9\linewidth]{hme_samples_utzap50k.png}
-	\label{fig:samples:hme_utzap50k}
-}
-
-\subfloat{
-	\includegraphics[width=0.9\linewidth]{hme_samples_flowers.png}
-	\label{fig:samples:hme_flowers}
-}
+	\begin{tabular}{c}
+		\includegraphics[width=0.9\linewidth]{hme_samples_celeb.png} \\
+		\includegraphics[width=0.9\linewidth]{hme_samples_utzap50k.png} \\
+		\includegraphics[width=0.9\linewidth]{hme_samples_flowers.png}
+	\end{tabular}
 \end{center}
 \caption{Samples generated using HME-6 on $64 \times 64$ sized data sets.}
 \vskip\baselineskip
 \label{fig:samples_hme2}
 \end{figure}
 
-Some samples generated from ME-64 and HME-6 are shown in Figures \ref{fig:samples_me} to \ref{fig:samples_hme2} for visual inspection. It can be seen that these are quite realistic and contain diversity for both models. We also visualized the average generator responses of ME and HME for FashionMNIST data set in Figure \ref{fig:leaves}. To calculate this, we count the gating values of leaves for each generated image. Then, for each leaf, we take a weighted average of generated images where weights are gating values of a leaf for each image. This will give us a leaf's average response. We can see from the figure that the HME leaves are more diverse and local when compared with ME leaves. However, this figure is not about sample quality or sample diversity. It is rather about the relation of leaves with each other. In Figure \ref{fig:leaves:me_fashion}, leaves seem more blurry. This says that leaves of ME are not specialized in a region of $p(z)$ but rather used throughout in many regions of $p(z)$. To understand this clearly, we also show the covariance matrices of leaf gating values in Figure \ref{fig:covariances}. These are $64 \times 64$ matrices where each index corresponds to a leaf. For example, for both matrices, we see that the diagonal values are higher than others. This implies leaves are rather used alone, or used with high proportion. For ME in Figure \ref{fig:cov:me}, correlations are randomly scattered. Its counterpart HME (Figure \ref{fig:cov:hme}) has correlations gathered around the diagonal. Furthermore, we can see spectral squares of sizes $4 \times 4$ and $8 \times 8$. This shows that cooperations are done in a hierarchical way.
+Some samples generated from ME-64 and HME-6 are shown in Figures \ref{fig:samples_me} to \ref{fig:samples_hme2} for visual inspection. It can be seen that these are quite realistic and contain diversity for both models. We also visualized the average generator responses of ME and HME for FashionMNIST data set in Figure \ref{fig:leaves}. To calculate this, we count the gating values of leaves for each generated image. Then, for each leaf, we take a weighted average of generated images where weights are gating values of a leaf for each image. This will give us a leaf's average response. We can see from the figure that the HME leaves are more diverse and local when compared with ME leaves. However, this figure is not about sample quality or sample diversity. It is rather about the relation of leaves with each other. Leaves of the ME model seem more blurry. This says that leaves of ME are not specialized in a region of $p(z)$ but rather used throughout in many regions of $p(z)$. To understand this clearly, we also show the covariance matrices of leaf gating values in Figure \ref{fig:covariances}. These are $64 \times 64$ matrices where each index corresponds to a leaf. For example, for both matrices, we see that the diagonal values are higher than others. This implies leaves are rather used alone, or used with high proportion. For ME, correlations are randomly scattered. Its counterpart HME has correlations gathered around the diagonal. Furthermore, we can see spectral squares of sizes $4 \times 4$ and $8 \times 8$. This shows that cooperations are done in a hierarchical way.
 
 \begin{figure}[htbp]
 \begin{center}
-\subfloat[ME-64]{
-	\includegraphics[width=0.6\linewidth]{me_leaves_fashion.png}
-	\label{fig:leaves:me_fashion}
-}
-
-\subfloat[HME-6]{
-	\includegraphics[width=0.6\linewidth]{hme_leaves_fashion.png}
-	\label{fig:leaves:hme_fashion}
-}
+	\begin{tabular}{c}
+		\includegraphics[width=0.55\linewidth]{me_leaves_fashion.png} \\
+		{\footnotesize (a) ME-64} \\
+		\vspace{0cm} \\
+		\includegraphics[width=0.55\linewidth]{hme_leaves_fashion.png} \\
+		{\footnotesize (b) HME-6}
+	\end{tabular}
 \end{center}
-\caption[Average responses of generators at the leaves for ME-64 and HME-6]{Average responses of generators at the leaves for ME-64 and HME-6. We see that HME-6 responses are more localized compared to ME-64.}
+\caption[The average responses of generators at the leaves for ME-64 and HME-6]{The average responses of generators at the leaves for ME-64 and HME-6. We see that HME-6 responses are more localized compared to ME-64.}
 \vskip\baselineskip
 \label{fig:leaves}
 \end{figure}
-%
 
 \begin{figure}[htbp]
 \begin{center}
-\subfloat[ME-64]{
-	\includegraphics[width=0.5\linewidth]{cov_me.pdf}
-	\label{fig:cov:me}
-}
-
-\subfloat[HME-6]{
-	\includegraphics[width=0.5\linewidth]{cov_hme.pdf}
-	\label{fig:cov:hme}
-}
+	\begin{tabular}{c}
+		\includegraphics[width=0.5\linewidth]{cov_me.pdf} \\
+		{\footnotesize (a) ME-64} \\
+		\vspace{0cm} \\
+		\includegraphics[width=0.5\linewidth]{cov_hme.pdf} \\
+		{\footnotesize (b) HME-6}
+	\end{tabular}
 \end{center}
 \caption[Covariance matrix of gating values of generators for ME-64 and HME-6]{Covariance matrix of gating values of generators for ME-64 and HME-6. We see spectral squares near diagonal for HME-6 model, which indicates generators that are closer by index are used together.}
 \vskip\baselineskip
@@ -722,15 +677,13 @@ The 5-NN and FID scores for five different data sets are visualized in Figure \r
 
 \begin{figure}[htbp]
 \begin{center}
-\subfloat[MNIST]{
-	\includegraphics[width=0.95\linewidth]{box_mnist_s.pdf}
-	\label{fig:box_s:mnist}
-}
-
-\subfloat[FashionMNIST]{
-	\includegraphics[width=0.95\linewidth]{box_fashion_s.pdf}
-	\label{fig:box_s:fashion}
-}
+	\begin{tabular}{c}
+		\includegraphics[width=0.95\linewidth]{box_mnist_s.pdf} \\
+		{\footnotesize (a) MNIST} \\
+		\vspace{0cm} \\
+		\includegraphics[width=0.95\linewidth]{box_fashion_s.pdf} \\
+		{\footnotesize (b) FashionMNIST}
+	\end{tabular}
 \end{center}
 \caption[FID scores and 5-NN accuracies of ME-$k$ and HME-$k$ on MNIST and FashionMNIST]{FID scores and 5-NN accuracies of ME-$k$ and HME-$k$ on MNIST and FashionMNIST data sets. Lower FID and 5-NN scores are better. The parameter count does not include the convolutional part.}
 \vskip\baselineskip
@@ -739,20 +692,16 @@ The 5-NN and FID scores for five different data sets are visualized in Figure \r
 
 \begin{figure}[htbp]
 \begin{center}
-\subfloat[CelebA]{
-	\includegraphics[width=0.95\linewidth]{box_celeb_s.pdf}
-	\label{fig:box_s:celeb}
-}
-
-\subfloat[UTZap50K]{
-	\includegraphics[width=0.95\linewidth]{box_utzap50k_s.pdf}
-	\label{fig:box_s:utzap50k}
-}
-
-\subfloat[Oxford Flowers]{
-	\includegraphics[width=0.95\linewidth]{box_flowers_s.pdf}
-	\label{fig:box_s:flowers}
-}
+	\begin{tabular}{c}
+		\includegraphics[width=0.95\linewidth]{box_celeb_s.pdf}\\
+		{\footnotesize (a) CelebA} \\
+		\vspace{0cm} \\
+		\includegraphics[width=0.95\linewidth]{box_utzap50k_s.pdf}\\
+		{\footnotesize (b) UTZap50K} \\
+		\vspace{0cm} \\
+		\includegraphics[width=0.95\linewidth]{box_flowers_s.pdf} \\
+		{\footnotesize (c) Oxford Flowers}
+	\end{tabular}
 \end{center}
 \caption[FID scores and 5-NN accuracies of ME-$k$ and HME-$k$ on CelebA, UTZap50K, and Oxford Flowers]{FID scores and 5-NN accuracies of ME-$k$ and HME-$k$ on CelebA, UTZap50K, and Oxford Flowers data sets. Lower FID and 5-NN scores are better. The parameter count does not include the convolutional part.}
 \vskip\baselineskip
@@ -892,15 +841,10 @@ To remedy this problem, we use linear functions as in Equation \ref{eq:linear} a
 
 \begin{figure}[htbp]
 \begin{center}
-\subfloat{
-	\includegraphics[width=0.75\linewidth]{me_lin_samples_mnist.png}
-	\label{fig:samples_lin:me_mnist}
-}
-
-\subfloat{
-	\includegraphics[width=0.75\linewidth]{me_lin_samples_fashion.png}
-	\label{fig:samples_lin:me_fashion}
-}
+	\begin{tabular}{c}
+		\includegraphics[width=0.75\linewidth]{me_lin_samples_mnist.png}\\
+		\includegraphics[width=0.75\linewidth]{me_lin_samples_fashion.png}
+	\end{tabular}
 \end{center}
 \caption{Samples generated using ME-L-16 on $32 \times 32$ sized data sets.}
 \vskip\baselineskip
@@ -909,15 +853,10 @@ To remedy this problem, we use linear functions as in Equation \ref{eq:linear} a
 
 \begin{figure}[htbp]
 \begin{center}
-\subfloat{
-	\includegraphics[width=0.75\linewidth]{hme_lin_samples_mnist.png}
-	\label{fig:samples_lin:hme_mnist}
-}
-
-\subfloat{
-	\includegraphics[width=0.75\linewidth]{hme_lin_samples_fashion.png}
-	\label{fig:samples_lin:hme_fashion}
-}
+	\begin{tabular}{c}
+		\includegraphics[width=0.75\linewidth]{hme_lin_samples_mnist.png}\\
+		\includegraphics[width=0.75\linewidth]{hme_lin_samples_fashion.png}
+	\end{tabular}
 \end{center}
 \caption{Samples generated using HME-L-4 on $32 \times 32$ sized data sets.}
 \vskip\baselineskip
@@ -926,20 +865,11 @@ To remedy this problem, we use linear functions as in Equation \ref{eq:linear} a
 
 \begin{figure}[htbp]
 \begin{center}
-\subfloat{
-	\includegraphics[width=0.9\linewidth]{me_lin_samples_celeb.png}
-	\label{fig:samples_lin:me_celeb}
-}
-
-\subfloat{
-	\includegraphics[width=0.9\linewidth]{me_lin_samples_utzap50k.png}
-	\label{fig:samples_lin:me_utzap50k}
-}
-
-\subfloat{
-	\includegraphics[width=0.9\linewidth]{me_lin_samples_flowers.png}
-	\label{fig:samples_lin:me_flowers}
-}
+	\begin{tabular}{c}
+		\includegraphics[width=0.9\linewidth]{me_lin_samples_celeb.png}\\
+		\includegraphics[width=0.9\linewidth]{me_lin_samples_utzap50k.png}\\
+		\includegraphics[width=0.9\linewidth]{me_lin_samples_flowers.png}
+	\end{tabular}
 \end{center}
 \caption{Samples generated using ME-L-16 on $64 \times 64$ sized data sets.}
 \vskip\baselineskip
@@ -948,20 +878,11 @@ To remedy this problem, we use linear functions as in Equation \ref{eq:linear} a
 
 \begin{figure}[htbp]
 \begin{center}
-\subfloat{
-	\includegraphics[width=0.9\linewidth]{hme_lin_samples_celeb.png}
-	\label{fig:samples_lin:hme_celeb}
-}
-
-\subfloat{
-	\includegraphics[width=0.9\linewidth]{hme_lin_samples_utzap50k.png}
-	\label{fig:samples_lin:hme_utzap50k}
-}
-
-\subfloat{
-	\includegraphics[width=0.9\linewidth]{hme_lin_samples_flowers.png}
-	\label{fig:samples_lin:hme_flowers}
-}
+	\begin{tabular}{c}
+		\includegraphics[width=0.9\linewidth]{hme_lin_samples_celeb.png}\\
+		\includegraphics[width=0.9\linewidth]{hme_lin_samples_utzap50k.png}\\
+		\includegraphics[width=0.9\linewidth]{hme_lin_samples_flowers.png}
+	\end{tabular}
 \end{center}
 \caption{Samples generated using HME-L-4 on $64 \times 64$ sized data sets.}
 \vskip\baselineskip
@@ -970,56 +891,49 @@ To remedy this problem, we use linear functions as in Equation \ref{eq:linear} a
 
 \begin{figure}[htbp]
 \begin{center}
-\subfloat[ME-L-16]{
-	\includegraphics[width=0.9\linewidth]{me_lin_leaves_fashion.png}
-	\label{fig:leaves_lin:me_fashion}
-}
-
-\subfloat[HME-L-4]{
-	\includegraphics[width=0.9\linewidth]{hme_lin_leaves_fashion.png}
-	\label{fig:leaves_lin:hme_fashion}
-}
+	\begin{tabular}{c}
+		\includegraphics[width=0.9\linewidth]{me_lin_leaves_fashion.png}\\
+		{\footnotesize (a) ME-L-16}\\
+		\vspace{0cm} \\
+		\includegraphics[width=0.9\linewidth]{hme_lin_leaves_fashion.png}\\
+		{\footnotesize (b) HME-L-4}
+	\end{tabular}
 \end{center}
-\caption{Average responses of generators at the leaves for ME-L-16 and HME-L-4.}
+\caption{The average responses of generators at the leaves for ME-L-16 and HME-L-4.}
 \vskip\baselineskip
 \label{fig:leaves_lin}
 \end{figure}
 
 The experimental results on five data sets are given in Tables \ref{tab:res:related:mnist} to \ref{tab:res:related:flowers}. First, we see that both ME-L and HME-L models outperform the baseline FC model. Though one can expect these results since the number of parameters increases. Both 5-NN real and 5-NN fake accuracy drops, which says our mixture models fit better to $p(x)$ with more variety. Some samples generated from ME-L-16 and HME-L-4 are visualized in Figures \ref{fig:samples_lin_me} and \ref{fig:samples_lin_hme}.
 
-When we compare ME-L and HME-L models, we see that ME slightly enjoys more from having linear experts. We visualized the average generator responses for FashionMNIST data set in Figure \ref{fig:leaves_lin}. We see that ME-L leaves are now more local and diverse. Figure \ref{fig:cov_lin:me} also confirms this since the diagonal is now more prominent. On the other hand, in Figure \ref{fig:cov_lin:hme} HME seems to use its leaves more cooperatively when compared with its constant counterpart. For both formulations, results stagnate at their largest models. We argue that the training time may increase when the number of generators increases since we distribute the error to multiple generators. More generators imply we update generators with smaller gradients. Also, the bottleneck may be caused by other factors.
+When we compare ME-L and HME-L models, we see that ME slightly enjoys more from having linear experts. We visualized the average generator responses for FashionMNIST data set in Figure \ref{fig:leaves_lin}. We see that ME-L leaves are now more local and diverse. Figure \ref{fig:covariances_lin}a also confirms this since the diagonal is now more prominent. On the other hand, in Figure \ref{fig:covariances_lin}b HME seems to use its leaves more cooperatively when compared with its constant counterpart. For both formulations, results stagnate at their largest models. We argue that the training time may increase when the number of generators increases since we distribute the error to multiple generators. More generators imply we update generators with smaller gradients. Also, the bottleneck may be caused by other factors.
 
 In Figure \ref{fig:gens} and \ref{fig:gens2}, we show some samples generated from different generators at the leaves of ME-L-16 and HME-L-4. Each generator works in a different input region. To find these input regions, we sample 10,000 input noise vectors and select the top five most likely points. Here, the most likely point for a generator is the point which maximizes the gating value of a generator. From the figure, we see that each generator is localized in a different input-output mapping region.
 
 \begin{figure}[htbp]
 \begin{center}
-\subfloat[ME-L-16]{
-	\includegraphics[width=0.5\linewidth]{cov_me_lin.pdf}
-	\label{fig:cov_lin:me}
-}
-
-\subfloat[HME-L-4]{
-	\includegraphics[width=0.5\linewidth]{cov_hme_lin.pdf}
-	\label{fig:cov_lin:hme}
-}
+	\begin{tabular}{c}
+		\includegraphics[width=0.5\linewidth]{cov_me_lin.pdf}\\
+		{\footnotesize (a) ME-L-16} \\
+		\vspace{0cm} \\
+		\includegraphics[width=0.5\linewidth]{cov_hme_lin.pdf}\\
+		{\footnotesize (b) HME-L-4}
+	\end{tabular}
 \end{center}
-\caption[Covariance matrix of gating values of generators for ME-L-16 and HME-L-4]{Covariance matrix of gating values of generators for ME-L-16 and HME-L-4. As in Figure \ref{fig:covariances} (constant model), we see spectral squares near diagonal for HME-L-4 model. The diagonal of the covariance matrix for ME-L-16 is more intense compared to its constant counterpart in Figure \ref{fig:cov:me}.}
+\caption[Covariance matrix of gating values of generators for ME-L-16 and HME-L-4]{Covariance matrix of gating values of generators for ME-L-16 and HME-L-4. As in Figure \ref{fig:covariances} (constant model), we see spectral squares near diagonal for HME-L-4 model. The diagonal of the covariance matrix for ME-L-16 is more intense compared to its constant counterpart.}
 \vskip\baselineskip
 \label{fig:covariances_lin}
 \end{figure}
 
-
 \begin{figure}[htbp]
 \begin{center}
-\subfloat[ME-L-16]{
-	\includegraphics[width=0.98\linewidth]{me_mnist_L4_exps.png}
-	\label{fig:gens:mnist:me}
-}
-
-\subfloat[HME-L-4]{
-	\includegraphics[width=0.98\linewidth]{hme_mnist_L4_exps.png}
-	\label{fig:gens:mnist:hme}
-}
+	\begin{tabular}{c}
+		\includegraphics[width=0.95\linewidth]{me_mnist_L4_exps.png} \\
+		{\footnotesize (a) ME-L-16} \\
+		\vspace{0cm} \\
+		\includegraphics[width=0.95\linewidth]{hme_mnist_L4_exps.png} \\
+		{\footnotesize (b) HME-L-4}
+	\end{tabular}
 \end{center}
 \caption[Some samples generated from generators at the leaves of ME-L-16 and HME-L-4 for MNIST data set]{Some samples generated from generators at the leaves of ME-L-16 and HME-L-4 for MNIST data set. Samples in the $i$th column are generated from $i$th generator. When we look at columns from 5 to 8 in (b), they are all digits that contain a vertical stroke. Since HME-L-4 is a tree with a depth of four, generators from 5 to 8 have the same ancestor at the second level of the tree. We see that digits that contain a vertical stroke are split from others at the second level of the tree. These digits are further split into different leaves when we go down at the bottom of the tree. This further confirms our hypothesis that HME hierarchically splits the data generation task.}
 \vskip\baselineskip
@@ -1028,15 +942,10 @@ In Figure \ref{fig:gens} and \ref{fig:gens2}, we show some samples generated fro
 
 \begin{figure}[htbp]
 \begin{center}
-\subfloat[ME-L-16]{
-	\includegraphics[width=0.98\linewidth]{me_celeb_L4_exps.png}
-	\label{fig:gens:celeb:me}
-}
-
-\subfloat[HME-L-4]{
-	\includegraphics[width=0.98\linewidth]{hme_celeb_L4_exps.png}
-	\label{fig:gens:celeb:hme}
-}
+	\begin{tabular}{c}
+		\includegraphics[width=0.95\linewidth]{me_celeb_L4_exps.png} \\
+		\includegraphics[width=0.95\linewidth]{hme_celeb_L4_exps.png}
+	\end{tabular}
 \end{center}
 \caption[Some samples generated from generators at the leaves of ME-L-16 and HME-L-4 for CelebA data set]{Some samples generated from generators at the leaves of ME-L-16 and HME-L-4 for CelebA data set. Samples in the $i$th column are generated from $i$th generator. Again, for HME model we see that generators that are neighbors create images that share common features such as background color, hair type, gender. For example, male faces are generally located in the first eight columns which indicates that the tree is softly split by the gender feature at the first level. This is a good split since the split by the gender approximately splits $p(x)$ by half. When we go down in the tree, splits become more detailed. In columns 11 and 12, we see women with different hair colors but with the same orientation and hair type.}
 \vskip\baselineskip
@@ -1250,15 +1159,13 @@ MEGAN-32 & $85.80 \pm 1.27$ & $97.23 \pm 0.26$ & $107.37 \pm 3.72$ & 27.92M\\
 %%%%%%%%%%%%%
 \begin{figure}[htbp]
 \begin{center}
-\subfloat[MNIST]{
-	\includegraphics[width=0.95\linewidth]{box_mnist.pdf}
-	\label{fig:box:mnist}
-}
-
-\subfloat[FashionMNIST]{
-	\includegraphics[width=0.95\linewidth]{box_fashion.pdf}
-	\label{fig:box:fashion}
-}
+	\begin{tabular}{c}
+		\includegraphics[width=0.95\linewidth]{box_mnist.pdf}\\
+		{\footnotesize (a) MNIST} \\
+		\vspace{0cm} \\
+		\includegraphics[width=0.95\linewidth]{box_fashion.pdf} \\
+		{\footnotesize (b) FashionMNIST}
+	\end{tabular}
 \end{center}
 \caption[FID scores and 5-NN accuracies on MNIST and FashionMNIST]{FID scores and 5-NN accuracies on MNIST and FashionMNIST data sets. The parameter count does not include the convolutional part.}
 \vskip\baselineskip
@@ -1267,26 +1174,22 @@ MEGAN-32 & $85.80 \pm 1.27$ & $97.23 \pm 0.26$ & $107.37 \pm 3.72$ & 27.92M\\
 
 \begin{figure}[htbp]
 \begin{center}
-\subfloat[CelebA]{
-	\includegraphics[width=0.95\linewidth]{box_celeb.pdf}
-	\label{fig:box:celeb}
-}
-
-\subfloat[UTZap50K]{
-	\includegraphics[width=0.95\linewidth]{box_utzap50k.pdf}
-	\label{fig:box:utzap50k}
-}
-
-\subfloat[Oxford Flowers]{
-	\includegraphics[width=0.95\linewidth]{box_flowers.pdf}
-	\label{fig:box:flowers}
-}
+	\begin{tabular}{c}
+		\includegraphics[width=0.95\linewidth]{box_celeb.pdf} \\ 
+		{\footnotesize (a) CelebA}\\
+		\vspace{0cm} \\
+		\includegraphics[width=0.95\linewidth]{box_utzap50k.pdf} \\
+		{\footnotesize (b) UTZap50K} \\
+		\vspace{0cm} \\
+		\includegraphics[width=0.95\linewidth]{box_flowers.pdf} \\
+		{\footnotesize (c) Oxford Flowers}
+	\end{tabular}
 \end{center}
 \caption[FID scores and 5-NN accuracies on CelebA, UTZap50K, and Oxford Flowers]{FID scores and 5-NN accuracies on CelebA, UTZap50K, and Oxford Flowers data sets. The parameter count does not include the convolutional part.}
 \vskip\baselineskip
 \label{fig:box2}
 \end{figure}
-%
+
 From the results, we see that MADGAN and MGAN perform worse than the baseline in terms of FID score. Only on the MNIST data set, MADGAN performs better than the baseline. This might suggest that forcing discriminator to classify generators may not always work, which is the idea behind MADGAN and MGAN. On the other hand, we can say that MEGAN performs on par with the baseline, sometimes even better. Note that unlike MADGAN and MGAN, MEGAN uses a gating function to select among its generators. This also hints the importance of training different generators in different input regions and combining them based on the input, instead of only relying on the discriminator to force multiple generators to different modalities.
 
 When we compare our mixture of experts formulation (ME-L-$k$) with MEGAN at the same complexity, we see that our model gets better results in terms of FID scores and 5-NN accuracies. As opposed to MEGAN, our mixture of generators is a soft one and the input to the gating model is only the noise vector $z$. This reduces the number of parameters significantly (890K parameters for the model with four generators).
