@@ -588,7 +588,7 @@ This example shows that even when the distribution is very non-linear, we can mo
 
 \begin{figure}[htbp]
 \begin{center}
-\includegraphics[width=0.9\textwidth]{toy_hme.pdf}
+\includegraphics[width=0.9\textwidth]{toy_hme.png}
 \end{center}
 \caption[The average responses of tree nodes of HME-GAN on a spiral data set.]{The average responses of tree nodes of HME-GAN on a spiral data set. The data set is represented with black crosses. The output of the model is colored dots. These colors represent different regions of the input.}
 \vskip\baselineskip
@@ -598,12 +598,12 @@ This example shows that even when the distribution is very non-linear, we can mo
 \begin{figure}[htbp]
 	\begin{center}
 		\begin{tabular}{cc}
-			\includegraphics[width=0.45\textwidth]{toy_madgan.pdf} & 
-			\includegraphics[width=0.45\textwidth]{toy_mgan.pdf} \\
+			\includegraphics[width=0.45\textwidth]{toy_madgan.png} & 
+			\includegraphics[width=0.45\textwidth]{toy_mgan.png} \\
 			{\footnotesize (a) MADGAN} & {\footnotesize (b) MGAN} \\
 			\vspace{0cm}\\
-			\includegraphics[width=0.45\textwidth]{toy_megan.pdf} & 
-			\includegraphics[width=0.45\textwidth]{toy_me.pdf} \\
+			\includegraphics[width=0.45\textwidth]{toy_megan.png} & 
+			\includegraphics[width=0.45\textwidth]{toy_me.png} \\
 			{\footnotesize (c) MEGAN}  & {\footnotesize (d) ME-GAN}
 		\end{tabular}
 	\end{center}
@@ -862,7 +862,6 @@ ME-256 & $94.40 \pm 1.19$ & $97.89 \pm 0.48$ & $137.08 \pm 6.46$ & 2.12M\\
 \end{center}
 \end{table}
 
-\vskip\baselineskip
 When we make a comparison with the baseline, we see that ME and HME are not as good as FC in terms of FID score or 5-NN accuracy (Figure \ref{fig:box_s1} and \ref{fig:box_s2}). Their performance improves as the structure gets larger; note that trees with depth five and six are smaller than FC. Although 5-NN real accuracies are quite close, there is a gap between 5-NN fake accuracies. High 5-NN fake accuracy implies that fake samples are located near fake samples in $p(x)$. So, the performance drop might be due to decreased sample diversity.
 
 One possible cause for the decreased diversity is to use constant vectors in the leaves. In an FC layer, the random vector $z$ is gone through an affine transformation and a ReLU non-linearity, the \emph{randomness} is propagated linearly. ME and HME, on the other hand, encapsulate the information of $z$ (randomness) in their gating values. Gating values are calculated with a set of sigmoid functions for HME, and with a softmax function for ME. Both the sigmoid function and the softmax function get saturated for values that are too low or too high. Therefore, if gating weights get too high or too low, which also means that it mimics a hard split instead of a soft one, the variety is lost.
